@@ -1,0 +1,31 @@
+name: playx_version_update
+description: Playx Version Update
+version: 0.0.1
+homepage:
+
+environment:
+  sdk: '>=3.0.3 <4.0.0'
+  flutter: ">=3.3.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.1.4
+  package_info_plus: ^4.0.2
+  version: ^3.0.2
+  html: ^0.15.4
+  dio: ^5.2.1
+  fimber: ^0.6.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: io.sourcya.playx_version_update
+        pluginClass: PlayxVersionUpdatePlugin
+
