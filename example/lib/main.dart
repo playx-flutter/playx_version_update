@@ -41,16 +41,35 @@ class _MyAppState extends State<MyApp> {
   Future<void> checkVersion(BuildContext context) async {
     Fimber.plantTree(DebugTree());
     final result = await PlayxVersionUpdate.checkVersion(
-        googlePlayId: 'io.sourcya.tmt.track', appStoreId: 'com.apple.tv');
+        googlePlayId: 'com.kiloo.subwaysurf', appStoreId: 'com.apple.tv');
     result.when(success: (info) {
       Fimber.d(' check version successfully :$info');
-      showDialog(
-          context: context,
-          builder: (context) => PlayxUpdateDialog(
-                versionUpdateInfo: info,
-                showReleaseNotes: true,
-                title: 'New update available.',
-              ));
+
+      if (info.forceUpdate) {
+        Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => PlayxUpdatePage(
+              versionUpdateInfo: info,
+              showReleaseNotes: false,
+              showDismissButtonOnForceUpdate: false,
+              leading: Image.network(
+                  'https://img.freepik.com/premium-vector/concept-system-update-software-installation-premium-vector_199064-146.jpg'),
+              title: "It's time to update",
+              description:
+                  'A new version of the app is now available.\nThe app needs to be updated to the latest version in order to work properly.\nEnjoy the latest version features now.',
+            ),
+          ),
+        );
+      } else {
+        showDialog(
+            context: context,
+            builder: (context) => PlayxUpdateDialog(
+                  versionUpdateInfo: info,
+                  showReleaseNotes: true,
+                  title: 'New update available.',
+                ));
+      }
     }, error: (error) {
       Fimber.d(' check version error :${error.message}');
     });

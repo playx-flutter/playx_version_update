@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:fimber/fimber.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
@@ -15,34 +14,25 @@ class PlayxUpdateDialog extends StatefulWidget {
   final bool showDismissButtonOnForceUpdate;
   final String? updateActionTitle;
   final String? dismissActionTitle;
-  final String? forceDismissActionTitle;
-
-  final String? forceUpdateTitle;
-  final String? forceUpdateDescription;
 
   final VoidCallback? onUpdate;
-  final VoidCallback? onCancel;
-  final VoidCallback? onForceCancel;
-
+  final Function(bool forceUpdate)? onCancel;
   final LaunchMode launchMode;
 
-  const PlayxUpdateDialog(
-      {super.key,
-      required this.versionUpdateInfo,
-      this.title,
-      this.description,
-      this.releaseNotesTitle,
-      this.showReleaseNotes = false,
-      this.updateActionTitle,
-      this.dismissActionTitle,
-      this.forceDismissActionTitle,
-      this.forceUpdateTitle,
-      this.forceUpdateDescription,
-      this.showDismissButtonOnForceUpdate = true,
-      this.launchMode = LaunchMode.externalApplication,
-      this.onUpdate,
-      this.onCancel,
-      this.onForceCancel});
+  const PlayxUpdateDialog({
+    super.key,
+    required this.versionUpdateInfo,
+    this.title,
+    this.description,
+    this.releaseNotesTitle,
+    this.showReleaseNotes = false,
+    this.updateActionTitle,
+    this.dismissActionTitle,
+    this.showDismissButtonOnForceUpdate = true,
+    this.launchMode = LaunchMode.externalApplication,
+    this.onUpdate,
+    this.onCancel,
+  });
 
   @override
   State<PlayxUpdateDialog> createState() => _PlayxUpdateDialogState();
@@ -92,18 +82,16 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
           TextButton(
             onPressed: () {
               Navigator.pop(context, 'Later');
-              if (widget.versionUpdateInfo.forceUpdate) {
-                widget.onForceCancel?.call();
-              } else {
-                widget.onCancel?.call();
-              }
+              widget.onCancel?.call(widget.versionUpdateInfo.forceUpdate);
             },
             child: Text(_getDismissActionTitle()),
           ),
         TextButton(
           onPressed: () {
             Navigator.pop(context, 'Update');
-            updateAndroidApp();
+            PlayxVersionUpdate.openStore(
+                storeUrl: widget.versionUpdateInfo.storeUrl,
+                launchMode: widget.launchMode);
             widget.onUpdate?.call();
           },
           child: Text(widget.updateActionTitle ?? 'Update'),
@@ -144,11 +132,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
           CupertinoDialogAction(
             onPressed: () {
               Navigator.pop(context, 'Later');
-              if (widget.versionUpdateInfo.forceUpdate) {
-                widget.onForceCancel?.call();
-              } else {
-                widget.onCancel?.call();
-              }
+              widget.onCancel?.call(widget.versionUpdateInfo.forceUpdate);
             },
             child: Text(_getDismissActionTitle()),
           ),
@@ -157,7 +141,9 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
           onPressed: () {
             Navigator.pop(context, 'Update');
             widget.onUpdate?.call();
-            updateIosApp();
+            PlayxVersionUpdate.openStore(
+                storeUrl: widget.versionUpdateInfo.storeUrl,
+                launchMode: widget.launchMode);
           },
           child: Text(widget.updateActionTitle ?? 'Update'),
         ),
@@ -167,23 +153,12 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
 
   String _getTitleText() {
     String title = widget.title ?? 'New version available.';
-    if (widget.versionUpdateInfo.forceUpdate) {
-      if (widget.forceUpdateTitle != null) {
-        title = widget.forceUpdateTitle!;
-      }
-    }
     return title;
   }
 
   String _getDescriptionText() {
     String description = widget.description ??
         'A new version of the app is now available. \n \nWould you like to update now to version ${widget.versionUpdateInfo.newVersion} ?';
-    if (widget.versionUpdateInfo.forceUpdate) {
-      if (widget.forceUpdateTitle != null) {
-        description = widget.forceUpdateTitle!;
-      }
-    }
-
     return description;
   }
 
@@ -191,11 +166,6 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
     final forceUpdate = widget.versionUpdateInfo.forceUpdate;
     final defaultTitle = forceUpdate ? 'Close App' : 'Later';
     String title = widget.dismissActionTitle ?? defaultTitle;
-    if (forceUpdate) {
-      if (widget.forceDismissActionTitle != null) {
-        title = widget.forceDismissActionTitle!;
-      }
-    }
     return title;
   }
 
@@ -208,26 +178,4 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
       !widget.versionUpdateInfo.forceUpdate ||
       (widget.versionUpdateInfo.forceUpdate &&
           widget.showDismissButtonOnForceUpdate);
-
-  Future<void> updateAndroidApp() async {
-    final Uri url = Uri.parse(widget.versionUpdateInfo.storeUrl);
-    if (await canLaunchUrl(url)) {
-      try {
-        launchUrl(url, mode: widget.launchMode);
-      } catch (e) {
-        Fimber.e("couldn't open store");
-      }
-    }
-  }
-
-  Future<void> updateIosApp() async {
-    final Uri url = Uri.parse(widget.versionUpdateInfo.storeUrl);
-    if (await canLaunchUrl(url)) {
-      try {
-        launchUrl(url, mode: widget.launchMode);
-      } catch (e) {
-        Fimber.e("couldn't open store");
-      }
-    }
-  }
 }
