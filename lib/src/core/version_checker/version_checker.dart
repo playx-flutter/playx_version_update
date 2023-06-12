@@ -4,11 +4,9 @@ import 'package:fimber/fimber.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
-import 'package:playx_version_update/src/core/model/playx_version.dart';
 import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_error.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_result.dart';
-import 'package:playx_version_update/src/core/model/store_info.dart';
 import 'package:version/version.dart';
 
 class VersionChecker {
@@ -20,70 +18,143 @@ class VersionChecker {
 
   VersionChecker._internal();
 
-  final dataSource = RemoteStoreDataSource();
+  final _dataSource = RemoteStoreDataSource();
 
-  Future<PlayxVersionResult<StoreInfo>> getPlayStoreInfo(
-      {required String packageId, required String country}) async {
-    return dataSource.getPlayStoreInfo(packageId: packageId, country: country);
-  }
-
-  Future<PlayxVersionResult<PlayxVersionUpdateInfo>> checkVersion(
-      {required PlayxVersion playxVersion}) async {
+  Future<PlayxVersionResult<PlayxVersionUpdateInfo>> checkVersion({
+    String? localVersion,
+    String? newVersion,
+    String? minVersion,
+    bool forceUpdate = false,
+    String? googlePlayId,
+    String? appStoreId,
+    required String country,
+    required String language,
+  }) async {
     WidgetsFlutterBinding.ensureInitialized();
 
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
     String version = packageInfo.version;
-    final country = playxVersion.country;
+
+    final packageId = appStoreId ?? packageInfo.packageName;
+    return _checkIosVersion(
+      localVersion: version,
+      packageId: packageId,
+      country: country,
+      language: language,
+      newVersion: newVersion,
+      forceUpdate: forceUpdate,
+    );
 
     if (Platform.isAndroid) {
-      final packageId = playxVersion.googlePlayId ?? packageInfo.packageName;
+      final packageId = googlePlayId ?? packageInfo.packageName;
       Fimber.d('check version packageId :$packageId, version :$version ');
 
       return _checkAndroidVersion(
           localVersion: version,
           packageId: packageId,
           country: country,
-          playxVersion: playxVersion);
+          language: language,
+          newVersion: newVersion,
+          forceUpdate: forceUpdate);
     } else if (Platform.isIOS) {
-      return const PlayxVersionResult.error(NotSupportedException());
+      final packageId = appStoreId ?? packageInfo.packageName;
+      return _checkIosVersion(
+          localVersion: version,
+          packageId: packageId,
+          country: country,
+          language: language,
+          newVersion: newVersion,
+          forceUpdate: forceUpdate);
     } else {
       return const PlayxVersionResult.error(NotSupportedException());
     }
   }
 
-  Future<PlayxVersionResult<PlayxVersionUpdateInfo>> _checkAndroidVersion(
-      {required String localVersion,
-      required String packageId,
-      required String country,
-      required PlayxVersion playxVersion}) async {
-    final storeInfo = await dataSource.getPlayStoreInfo(
-        packageId: packageId, country: country);
+  Future<PlayxVersionResult<PlayxVersionUpdateInfo>> _checkAndroidVersion({
+    required String localVersion,
+    required String packageId,
+    required String country,
+    required String language,
+    required String? newVersion,
+    required bool forceUpdate,
+  }) async {
+    final storeInfo = await _dataSource.getPlayStoreInfo(
+        packageId: packageId, country: country, language: language);
 
     return storeInfo.mapAsync(success: (infoResult) async {
       final info = infoResult.data;
 
-      final newVersion = playxVersion.newVersion ?? info.version;
-      final canUpdateResult =
-          await shouldUpdate(version: localVersion, currentVersion: newVersion);
+      final currentVersion = newVersion ?? info.version;
+      final canUpdateResult = await shouldUpdate(
+          version: localVersion, currentVersion: currentVersion);
 
       return canUpdateResult.mapAsync(success: (shouldUpdateResult) async {
         final shouldUpdate = shouldUpdateResult.data;
 
         final minVersion = await getMinVersionVersion(
             minVersion: info.minVersion, storeVersion: info.version);
-        bool forceUpdate = await shouldForceUpdate(
+        bool shouldAppForcedToUpdate = await shouldForceUpdate(
             version: localVersion,
             minVersion: minVersion,
-            playxForceUpdate: playxVersion.forceUpdate);
+            playxForceUpdate: forceUpdate);
 
         final updateInfo = PlayxVersionUpdateInfo(
           localVersion: localVersion,
-          newVersion: newVersion,
+          newVersion: currentVersion,
           country: country,
-          storeUrl: getGooglePlayUrl(packageId: packageId, country: country),
+          storeUrl: getGooglePlayUrl(
+              packageId: packageId, country: country, language: language),
           canUpdate: shouldUpdate,
-          forceUpdate: forceUpdate,
+          forceUpdate: shouldAppForcedToUpdate,
+          releaseNotes: info.releaseNotes,
+          minVersion: minVersion,
+        );
+
+        return PlayxVersionResult.success(updateInfo);
+      }, error: (error) async {
+        return PlayxVersionResult.error(error.error);
+      });
+    }, error: (error) async {
+      return PlayxVersionResult.error(error.error);
+    });
+  }
+
+  Future<PlayxVersionResult<PlayxVersionUpdateInfo>> _checkIosVersion({
+    required String localVersion,
+    required String packageId,
+    required String country,
+    required String language,
+    required String? newVersion,
+    required bool forceUpdate,
+  }) async {
+    final storeInfo = await _dataSource.getAppStoreInfo(
+        packageId: packageId, country: country, language: language);
+
+    return storeInfo.mapAsync(success: (infoResult) async {
+      final info = infoResult.data;
+
+      final currentVersion = newVersion ?? info.version;
+      final canUpdateResult = await shouldUpdate(
+          version: localVersion, currentVersion: currentVersion);
+
+      return canUpdateResult.mapAsync(success: (shouldUpdateResult) async {
+        final shouldUpdate = shouldUpdateResult.data;
+
+        final minVersion = await getMinVersionVersion(
+            minVersion: info.minVersion, storeVersion: info.version);
+        bool shouldAppForcedToUpdate = await shouldForceUpdate(
+            version: localVersion,
+            minVersion: minVersion,
+            playxForceUpdate: forceUpdate);
+
+        final updateInfo = PlayxVersionUpdateInfo(
+          localVersion: localVersion,
+          newVersion: currentVersion,
+          country: country,
+          storeUrl: info.storeUrl ?? '',
+          canUpdate: shouldUpdate,
+          forceUpdate: shouldAppForcedToUpdate,
           releaseNotes: info.releaseNotes,
           minVersion: minVersion,
         );

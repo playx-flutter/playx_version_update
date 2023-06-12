@@ -39,9 +39,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> checkVersion() async {
     Fimber.plantTree(DebugTree());
     final result = await PlayxVersionUpdate.checkVersion(
-        playxVersion:
-            PlayxVersion(googlePlayId: 'pdf.reader.pdfviewer.pdfeditor'));
-
+        googlePlayId: 'com.zzkko', appStoreId: 'com.apple.tv');
     result.when(success: (info) {
       Fimber.d(' check version successfully :$info');
     }, error: (error) {
