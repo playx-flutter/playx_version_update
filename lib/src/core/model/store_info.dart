@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:fimber/fimber.dart';
+import 'package:playx_version_update/src/core/utils/utils.dart';
+
 class StoreInfo {
   final String version;
   final String? minVersion;
@@ -21,27 +24,37 @@ class StoreInfo {
     final regexpRelease =
         RegExp(r'\[(null,)\[(null,)\"((\.[a-z]+)?(([^"]|\\")*)?)\"\]\]');
 
-    final releaseNotes = regexpRelease.firstMatch(body)?.group(3);
+    final releaseNotes =
+        getFormattedHtmlText(regexpRelease.firstMatch(body)?.group(3));
 
     String? minVersion;
 
     try {
       final regexpDescription =
           RegExp(r'\[\[(null,)\"((\.[a-z]+)?(([^"]|\\")*)?)\"\]\]');
-      final description = regexpDescription.firstMatch(body)?.group(2);
+      final description =
+          regexpDescription.firstMatch(body)?.group(2)?.toLowerCase();
 
       if (description != null && description.isNotEmpty) {
-        if (description.contains('[minimum version :'.toLowerCase())) {
+        Fimber.d('store info : 2 minimum :$minVersion');
+
+        final minimumVersionPrefix = '[Minimum Version :'.toLowerCase();
+        if (description.contains(minimumVersionPrefix)) {
+          Fimber.d('store info : 4 minimum :$minVersion');
+
           minVersion = description
-              .substring(
-                  description.indexOf('[minimum version :'.toLowerCase()))
-              .split('[minimum version :'.toLowerCase())[1]
+              .substring(description.indexOf(minimumVersionPrefix))
+              .split(minimumVersionPrefix)[1]
               .split(']')[0]
               .trim();
+
+          Fimber.d('store info2 : minimum :$minVersion');
         }
       }
     } catch (_) {}
+    Fimber.d('store info :3 minimum :$minVersion');
 
+    // [Minimum Version :
     return StoreInfo(
         version: storeVersion ?? '',
         minVersion: minVersion,

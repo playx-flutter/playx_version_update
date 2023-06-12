@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const MaterialApp(home: MyApp()));
 }
 
 class MyApp extends StatefulWidget {
@@ -19,29 +19,38 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    checkVersion();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: Center(
-          child: Text('Running on:'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Plugin example app'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            checkVersion(context);
+          },
+          child: Text('Check version'),
         ),
       ),
     );
   }
 
-  Future<void> checkVersion() async {
+  Future<void> checkVersion(BuildContext context) async {
     Fimber.plantTree(DebugTree());
     final result = await PlayxVersionUpdate.checkVersion(
-        googlePlayId: 'com.zzkko', appStoreId: 'com.apple.tv');
+        googlePlayId: 'io.sourcya.tmt.track', appStoreId: 'com.apple.tv');
     result.when(success: (info) {
       Fimber.d(' check version successfully :$info');
+      showDialog(
+          context: context,
+          builder: (context) => PlayxUpdateDialog(
+                versionUpdateInfo: info,
+                showReleaseNotes: true,
+                title: 'New update available.',
+              ));
     }, error: (error) {
       Fimber.d(' check version error :${error.message}');
     });

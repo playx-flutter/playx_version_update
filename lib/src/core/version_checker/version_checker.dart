@@ -36,16 +36,6 @@ class VersionChecker {
 
     String version = packageInfo.version;
 
-    final packageId = appStoreId ?? packageInfo.packageName;
-    return _checkIosVersion(
-      localVersion: version,
-      packageId: packageId,
-      country: country,
-      language: language,
-      newVersion: newVersion,
-      forceUpdate: forceUpdate,
-    );
-
     if (Platform.isAndroid) {
       final packageId = googlePlayId ?? packageInfo.packageName;
       Fimber.d('check version packageId :$packageId, version :$version ');
