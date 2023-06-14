@@ -5,8 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
 import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
-import 'package:playx_version_update/src/core/model/result/playx_version_error.dart';
-import 'package:playx_version_update/src/core/model/result/playx_version_result.dart';
+import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
+import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
 import 'package:version/version.dart';
 
 class VersionChecker {
@@ -20,7 +20,7 @@ class VersionChecker {
 
   final _dataSource = RemoteStoreDataSource();
 
-  Future<PlayxVersionResult<PlayxVersionUpdateInfo>> checkVersion({
+  Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>> checkVersion({
     String? localVersion,
     String? newVersion,
     String? minVersion,
@@ -57,11 +57,12 @@ class VersionChecker {
           newVersion: newVersion,
           forceUpdate: forceUpdate);
     } else {
-      return const PlayxVersionResult.error(NotSupportedException());
+      return const PlayxVersionUpdateResult.error(NotSupportedException());
     }
   }
 
-  Future<PlayxVersionResult<PlayxVersionUpdateInfo>> _checkAndroidVersion({
+  Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>>
+      _checkAndroidVersion({
     required String localVersion,
     required String packageId,
     required String country,
@@ -101,16 +102,16 @@ class VersionChecker {
           minVersion: minVersion,
         );
 
-        return PlayxVersionResult.success(updateInfo);
+        return PlayxVersionUpdateResult.success(updateInfo);
       }, error: (error) async {
-        return PlayxVersionResult.error(error.error);
+        return PlayxVersionUpdateResult.error(error.error);
       });
     }, error: (error) async {
-      return PlayxVersionResult.error(error.error);
+      return PlayxVersionUpdateResult.error(error.error);
     });
   }
 
-  Future<PlayxVersionResult<PlayxVersionUpdateInfo>> _checkIosVersion({
+  Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>> _checkIosVersion({
     required String localVersion,
     required String packageId,
     required String country,
@@ -149,12 +150,12 @@ class VersionChecker {
           minVersion: minVersion,
         );
 
-        return PlayxVersionResult.success(updateInfo);
+        return PlayxVersionUpdateResult.success(updateInfo);
       }, error: (error) async {
-        return PlayxVersionResult.error(error.error);
+        return PlayxVersionUpdateResult.error(error.error);
       });
     }, error: (error) async {
-      return PlayxVersionResult.error(error.error);
+      return PlayxVersionUpdateResult.error(error.error);
     });
   }
 
@@ -195,17 +196,17 @@ class VersionChecker {
     }
   }
 
-  Future<PlayxVersionResult<bool>> shouldUpdate(
+  Future<PlayxVersionUpdateResult<bool>> shouldUpdate(
       {required String version, required String currentVersion}) async {
     if (currentVersion.isEmpty) {
-      return const PlayxVersionResult.error(VersionFormatException());
+      return const PlayxVersionUpdateResult.error(VersionFormatException());
     }
     try {
       final localVersion = Version.parse(version);
       final newVersion = Version.parse(currentVersion);
-      return PlayxVersionResult.success(newVersion > localVersion);
+      return PlayxVersionUpdateResult.success(newVersion > localVersion);
     } catch (_) {
-      return const PlayxVersionResult.error(VersionFormatException());
+      return const PlayxVersionUpdateResult.error(VersionFormatException());
     }
   }
 }

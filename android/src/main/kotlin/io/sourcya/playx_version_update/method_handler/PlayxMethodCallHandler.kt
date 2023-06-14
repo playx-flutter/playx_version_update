@@ -60,7 +60,6 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
             START_IMMEDIATE_UPDATE -> startImmediateUpdate(result)
             START_FLEXIBLE_UPDATE -> startFlexibleUpdate(result)
 
-            GET_DOWNLOAD_INFO -> getDownloadInfo(result)
 
             COMPLETE_FLEXIBLE_UPDATE -> completeFlexibleUpdate(result)
 
@@ -83,7 +82,7 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
         coroutineScope.launch {
             try {
                 val updateAvailability = updateManger.getUpdateAvailability()
-                result.success(updateAvailability)
+                result.success(updateAvailability.ordinal)
             } catch (e: Exception) {
                 handleMethodException(e, result)
             }
@@ -189,17 +188,6 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
     }
 
 
-    private fun getDownloadInfo(result: MethodChannel.Result) {
-        coroutineScope.launch {
-            try {
-                val days = updateManger.getUpdateStalenessDays()
-                result.success(days)
-            } catch (e: Exception) {
-                handleMethodException(e, result)
-            }
-        }
-
-    }
 
 
     //Install a flexible update
@@ -365,8 +353,6 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
 
         const val START_IMMEDIATE_UPDATE = "START_IMMEDIATE_UPDATE"
         const val START_FLEXIBLE_UPDATE = "START_FLEXIBLE_UPDATE"
-
-        const val GET_DOWNLOAD_INFO = "GET_DOWNLOAD_INFO"
 
         const val COMPLETE_FLEXIBLE_UPDATE = "COMPLETE_FLEXIBLE_UPDATE"
 

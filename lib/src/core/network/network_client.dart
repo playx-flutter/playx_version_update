@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:playx_version_update/src/core/model/result/playx_version_result.dart';
+import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
 import 'package:playx_version_update/src/core/network/handler/api_handler.dart';
 
 typedef JsonMapper<T> = T Function(dynamic json);
@@ -24,7 +24,7 @@ class NetworkClient {
 
   /// sends a [GET] request to the given [url]
   /// and returns object of Type [T] not list
-  Future<PlayxVersionResult<T>> get<T>(
+  Future<PlayxVersionUpdateResult<T>> get<T>(
     String path, {
     required JsonMapper<T>? fromJson,
   }) async {

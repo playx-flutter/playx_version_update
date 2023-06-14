@@ -2,15 +2,16 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:fimber/fimber.dart';
-import 'package:playx_version_update/src/core/model/result/playx_version_error.dart';
-import 'package:playx_version_update/src/core/model/result/playx_version_result.dart';
+import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
 import 'package:playx_version_update/src/core/network/network_client.dart';
+
+import '../../model/result/playx_version_update_error.dart';
 
 // ignore: avoid_classes_with_only_static_members
 /// This class is responsible for handling the network response and extract error from it.
 /// and return the result whether it was successful or not.
 abstract class ApiHandler {
-  static Future<PlayxVersionResult<T>> handleNetworkResult<T>(
+  static Future<PlayxVersionUpdateResult<T>> handleNetworkResult<T>(
     Response response, {
     JsonMapper<T>? fromJson,
   }) async {
@@ -23,42 +24,42 @@ abstract class ApiHandler {
 
       if (response.statusCode == HttpStatus.badRequest ||
           !correctCodes.contains(response.statusCode)) {
-        final PlayxVersionError error = _handleResponse(response);
+        final PlayxVersionUpdateError error = _handleResponse(response);
 
-        return PlayxVersionResult.error(error);
+        return PlayxVersionUpdateResult.error(error);
       } else {
         final data = response.data;
 
         if (data == null) {
           Fimber.d('check version handleNetworkResult data == null ');
 
-          return const PlayxVersionResult.error(NotFoundError());
+          return const PlayxVersionUpdateResult.error(NotFoundError());
         }
         try {
           final result = fromJson?.call(data);
-          return PlayxVersionResult.success(result as T);
+          return PlayxVersionUpdateResult.success(result as T);
           // ignore: avoid_catches_without_on_clauses
         } catch (e) {
           Fimber.d('check version handleNetworkResult error :$e ');
 
-          return const PlayxVersionResult.error(
+          return const PlayxVersionUpdateResult.error(
             NotFoundError(),
           );
         }
         // ignore: avoid_catches_without_on_clauses
       }
     } catch (e) {
-      return const PlayxVersionResult.error(
-        UnknownError(),
+      return PlayxVersionUpdateResult.error(
+        DefaultFailureError(errorMsg: e.toString()),
       );
     }
   }
 
-  static PlayxVersionResult<T> handleDioException<T>(dynamic error) {
-    return PlayxVersionResult.error(_getDioException(error));
+  static PlayxVersionUpdateResult<T> handleDioException<T>(dynamic error) {
+    return PlayxVersionUpdateResult.error(_getDioException(error));
   }
 
-  static PlayxVersionError _handleResponse(Response? response) {
+  static PlayxVersionUpdateError _handleResponse(Response? response) {
     final int statusCode = response?.statusCode ?? 0;
     switch (statusCode) {
       case 404:
@@ -70,47 +71,49 @@ abstract class ApiHandler {
       case 503:
         return const ServiceUnavailableException();
       default:
-        return const UnknownError();
+        return DefaultFailureError(
+            errorMsg: 'network error with status code $statusCode');
     }
   }
 
-  static PlayxVersionError _getDioException(dynamic error) {
+  static PlayxVersionUpdateError _getDioException(dynamic error) {
     if (error is Exception) {
       try {
-        PlayxVersionError networkExceptions = const UnknownError();
+        PlayxVersionUpdateError networkExceptions = const DefaultFailureError();
 
         if (error is DioException) {
           networkExceptions = switch (error.type) {
-            DioExceptionType.cancel => const RequestCanceledException(),
+            DioExceptionType.cancel => PlayxRequestCanceledError(),
             DioExceptionType.connectionTimeout =>
               const RequestTimeoutException(),
             DioExceptionType.unknown => error.error is SocketException
                 ? const NoInternetConnectionException()
-                : const UnknownError(),
+                : const DefaultFailureError(),
             DioExceptionType.receiveTimeout => const SendTimeoutException(),
             DioExceptionType.badResponse => _handleResponse(error.response),
             DioExceptionType.sendTimeout => const SendTimeoutException(),
-            DioExceptionType.badCertificate => const UnknownError(),
+            DioExceptionType.badCertificate => const DefaultFailureError(
+                errorMsg: 'network error bad certificate'),
             DioExceptionType.connectionError =>
               const NoInternetConnectionException(),
           };
         } else if (error is SocketException) {
           networkExceptions = const NoInternetConnectionException();
         } else {
-          networkExceptions = const UnknownError();
+          networkExceptions = const DefaultFailureError();
         }
         return networkExceptions;
       } on FormatException catch (_) {
         return const NotFoundError();
         // ignore: avoid_catches_without_on_clauses
       } catch (_) {
-        return const UnknownError();
+        return const DefaultFailureError();
       }
     } else {
       if (error.toString().contains("is not a subtype of")) {
         return const NotFoundError();
       } else {
-        return const UnknownError();
+        return const DefaultFailureError();
       }
     }
   }
