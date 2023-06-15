@@ -102,6 +102,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         googlePlayId: 'other app id',
         minVersion: '1.0.0',
         title: 'A new update is available');
+        onCancel: (forceUpdate) {
+          if (forceUpdate) {
+            exit(0);
+          }
+        });
     result.when(success: (isShowed) {
       setState(() {
         message = ' showUpdateDialog success : $isShowed';
@@ -180,7 +185,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   Future<void> checkVersion(BuildContext context) async {
     final result = await PlayxVersionUpdate.checkVersion(
-        googlePlayId: 'com.kiloo.subwaysurf', appStoreId: 'com.apple.tv');
+      localVersion: '1.0.0',
+      newVersion: '1.1.0',
+      forceUpdate: true,
+      googlePlayId: 'app id',
+      country: 'us',
+      language: 'en',
+    );
 
     result.when(success: (info) {
       setState(() {
@@ -233,8 +244,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     });
   }
 
-  ///check whether there's an update needs to be installed.
-  ///If there's an update needs to be installed shows snack bar to ask the user to install the update.
+  ///Completes an update that is downloaded and needs to be installed as it shows snack bar to ask the user to install the update.
   Future<void> completeFlexibleUpdate() async {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final snackBar = SnackBar(

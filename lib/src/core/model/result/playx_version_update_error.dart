@@ -170,6 +170,20 @@ class NotSupportedException extends PlayxVersionUpdateError {
   String get errorCode => 'NOT_SUPPORTED_ERROR_CODE';
 }
 
+class PlayxVersionCantUpdateError extends PlayxVersionUpdateError {
+  final String currentVersion;
+  final String newVersion;
+  const PlayxVersionCantUpdateError(
+      {required this.currentVersion, required this.newVersion});
+
+  @override
+  String get message =>
+      "Can't update version as the current version is $currentVersion and the new version is $newVersion";
+
+  @override
+  String get errorCode => 'PLAYX_VERSION_CANT_UPDATE_ERROR_CODE';
+}
+
 class VersionFormatException extends PlayxVersionUpdateError {
   const VersionFormatException();
 

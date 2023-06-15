@@ -47,11 +47,15 @@ android {
         applicationId "io.sourcya.playx_version_update_example"
         minSdkVersion 23
         targetSdkVersion flutter.targetSdkVersion
-        versionCode 20
-        versionName '0.3.0'
+        versionCode 1
+        versionName '0.0.1'
     }
 
     buildTypes {
+        debug{
+            applicationIdSuffix = ".debug"
+
+        }
         release {
             signingConfig signingConfigs.debug
         }

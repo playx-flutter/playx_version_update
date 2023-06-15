@@ -111,6 +111,10 @@ abstract class PlayxVersionUpdate {
 
     return result.map(success: (result) {
       final info = result.data;
+      if (!info.canUpdate) {
+        return PlayxVersionUpdateResult.error(PlayxVersionCantUpdateError(
+            currentVersion: info.localVersion, newVersion: info.newVersion));
+      }
       if (info.forceUpdate && showPageOnForceUpdate) {
         Navigator.push(
           context,
@@ -220,6 +224,12 @@ abstract class PlayxVersionUpdate {
 
       return result.map(success: (result) {
         final info = result.data;
+
+        if (!info.canUpdate) {
+          return PlayxVersionUpdateResult.error(PlayxVersionCantUpdateError(
+              currentVersion: info.localVersion, newVersion: info.newVersion));
+        }
+
         if (info.forceUpdate && showPageOnForceUpdate) {
           Navigator.push(
             context,
