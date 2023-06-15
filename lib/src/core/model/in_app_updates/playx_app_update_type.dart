@@ -1,0 +1,4 @@
+enum PlayxAppUpdateType {
+  flexible,
+  immediate;
+}

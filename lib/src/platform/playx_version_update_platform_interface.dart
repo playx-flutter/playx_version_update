@@ -1,3 +1,4 @@
+import 'package:playx_version_update/playx_version_update.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'playx_version_update_method_channel.dart';
@@ -8,10 +9,10 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static PlayxVersionUpdatePlatform _instance = MethodChannelPlayxVersionUpdate();
+  static PlayxVersionUpdatePlatform _instance =
+      MethodChannelPlayxVersionUpdate();
 
   /// The default instance of [PlayxVersionUpdatePlatform] to use.
-  ///
   /// Defaults to [MethodChannelPlayxVersionUpdate].
   static PlayxVersionUpdatePlatform get instance => _instance;
 
@@ -20,10 +21,90 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   /// they register themselves.
   static set instance(PlayxVersionUpdatePlatform instance) {
     PlatformInterface.verifyToken(instance, _token);
+    // DartPluginRegistrant.ensureInitialized();
+    // WidgetsFlutterBinding.ensureInitialized();
     _instance = instance;
   }
 
-  Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+  //Check for update availability:
+  //checks if there is an update available for your app.
+  Future<PlayxVersionUpdateResult<PlayxAppUpdateAvailability>>
+      getUpdateAvailability() {
+    throw UnimplementedError('getUpdateAvailability has not been implemented.');
+  }
+
+  // check the number of days since the update became available on the Play Store
+  //If an update is available or in progress, this method returns the number of days
+  // since the Google Play Store app on the user's device has learnt about an available update.
+  //If update is not available, or if staleness information is unavailable, this method returns -1.
+  Future<PlayxVersionUpdateResult<int>> getUpdateStalenessDays() {
+    throw UnimplementedError(
+        'getUpdateStalenessDays has not been implemented.');
+  }
+
+  //The Google Play Developer API allows you to set the priority of each update.
+  // This allows your app to decide how strongly to recommend an update to the user.
+  //To determine priority, Google Play uses an integer value between 0 and 5, with 0 being the default and 5 being the highest priority.
+  // To set the priority for an update, use the inAppUpdatePriority field under Edits.tracks.releases in the Google Play Developer API.
+  // All newly-added versions in the release are considered to be the same priority as the release.
+  // Priority can only be set when rolling out a new release and cannot be changed later.
+  // This method returns the current priority value.
+  Future<PlayxVersionUpdateResult<int>> getUpdatePriority() {
+    throw UnimplementedError('getUpdatePriority has not been implemented.');
+  }
+
+  // Checks that the platform will allow the specified type of update.
+  Future<PlayxVersionUpdateResult<bool>> isUpdateAllowed(
+      PlayxAppUpdateType type) {
+    throw UnimplementedError('isUpdateAllowed has not been implemented.');
+  }
+
+  //Starts immediate update flow.
+  //In the immediate flow, the method returns one of the following values:
+  //Boolean [success]: The user accepted and the update succeeded (which, in practice, your app never should never receive because it already updated).
+  //ActivityNotFoundException : When the user started the update flow from background.
+  //PlayxRequestCanceledException : The user denied or canceled the update.
+  //PlayxInAppUpdateFailed: The flow failed either during the user confirmation, the download, or the installation.
+  Future<PlayxVersionUpdateResult<bool>> startImmediateUpdate() {
+    throw UnimplementedError('startImmediateUpdate has not been implemented.');
+  }
+
+  //Starts Flexible update flow.
+  //In the immediate flow, the method returns one of the following values:
+  //Boolean [success]: The user accepted the request to update.
+  //ActivityNotFoundException : When the user started the update flow from background.
+  //PlayxRequestCanceledException : The user denied the request to update.
+  //PlayxInAppUpdateFailed: Something failed during the request for user confirmation. For example, the user terminates the app before responding to the request.
+  Future<PlayxVersionUpdateResult<bool>> startFlexibleUpdate() {
+    throw UnimplementedError('startFlexibleUpdate has not been implemented.');
+  }
+
+  Stream<PlayxDownloadInfo?> getDownloadInfo() {
+    throw UnimplementedError('getDownloadInfo has not been implemented.');
+  }
+
+  //Install a flexible update
+  //When you detect the InstallStatus.DOWNLOADED state, you need to restart the app to install the update.
+  //
+  //Unlike with immediate updates, Google Play does not automatically trigger an app restart for a flexible update.
+  // This is because during a flexible update, the user has an expectation to continue interacting with the app until they decide that they want to install the update.
+  //
+  //It is recommended that you provide a notification (or some other UI indication) to inform the user that the update is ready to install and request confirmation before restarting the app.
+  Future<PlayxVersionUpdateResult<bool>> completeFlexibleUpdate() {
+    throw UnimplementedError(
+        'completeFlexibleUpdate has not been implemented.');
+  }
+
+  //Whether or not the flexible update is ready to install .
+  Future<PlayxVersionUpdateResult<bool>> isFlexibleUpdateNeedToBeInstalled() {
+    throw UnimplementedError(
+        'isFlexibleUpdateNeedToBeInstalled not been implemented.');
+  }
+
+  // refreshes app update manger
+  //Each Update manger instance can be used only in a single call to this method.
+  // If you need to call it multiple times - for instance, when retrying to start a flow in case of failure - you need to get a fresh Update manger.
+  Future<PlayxVersionUpdateResult<bool>> refreshInAppUpdate() {
+    throw UnimplementedError('refreshInAppUpdate has not been implemented.');
   }
 }

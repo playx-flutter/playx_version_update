@@ -1,4 +1,4 @@
-import 'package:playx_version_update/src/core/model/result/playx_version_result.dart';
+import 'package:playx_version_update/playx_version_update.dart';
 import 'package:playx_version_update/src/core/model/store_info.dart';
 import 'package:playx_version_update/src/core/network/network_client.dart';
 
@@ -14,12 +14,33 @@ class RemoteStoreDataSource {
 
   final NetworkClient client = NetworkClient();
 
-  Future<PlayxVersionResult<StoreInfo>> getPlayStoreInfo(
-      {required String packageId, required String country}) {
-    final url = getGooglePlayUrl(packageId: packageId, country: country);
+  Future<PlayxVersionUpdateResult<StoreInfo>> getPlayStoreInfo(
+      {required String packageId,
+      required String country,
+      required String language}) {
+    final url = getGooglePlayUrl(
+        packageId: packageId, country: country, language: language);
     return client.get(url, fromJson: StoreInfo.fromGooglePlay);
+  }
+
+  Future<PlayxVersionUpdateResult<StoreInfo>> getAppStoreInfo(
+      {required String packageId,
+      required String country,
+      required String language}) {
+    final url = getAppStoreInfoUrl(
+        packageId: packageId, country: country, language: language);
+    return client.get(url, fromJson: StoreInfo.fromAppStore);
   }
 }
 
-String getGooglePlayUrl({required String packageId, required String country}) =>
-    "https://play.google.com/store/apps/details?id=$packageId&hl=$country";
+String getGooglePlayUrl(
+        {required String packageId,
+        required String country,
+        required String language}) =>
+    "https://play.google.com/store/apps/details?id=$packageId&hl=$language&gl=$country";
+
+String getAppStoreInfoUrl(
+        {required String packageId,
+        required String country,
+        required String language}) =>
+    "https://itunes.apple.com/lookup?bundleId=$packageId&country=$country&lang=$language";
