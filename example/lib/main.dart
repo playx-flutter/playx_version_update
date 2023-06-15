@@ -101,7 +101,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         showReleaseNotes: false,
         googlePlayId: 'other app id',
         minVersion: '1.0.0',
-        title: 'A new update is available');
+        title: 'A new update is available',
         onCancel: (forceUpdate) {
           if (forceUpdate) {
             exit(0);

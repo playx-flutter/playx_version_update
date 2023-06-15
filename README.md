@@ -34,7 +34,7 @@ playx_version_update: ^0.0.1
            //sets min version that force app to update if below this version
            minVersion: '1.0.0',
           //customize dialog layout like title.
-          title: 'A new update is available'
+          title: 'A new update is available',
           //forces app update.
           forceUpdate: true,  
           //shows update page instead of dialog on force update
@@ -45,6 +45,7 @@ playx_version_update: ^0.0.1
                    if(forceUpdate){
                         exit(0);
                     }
+                }
        );
       result.when(success: (isShowed) {
              print(' showUpdateDialog success :');
@@ -71,13 +72,9 @@ playx_version_update: ^0.0.1
            releaseNotesTitle: 'Recent Updates',           
          );
          result.when(success: (isShowed) {
-           setState(() {
-             message = ' showInAppUpdateDialog success : $isShowed';
-           });
+             print( ' showInAppUpdateDialog success : $isShowed');
          }, error: (error) {
-           setState(() {
-             message = ' showInAppUpdateDialog error : $error ${error.message}';
-           });
+             print(' showInAppUpdateDialog error : $error ${error.message}');
          });
       ```
     Now we can show in app update either flexible or immediate update in android or dialog in IOS.
@@ -145,17 +142,17 @@ Immediate updates are full screen UX flows that require the user to update and r
 
 #### To start a flexible update, You can use :
 ```dart
-final result = await PlayxVersionUpdate.startImmediateUpdate();
-result.when(success: (isSucceeded ) {
-//The user accepted and the update succeeded 
-//(which, in practice, your app never should never receive because it already updated).
-}, error: (error) {
-//It can return one of these errors:
-//[ActivityNotFoundError] : When the user started the update flow from background.  
-//[PlayxRequestCanceledError] : The user denied or canceled the update.  
-// [PlayxInAppUpdateFailedError] : The flow failed either during the user confirmation, the download, or the installation.
-print('an error occurred :${error.message}');
-});
+final result = await PlayxVersionUpdate.startImmediateUpdate();  
+      result.when(success: (isSucceeded ) {  
+       //The user accepted and the update succeeded 
+       //(which, in practice, your app never should never receive because it already updated).
+      }, error: (error) {  
+        //It can return one of these errors:
+      //[ActivityNotFoundError] : When the user started the update flow from background.  
+      //[PlayxRequestCanceledError] : The user denied or canceled the update.  
+      // [PlayxInAppUpdateFailedError] : The flow failed either during the user confirmation, the download, or the installation.
+       print('an error occurred :${error.message}'); 
+   });
 ```
 
 ## Handle an immediate update
@@ -173,16 +170,16 @@ Flexible updates provide background download and installation with graceful stat
 
 To start a flexible update, You can use :
 ```dart
-final result = await PlayxVersionUpdate.startFlexibleUpdate();
-result.when(success: (isStarted) {
-//The user has accepted the update.
-}, error: (error) {
-//It can return one of these errors:
-//[ActivityNotFoundError] : : When the user started the update flow from background.  
-//[PlayxRequestCanceledError] : The user denied the request to update.  
-//[PlayxInAppUpdateFailedError] :: Something failed during the request for user confirmation. For example, the user terminates the app before responding to the request.
-print('an error occurred :${error.message}');
-});
+final result = await PlayxVersionUpdate.startFlexibleUpdate();  
+      result.when(success: (isStarted) {  
+            //The user has accepted the update.
+      }, error: (error) {  
+        //It can return one of these errors:
+        //[ActivityNotFoundError] : : When the user started the update flow from background.  
+        //[PlayxRequestCanceledError] : The user denied the request to update.  
+        //[PlayxInAppUpdateFailedError] :: Something failed during the request for user confirmation. For example, the user terminates the app before responding to the request.
+       print('an error occurred :${error.message}'); 
+   });
 ```
 ### Handle a flexible update
 
@@ -198,17 +195,17 @@ You can monitor the state of an update in progress by using `listenToFlexibleDow
 
 ```dart
   void listenToFlexibleDownloadUpdates() {
-  downloadInfoStreamSubscription =
-      PlayxVersionUpdate.listenToFlexibleDownloadUpdate().listen((info) {
-        if (info == null) return;
-        if (info.status == PlayxDownloadStatus.downloaded) {
-          //app is downloaded, complete the update
-          completeFlexibleUpdate();
-        } else if (info.status == PlayxDownloadStatus.downloading) {
-          print( 'current download in progress : bytes downloaded:${info.bytesDownloaded} total bytes to download : ${info.totalBytesToDownload}');
-        }
-      });
-}
+    downloadInfoStreamSubscription =
+        PlayxVersionUpdate.listenToFlexibleDownloadUpdate().listen((info) {
+      if (info == null) return;
+      if (info.status == PlayxDownloadStatus.downloaded) {
+      //app is downloaded, complete the update
+        completeFlexibleUpdate();
+      } else if (info.status == PlayxDownloadStatus.downloading) {
+      print( 'current download in progress : bytes downloaded:${info.bytesDownloaded} total bytes to download : ${info.totalBytesToDownload}');
+      }
+    });
+  }
 ```
 ### Install a flexible update
 
@@ -251,32 +248,32 @@ Whenever the user brings your app to the foreground, check whether your app has 
 For example listen to on app resume lifecycle using [`WidgetsBindingObserver`](https://api.flutter.dev/flutter/widgets/WidgetsBindingObserver-class.html) and use :
 ```dart
   ///check if flexible update needs to be installed on app resume.
-@override
-void didChangeAppLifecycleState(AppLifecycleState state) {
-  if (state == AppLifecycleState.resumed) {
-    checkIfFlexibleUpdateNeedToBeInstalled();
-  }
-}
-///check whether there's an update needs to be installed.
-///If there's an update needs to be installed shows snack bar to ask the user to install the update.
-Future<void> checkIfFlexibleUpdateNeedToBeInstalled() async {
-  final result = await PlayxVersionUpdate.isFlexibleUpdateNeedToBeInstalled();
-  result.when(success: (isNeeded) {
-    if (isNeeded) {
-      completeFlexibleUpdate();
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      checkIfFlexibleUpdateNeedToBeInstalled();
     }
-  }, error: (error) {
-  setState(() {
-  print('checkIfFlexibleUpdateNeedToBeInstalled error :$error :${error.message}');
-  });
+  }
+  ///check whether there's an update needs to be installed.
+  ///If there's an update needs to be installed shows snack bar to ask the user to install the update.
+  Future<void> checkIfFlexibleUpdateNeedToBeInstalled() async {
+    final result = await PlayxVersionUpdate.isFlexibleUpdateNeedToBeInstalled();
+    result.when(success: (isNeeded) {
+      if (isNeeded) {
+        completeFlexibleUpdate();
+      }
+    }, error: (error) {
+     print('checkIfFlexibleUpdateNeedToBeInstalled error :$error :${error.message}');
   }
 ```
 
 
+## Important Notice
+The in app updates will not work unless the app is downloaded From Google Play.
+To test in app updates you can use Google play [`Internal app sharing`](https://play.google.com/console/about/internalappsharing/) or [`Internal testing`](https://play.google.com/console/about/internal-testing/) .
 
 
 ## Documentation && References
 
 -   [In-app updates](https://developer.android.com/guide/playcore/in-app-updates), Google play in app updates sdk.
 - [new_version_plus](https://pub.dev/packages/new_version_plus) package.
-     
