@@ -1,6 +1,23 @@
 name: playx_version_update
 description: Easily show material update dialog in Android or Cupertino dialog in IOS with support for Google play in app updates.
 version: 0.0.1
+homepage: https://sourcya.com/
+repository: https://github.com/playx-flutter/playx_version_update
+issue_tracker: https://github.com/playx-flutter/playx_version_update/issues
+screenshots:
+  - description: 'This screenshot shows Google play flexible in app update'
+    path: screenshots/screenshot1.jpg
+  - description: 'This screenshot shows Google play immediate in app update'
+    path: screenshots/screenshot2.jpg
+  - description: 'This screenshot shows IOS style update dialog.'
+    path: screenshots/screenshot3.jpg
+  - description: 'This screenshot shows Android style update dialog.'
+    path: screenshots/screenshot4.jpg
+  - description: 'This screenshot shows update page.'
+    path: screenshots/screenshot5.jpg
+  - description: 'This screenshot shows Android style update dialog with release notes and force update enabled.'
+    path: screenshots/screenshot6.jpg
+
 
 environment:
   sdk: '>=3.0.3 <4.0.0'
