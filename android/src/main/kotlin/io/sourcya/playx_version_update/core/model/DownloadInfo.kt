@@ -20,6 +20,7 @@ data class DownloadInfo (    private val status: DownloadStatus,
 
         return JSONObject(map).toString()
     }
+}
 
 
     enum class DownloadStatus {
@@ -50,4 +51,3 @@ data class DownloadInfo (    private val status: DownloadStatus,
             }
         }
     }
-}

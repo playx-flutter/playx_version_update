@@ -21,6 +21,8 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   /// they register themselves.
   static set instance(PlayxVersionUpdatePlatform instance) {
     PlatformInterface.verifyToken(instance, _token);
+    // DartPluginRegistrant.ensureInitialized();
+    // WidgetsFlutterBinding.ensureInitialized();
     _instance = instance;
   }
 
@@ -28,7 +30,7 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   //checks if there is an update available for your app.
   Future<PlayxVersionUpdateResult<PlayxAppUpdateAvailability>>
       getUpdateAvailability() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw UnimplementedError('getUpdateAvailability has not been implemented.');
   }
 
   // check the number of days since the update became available on the Play Store
@@ -36,7 +38,8 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   // since the Google Play Store app on the user's device has learnt about an available update.
   //If update is not available, or if staleness information is unavailable, this method returns -1.
   Future<PlayxVersionUpdateResult<int>> getUpdateStalenessDays() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw UnimplementedError(
+        'getUpdateStalenessDays has not been implemented.');
   }
 
   //The Google Play Developer API allows you to set the priority of each update.
@@ -47,13 +50,13 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   // Priority can only be set when rolling out a new release and cannot be changed later.
   // This method returns the current priority value.
   Future<PlayxVersionUpdateResult<int>> getUpdatePriority() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw UnimplementedError('getUpdatePriority has not been implemented.');
   }
 
   // Checks that the platform will allow the specified type of update.
   Future<PlayxVersionUpdateResult<bool>> isUpdateAllowed(
       PlayxAppUpdateType type) {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw UnimplementedError('isUpdateAllowed has not been implemented.');
   }
 
   //Starts immediate update flow.
@@ -63,7 +66,7 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   //PlayxRequestCanceledException : The user denied or canceled the update.
   //PlayxInAppUpdateFailed: The flow failed either during the user confirmation, the download, or the installation.
   Future<PlayxVersionUpdateResult<bool>> startImmediateUpdate() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw UnimplementedError('startImmediateUpdate has not been implemented.');
   }
 
   //Starts Flexible update flow.
@@ -73,11 +76,11 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   //PlayxRequestCanceledException : The user denied the request to update.
   //PlayxInAppUpdateFailed: Something failed during the request for user confirmation. For example, the user terminates the app before responding to the request.
   Future<PlayxVersionUpdateResult<bool>> startFlexibleUpdate() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw UnimplementedError('startFlexibleUpdate has not been implemented.');
   }
 
   Stream<PlayxDownloadInfo?> getDownloadInfo() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw UnimplementedError('getDownloadInfo has not been implemented.');
   }
 
   //Install a flexible update
@@ -88,18 +91,20 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   //
   //It is recommended that you provide a notification (or some other UI indication) to inform the user that the update is ready to install and request confirmation before restarting the app.
   Future<PlayxVersionUpdateResult<bool>> completeFlexibleUpdate() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw UnimplementedError(
+        'completeFlexibleUpdate has not been implemented.');
   }
 
   //Whether or not the flexible update is ready to install .
   Future<PlayxVersionUpdateResult<bool>> isFlexibleUpdateNeedToBeInstalled() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw UnimplementedError(
+        'isFlexibleUpdateNeedToBeInstalled not been implemented.');
   }
 
   // refreshes app update manger
   //Each Update manger instance can be used only in a single call to this method.
   // If you need to call it multiple times - for instance, when retrying to start a flow in case of failure - you need to get a fresh Update manger.
   Future<PlayxVersionUpdateResult<bool>> refreshInAppUpdate() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw UnimplementedError('refreshInAppUpdate has not been implemented.');
   }
 }

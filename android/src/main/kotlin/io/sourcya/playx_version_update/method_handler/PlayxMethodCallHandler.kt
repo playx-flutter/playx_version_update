@@ -29,22 +29,20 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
     private var channel: MethodChannel? = null
-
-    private val job = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
+    private var downloadStatusEventChannel: EventChannel? =null
 
 
     private var binding: FlutterPlugin.FlutterPluginBinding? = null
-
     private var activity: Activity? = null
 
-    private var updateManger = UpdateManger()
+    private lateinit var updateManger :UpdateManger
 
     private var startedFlexibleUpdateResult: MethodChannel.Result? = null
     private var startedImmediateUpdateResult: MethodChannel.Result? = null
 
-    private var downloadStatusEventChannel: EventChannel? =null
 
+    private val job = Job()
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 
@@ -60,7 +58,6 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
             START_IMMEDIATE_UPDATE -> startImmediateUpdate(result)
             START_FLEXIBLE_UPDATE -> startFlexibleUpdate(result)
 
-
             COMPLETE_FLEXIBLE_UPDATE -> completeFlexibleUpdate(result)
 
             IS_FLEXIBLE_UPDATE_NEED_TO_BE_INSTALLED -> isFlexibleUpdateNeedToBeInstalled(result)
@@ -68,8 +65,6 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
             REFRESH_PLAYX_UPDATE -> refresh(result)
 
             else -> result.notImplemented()
-
-
         }
 
 
@@ -180,7 +175,6 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
                 }
                 startedFlexibleUpdateResult = result
                 updateManger.startFlexibleUpdate(activity!!)
-
             } catch (e: Exception) {
                 handleMethodException(e, result)
             }
@@ -234,9 +228,7 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
             return
         }
         updateManger.stopListening()
-        updateManger = UpdateManger().apply {
-            startListening(context)
-        }
+        updateManger = UpdateManger(context)
         downloadStatusEventChannel?.setStreamHandler(null)
         downloadStatusEventChannel?.setStreamHandler(DownloadStatusEventHandler(updateManger))
 
@@ -251,12 +243,10 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
      */
     fun startListening(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         if (channel != null) stopListening()
-
+        updateManger = UpdateManger(flutterPluginBinding.applicationContext)
         binding = flutterPluginBinding
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, PLAYX_METHOD_CHANNEL_NAME)
         channel?.setMethodCallHandler(this)
-        updateManger.startListening(flutterPluginBinding.applicationContext)
-
         downloadStatusEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, DOWNLOAD_EVENT_CHANNEL_NAME )
         downloadStatusEventChannel?.setStreamHandler(DownloadStatusEventHandler(updateManger))
 
@@ -301,6 +291,7 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
     }
 
     private fun handleMethodException(e: Exception, result: MethodChannel.Result) {
+
         if (e is PlayxUpdateException) {
             result.error(e.errorCode(), e.message, e)
         } else {
@@ -319,9 +310,10 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
                         Activity.RESULT_OK -> it.success(true)
                             Activity.RESULT_CANCELED -> handleMethodException(PlayxRequestCanceledException(), it)
                             ActivityResult.RESULT_IN_APP_UPDATE_FAILED ->handleMethodException(PlayxInAppUpdateFailed(), it)
+                        else-> handleMethodException(PlayxInAppUpdateFailed(), it)
                     }
                 }
-
+                startedFlexibleUpdateResult = null
             }
 
             UpdateManger.IMMEDIATE_UPDATE_REQUEST_CODE -> {
@@ -330,8 +322,11 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
                         Activity.RESULT_OK -> it.success(true)
                         Activity.RESULT_CANCELED -> handleMethodException(PlayxRequestCanceledException(), it)
                         ActivityResult.RESULT_IN_APP_UPDATE_FAILED ->handleMethodException(PlayxInAppUpdateFailed(), it)
+                        else-> handleMethodException(PlayxInAppUpdateFailed(), it)
                     }
                 }
+                startedImmediateUpdateResult = null
+
             }
         }
         return true

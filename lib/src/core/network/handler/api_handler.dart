@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:fimber/fimber.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
 import 'package:playx_version_update/src/core/network/network_client.dart';
 
@@ -20,7 +19,6 @@ abstract class ApiHandler {
         200,
         201,
       ];
-      Fimber.d('check version handleNetworkResult  ');
 
       if (response.statusCode == HttpStatus.badRequest ||
           !correctCodes.contains(response.statusCode)) {
@@ -31,8 +29,6 @@ abstract class ApiHandler {
         final data = response.data;
 
         if (data == null) {
-          Fimber.d('check version handleNetworkResult data == null ');
-
           return const PlayxVersionUpdateResult.error(NotFoundError());
         }
         try {
@@ -40,8 +36,6 @@ abstract class ApiHandler {
           return PlayxVersionUpdateResult.success(result as T);
           // ignore: avoid_catches_without_on_clauses
         } catch (e) {
-          Fimber.d('check version handleNetworkResult error :$e ');
-
           return const PlayxVersionUpdateResult.error(
             NotFoundError(),
           );

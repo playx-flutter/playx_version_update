@@ -1,6 +1,4 @@
 package io.sourcya.playx_version_update
-
-import androidx.annotation.NonNull
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -23,6 +21,7 @@ class PlayxVersionUpdatePlugin : FlutterPlugin, ActivityAware, LifecycleEventObs
         playxMethodCallHandler = PlayxMethodCallHandler().apply {
             startListening(flutterPluginBinding)
         }
+
 
 
     }

@@ -31,9 +31,16 @@ class PlayxRequestCanceledException : PlayxUpdateException() {
 
 class PlayxUpdateNotAvailable : PlayxUpdateException() {
 
-    override val message: String = "Update is not available."
+    override val message: String = "Update is not available. 22"
 
     override fun errorCode()= "PLAYX_UPDATE_NOT_AVAILABLE"
+}
+
+class PlayxUpdateInProgress : PlayxUpdateException() {
+
+    override val message: String = "Update is currently in progress. 122"
+
+    override fun errorCode()= "PLAYX_UPDATE_IN_PROGRESS"
 }
 
 

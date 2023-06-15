@@ -179,6 +179,7 @@ class MethodChannelPlayxVersionUpdate extends PlayxVersionUpdatePlatform {
       final isNeeded = await methodChannel
               .invokeMethod<bool>(_isFlexibleUpdateNeedToBeInstalled) ??
           false;
+
       return PlayxVersionUpdateResult.success(isNeeded);
     } on PlatformException catch (e) {
       return PlayxVersionUpdateResult.error(

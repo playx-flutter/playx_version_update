@@ -1,15 +1,17 @@
 import 'dart:async';
+import 'dart:io';
 
-import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
-final logger = FimberLog("PLAYX_VERSION_UPDATE 2");
+final GlobalKey<ScaffoldMessengerState> globalKey =
+    GlobalKey<ScaffoldMessengerState>();
 
 void main() {
-  Fimber.plantTree(DebugTree());
-
-  runApp(const MaterialApp(home: MyApp()));
+  runApp(MaterialApp(
+    home: const MyApp(),
+    scaffoldMessengerKey: globalKey,
+  ));
 }
 
 class MyApp extends StatefulWidget {
@@ -21,6 +23,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   StreamSubscription<PlayxDownloadInfo?>? downloadInfoStreamSubscription;
+  String message = '';
 
   @override
   void initState() {
@@ -41,12 +44,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Plugin example app'),
+        title: const Text('Playx Version Update'),
       ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text(message),
             ElevatedButton(
               onPressed: () {
                 checkVersion(context);
@@ -61,15 +65,21 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             ),
             ElevatedButton(
               onPressed: () {
-                showInAppUpdateDialog(context);
+                checkPlayAvailability(context);
               },
-              child: const Text('Show in app update dialog'),
+              child: const Text('Check store availability'),
             ),
             ElevatedButton(
               onPressed: () {
-                checkPlayAvailability(context);
+                startImmediateUpdate(context);
               },
-              child: const Text('Check store avialabilty'),
+              child: const Text('Start immediate Update'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                startFlexibleUpdate(context);
+              },
+              child: const Text('Start Flexible Update'),
             ),
           ],
         ),
@@ -77,42 +87,75 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     );
   }
 
+  ///check if flexible update needs to be installed on app resume.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    //check if flexible update needs to be installed on app resume.
     if (state == AppLifecycleState.resumed) {
-      completeFlexibleUpdate(context);
+      checkIfFlexibleUpdateNeedToBeInstalled();
     }
   }
 
   Future<void> showUpdateDialog(BuildContext context) async {
     final result = await PlayxVersionUpdate.showUpdateDialog(
         context: context,
-        googlePlayId: 'com.kiloo.subwaysurf',
-        appStoreId: 'com.apple.tv',
-        showReleaseNotes: true,
-        releaseNotesTitle: 'Recent Updates');
+        showReleaseNotes: false,
+        googlePlayId: 'other app id',
+        minVersion: '1.0.0',
+        title: 'A new update is available');
     result.when(success: (isShowed) {
-      logger.d(' showUpdateDialog success : $isShowed');
+      setState(() {
+        message = ' showUpdateDialog success : $isShowed';
+      });
     }, error: (error) {
-      logger.e(' showUpdateDialog error : $error ${error.message}');
+      setState(() {
+        message = ' showUpdateDialog error : $error ${error.message}';
+      });
     });
   }
 
-  Future<void> showInAppUpdateDialog(BuildContext context) async {
+  Future<void> startFlexibleUpdate(BuildContext context) async {
+    final result = await PlayxVersionUpdate.showInAppUpdateDialog(
+        context: context,
+        type: PlayxAppUpdateType.flexible,
+        appStoreId: 'com.apple.tv',
+        showReleaseNotes: true,
+        releaseNotesTitle: 'Recent Updates',
+        forceUpdate: true,
+        showPageOnForceUpdate: true,
+        onCancel: (forceUpdate) {
+          if (forceUpdate) {
+            exit(0);
+          } else {
+            //Do nothing
+          }
+        });
+    result.when(success: (isShowed) {
+      setState(() {
+        message = ' showInAppUpdateDialog success : $isShowed';
+      });
+    }, error: (error) {
+      setState(() {
+        message = ' showInAppUpdateDialog error : $error ${error.message}';
+      });
+    });
+  }
+
+  Future<void> startImmediateUpdate(BuildContext context) async {
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
       context: context,
-      type: PlayxAppUpdateType.flexible,
+      type: PlayxAppUpdateType.immediate,
       //These for
-      googlePlayId: 'com.kiloo.subwaysurf',
-      appStoreId: 'com.apple.tv',
       showReleaseNotes: true,
       releaseNotesTitle: 'Recent Updates',
     );
     result.when(success: (isShowed) {
-      logger.d(' showUpdateDialog success : $isShowed');
+      setState(() {
+        message = ' showInAppUpdateDialog success : $isShowed';
+      });
     }, error: (error) {
-      logger.e(' showUpdateDialog error : $error ${error.message}');
+      setState(() {
+        message = ' showInAppUpdateDialog error : $error ${error.message}';
+      });
     });
   }
 
@@ -121,10 +164,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         PlayxVersionUpdate.listenToFlexibleDownloadUpdate().listen((info) {
       if (info == null) return;
       if (info.status == PlayxDownloadStatus.downloaded) {
-        completeFlexibleUpdate(context);
+        setState(() {
+          message = 'Downloaded, trying to complete update';
+        });
+
+        completeFlexibleUpdate();
       } else if (info.status == PlayxDownloadStatus.downloading) {
-        logger.d(
-            'current download in progress : downloaded :${info.bytesDownloaded} total to download : ${info.totalBytesToDownload}');
+        setState(() {
+          message =
+              'current download in progress : downloading :${info.bytesDownloaded} total to download : ${info.totalBytesToDownload}';
+        });
       }
     });
   }
@@ -134,9 +183,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         googlePlayId: 'com.kiloo.subwaysurf', appStoreId: 'com.apple.tv');
 
     result.when(success: (info) {
-      logger.d(
-          ' check version successfully :$info can update :${info.canUpdate}');
-
+      setState(() {
+        message =
+            ' check version successfully :${info.newVersion} can update :${info.canUpdate}';
+      });
       // decides what to show
       if (info.forceUpdate) {
         Navigator.push(
@@ -164,45 +214,67 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 ));
       }
     }, error: (error) {
-      logger.d(' check version error :${error.message}');
+      setState(() {
+        message = ' check version error :${error.message}';
+      });
     });
   }
 
   Future<void> checkPlayAvailability(BuildContext context) async {
-    logger.d(' checkPlayAvailability :');
     final result = await PlayxVersionUpdate.getUpdateAvailability();
     result.when(success: (availability) {
-      logger.d(' checkPlayAvailability :$availability');
+      setState(() {
+        message = ' checkPlayAvailability :$availability';
+      });
     }, error: (error) {
-      logger.d(' checkPlayAvailability error : $error ${error.message}');
+      setState(() {
+        message = ' checkPlayAvailability error : $error ${error.message}';
+      });
     });
   }
 
   ///check whether there's an update needs to be installed.
   ///If there's an update needs to be installed shows snack bar to ask the user to install the update.
-  Future<void> completeFlexibleUpdate(BuildContext context) async {
+  Future<void> completeFlexibleUpdate() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final snackBar = SnackBar(
+        content: const Text('An update has just been downloaded.'),
+        action: SnackBarAction(
+            label: 'Restart',
+            onPressed: () async {
+              final result = await PlayxVersionUpdate.completeFlexibleUpdate();
+              result.when(success: (isCompleted) {
+                setState(() {
+                  message =
+                      ' completeFlexibleUpdate isCompleted : $isCompleted ';
+                });
+              }, error: (error) {
+                setState(() {
+                  message =
+                      ' checkPlayAvailability error : $error ${error.message}';
+                });
+              });
+            }),
+        duration: const Duration(seconds: 10),
+      );
+
+      globalKey.currentState?.showSnackBar(snackBar);
+    });
+  }
+
+  ///check whether there's an update needs to be installed.
+  ///If there's an update needs to be installed shows snack bar to ask the user to install the update.
+  Future<void> checkIfFlexibleUpdateNeedToBeInstalled() async {
     final result = await PlayxVersionUpdate.isFlexibleUpdateNeedToBeInstalled();
-    result.when(
-        success: (isNeeded) {
-          if (isNeeded) {
-            final snackBar = SnackBar(
-              content: const Text('An update has just been downloaded.'),
-              action: SnackBarAction(
-                  label: 'Restart',
-                  onPressed: () async {
-                    final result =
-                        await PlayxVersionUpdate.completeFlexibleUpdate();
-                    result.when(success: (isCompleted) {
-                      logger.d(' Flexible update is $isCompleted');
-                    }, error: (error) {
-                      logger.d(
-                          ' Flexible update error : $error ${error.message}');
-                    });
-                  }),
-            );
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          }
-        },
-        error: (error) {});
+    result.when(success: (isNeeded) {
+      if (isNeeded) {
+        completeFlexibleUpdate();
+      }
+    }, error: (error) {
+      setState(() {
+        message =
+            ' checkIfFlexibleUpdateNeedToBeInstalled error :$error :${error.message}';
+      });
+    });
   }
 }

@@ -1,24 +1,24 @@
 package io.sourcya.playx_version_update.core.manger
 
+import io.sourcya.playx_version_update.core.model.AppUpdateAvailability
+import io.sourcya.playx_version_update.core.model.DownloadInfo
+import io.sourcya.playx_version_update.core.model.DownloadStatus
+import io.sourcya.playx_version_update.core.model.PlayxAppUpdateType
+import io.sourcya.playx_version_update.core.model.PlayxRequestCanceledException
+import io.sourcya.playx_version_update.core.model.PlayxUnknownUpdateType
+import io.sourcya.playx_version_update.core.model.PlayxUpdateInProgress
+import io.sourcya.playx_version_update.core.model.PlayxUpdateNotAllowed
+import io.sourcya.playx_version_update.core.model.PlayxUpdateNotAvailable
+
+
 import android.app.Activity
 import android.content.Context
-import com.google.android.gms.tasks.Task
-import com.google.android.play.core.appupdate.AppUpdateInfo
-import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
-import io.sourcya.playx_version_update.core.model.AppUpdateAvailability
-import io.sourcya.playx_version_update.core.model.AppUpdateMangerNotFoundException
-import io.sourcya.playx_version_update.core.model.DownloadInfo
-import io.sourcya.playx_version_update.core.model.PlayxAppUpdateType
-import io.sourcya.playx_version_update.core.model.PlayxRequestCanceledException
-import io.sourcya.playx_version_update.core.model.PlayxUnknownUpdateType
-import io.sourcya.playx_version_update.core.model.PlayxUpdateNotAllowed
-import io.sourcya.playx_version_update.core.model.PlayxUpdateNotAvailable
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,29 +32,26 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class UpdateManger {
+class UpdateManger( context: Context) {
 
 
-    private var appUpdateInfoTask: Task<AppUpdateInfo>? = null
-    private var appUpdateManager: AppUpdateManager? = null
+    private val appUpdateManager = AppUpdateManagerFactory.create(context)
     private val job = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
-
+    private var currentUpdateType : PlayxAppUpdateType? = null
 
     suspend fun getUpdateAvailability(): AppUpdateAvailability =
         suspendCancellableCoroutine { continuation ->
             // Checks that the platform will allow the specified type of update.
-            if (appUpdateInfoTask == null) {
-                continuation.resumeWithException(AppUpdateMangerNotFoundException())
-            }
+            val appUpdateInfoTask = appUpdateManager.appUpdateInfo
 
-            appUpdateInfoTask?.addOnSuccessListener { appUpdateInfo ->
+            appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
                 val updateAvailability =
                     AppUpdateAvailability.fromUpdateAvailability(appUpdateInfo.updateAvailability())
                 continuation.resume(updateAvailability)
-            }?.addOnFailureListener {
+            }.addOnFailureListener {
                 continuation.resumeWithException(it)
-            }?.addOnCanceledListener {
+            }.addOnCanceledListener {
                 continuation.resumeWithException(PlayxRequestCanceledException())
             }
         }
@@ -65,16 +62,18 @@ class UpdateManger {
     // since the Google Play Store app on the user's device has learnt about an available update.
     //If update is not available, or if staleness information is unavailable, this method returns -1.
     suspend fun getUpdateStalenessDays(): Int = suspendCancellableCoroutine { continuation ->
-        if (appUpdateInfoTask == null) {
-            continuation.resumeWithException(AppUpdateMangerNotFoundException())
-        }
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
 
-        appUpdateInfoTask?.addOnSuccessListener { appUpdateInfo ->
-            val days = appUpdateInfo.clientVersionStalenessDays() ?: -1
-            continuation.resume(days)
-        }?.addOnFailureListener {
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                val days = appUpdateInfo.clientVersionStalenessDays() ?: -1
+                continuation.resume(days)
+            } else {
+                continuation.resumeWithException(PlayxUpdateNotAvailable())
+            }
+        }.addOnFailureListener {
             continuation.resumeWithException(it)
-        }?.addOnCanceledListener {
+        }.addOnCanceledListener {
             continuation.resumeWithException(PlayxRequestCanceledException())
         }
     }
@@ -88,16 +87,18 @@ class UpdateManger {
     // Priority can only be set when rolling out a new release and cannot be changed later.
     // This method returns the current priority value.
     suspend fun getUpdatePriority(): Int = suspendCancellableCoroutine { continuation ->
-        if (appUpdateInfoTask == null) {
-            continuation.resumeWithException(AppUpdateMangerNotFoundException())
-        }
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
 
-        appUpdateInfoTask?.addOnSuccessListener { appUpdateInfo ->
-            val priority = appUpdateInfo.updatePriority()
-            continuation.resume(priority)
-        }?.addOnFailureListener {
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                val priority = appUpdateInfo.updatePriority()
+                continuation.resume(priority)
+            } else {
+                continuation.resumeWithException(PlayxUpdateNotAvailable())
+            }
+        }.addOnFailureListener {
             continuation.resumeWithException(it)
-        }?.addOnCanceledListener {
+        }.addOnCanceledListener {
             continuation.resumeWithException(PlayxRequestCanceledException())
         }
     }
@@ -105,13 +106,11 @@ class UpdateManger {
 
     // Checks that the platform will allow the specified type of update.
     suspend fun isUpdateAllowed(type: PlayxAppUpdateType?): Boolean =
+
         suspendCancellableCoroutine { continuation ->
+            val appUpdateInfoTask = appUpdateManager.appUpdateInfo
 
-            if (appUpdateInfoTask == null) {
-                continuation.resumeWithException(AppUpdateMangerNotFoundException())
-            }
-
-            appUpdateInfoTask?.addOnSuccessListener { appUpdateInfo ->
+            appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
                 if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
                     when (type) {
                         PlayxAppUpdateType.FLEXIBLE -> {
@@ -134,43 +133,55 @@ class UpdateManger {
                 } else {
                     continuation.resume(false)
                 }
-            }?.addOnFailureListener {
+            }.addOnFailureListener {
                 continuation.resumeWithException(it)
-            }?.addOnCanceledListener {
+            }.addOnCanceledListener {
                 continuation.resumeWithException(PlayxRequestCanceledException())
             }
         }
 
     suspend fun startImmediateUpdate(activity: Activity): Boolean? =
         suspendCancellableCoroutine { continuation ->
-            if (appUpdateInfoTask == null || appUpdateManager == null) {
-                continuation.resumeWithException(AppUpdateMangerNotFoundException())
-            }
+            val appUpdateInfoTask = appUpdateManager.appUpdateInfo
 
-            appUpdateInfoTask?.addOnSuccessListener { appUpdateInfo ->
-                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                    val isAllowed = appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
-                    
-                    if (isAllowed) {
-                        
-                        val isStarted = appUpdateManager?.startUpdateFlowForResult(
-                            appUpdateInfo,
-                            activity,
-                            AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE)
-                                .setAllowAssetPackDeletion(true)
-                                .build(),
-                            IMMEDIATE_UPDATE_REQUEST_CODE
-                        )
-                        continuation.resume(isStarted)
-                    } else {
-                        continuation.resumeWithException(PlayxUpdateNotAllowed())
+
+            appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+
+                when (appUpdateInfo.updateAvailability()) {
+                    UpdateAvailability.UPDATE_AVAILABLE -> {
+                        val isAllowed = appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+
+                        if (isAllowed) {
+                            try {
+                                val isStarted = appUpdateManager.startUpdateFlowForResult(
+                                    appUpdateInfo,
+                                    activity,
+                                    AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE)
+                                        .build(),
+                                    IMMEDIATE_UPDATE_REQUEST_CODE
+                                )
+                                currentUpdateType = PlayxAppUpdateType.IMMEDIATE
+                                continuation.resume(isStarted)
+                            } catch (e: Exception) {
+                                continuation.resumeWithException(e)
+                            }
+                        } else {
+                            continuation.resumeWithException(PlayxUpdateNotAllowed())
+                        }
                     }
-                } else {
-                    continuation.resumeWithException(PlayxUpdateNotAvailable())
+
+                    UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS -> {
+                        continuation.resumeWithException(PlayxUpdateInProgress())
+                    }
+
+                    UpdateAvailability.UPDATE_NOT_AVAILABLE, UpdateAvailability.UNKNOWN -> {
+                        continuation.resumeWithException(PlayxUpdateNotAvailable())
+
+                    }
                 }
-            }?.addOnFailureListener {
+            }.addOnFailureListener {
                 continuation.resumeWithException(it)
-            }?.addOnCanceledListener {
+            }.addOnCanceledListener {
                 continuation.resumeWithException(PlayxRequestCanceledException())
             }
         }
@@ -178,22 +189,25 @@ class UpdateManger {
 
     suspend fun startFlexibleUpdate(activity: Activity): Boolean? =
         suspendCancellableCoroutine { continuation ->
-            if (appUpdateInfoTask == null || appUpdateManager == null) {
-                continuation.resumeWithException(AppUpdateMangerNotFoundException())
-            }
-            appUpdateInfoTask?.addOnSuccessListener { appUpdateInfo ->
+            val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+            appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
                 if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
                     val isAllowed = appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
                     if (isAllowed) {
-                        val isStarted = appUpdateManager?.startUpdateFlowForResult(
-                            appUpdateInfo,
-                            activity,
-                            AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE)
-                                .setAllowAssetPackDeletion(true)
-                                .build(),
-                            FLEXIBLE_UPDATE_REQUEST_CODE
-                        )
-                        continuation.resume(isStarted)
+                        try {
+                            val isStarted = appUpdateManager.startUpdateFlowForResult(
+                                appUpdateInfo,
+                                activity,
+                                AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE)
+                                    .build(),
+                                FLEXIBLE_UPDATE_REQUEST_CODE
+                            )
+                            currentUpdateType = PlayxAppUpdateType.FLEXIBLE
+                            continuation.resume(isStarted)
+
+                        } catch (e: Exception) {
+                            continuation.resumeWithException(e)
+                        }
 
                     } else {
                         continuation.resumeWithException(PlayxUpdateNotAllowed())
@@ -201,9 +215,9 @@ class UpdateManger {
                 } else {
                     continuation.resumeWithException(PlayxUpdateNotAvailable())
                 }
-            }?.addOnFailureListener {
+            }.addOnFailureListener {
                 continuation.resumeWithException(it)
-            }?.addOnCanceledListener {
+            }.addOnCanceledListener {
                 continuation.resumeWithException(PlayxRequestCanceledException())
             }
         }
@@ -216,7 +230,7 @@ class UpdateManger {
             launch {
                 send(
                     DownloadInfo(
-                        DownloadInfo.DownloadStatus.from(state.installStatus()),
+                        DownloadStatus.from(state.installStatus()),
                         state.bytesDownloaded(),
                         state.totalBytesToDownload(),
                         state.installErrorCode()
@@ -225,24 +239,22 @@ class UpdateManger {
             }
         }
 
-        appUpdateManager?.registerListener(listener)
+        appUpdateManager.registerListener(listener)
 
         awaitClose {
-            appUpdateManager?.unregisterListener(listener)
+            appUpdateManager.unregisterListener(listener)
         }
     }
 
 
     suspend fun completeFlexibleUpdate(): Boolean = suspendCancellableCoroutine { continuation ->
-        if (appUpdateInfoTask == null || appUpdateManager == null) {
-            continuation.resumeWithException(AppUpdateMangerNotFoundException())
-        }
-        val result = appUpdateManager?.completeUpdate()
-        result?.addOnSuccessListener {
+
+        val result = appUpdateManager.completeUpdate()
+        result.addOnSuccessListener {
             continuation.resume(true)
-        }?.addOnFailureListener {
+        }.addOnFailureListener {
             continuation.resumeWithException(it)
-        }?.addOnCanceledListener {
+        }.addOnCanceledListener {
             continuation.resumeWithException(PlayxRequestCanceledException())
         }
     }
@@ -250,46 +262,46 @@ class UpdateManger {
 
     suspend fun isFlexibleUpdateNeedToBeInstalled(): Boolean =
         suspendCancellableCoroutine { continuation ->
-            if (appUpdateInfoTask == null) {
-                continuation.resumeWithException(AppUpdateMangerNotFoundException())
-            }
-            appUpdateInfoTask?.addOnSuccessListener { appUpdateInfo ->
-                continuation.resume(appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED)
-            }?.addOnFailureListener {
+            val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+
+            appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+                if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                    val isDownloaded = appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED
+                    continuation.resume(isDownloaded)
+                } else {
+                    continuation.resume(false)
+                }
+            }.addOnFailureListener {
                 continuation.resumeWithException(it)
-            }?.addOnCanceledListener {
+            }.addOnCanceledListener {
                 continuation.resumeWithException(PlayxRequestCanceledException())
             }
         }
 
 
-    fun startListening(context: Context) {
-        appUpdateManager = AppUpdateManagerFactory.create(context)
-        appUpdateInfoTask = appUpdateManager!!.appUpdateInfo
-    }
-
-
     fun stopListening() {
-        appUpdateInfoTask = null
-        appUpdateManager = null
         job.cancel()
         coroutineScope.cancel()
     }
 
 
     fun handleOnResume(activity: Activity?) {
-        if (activity == null || appUpdateManager == null) return
+        if (activity == null) return
+        if(currentUpdateType == PlayxAppUpdateType.IMMEDIATE) {
+            appUpdateManager.appUpdateInfo
+                .addOnSuccessListener { appUpdateInfo ->
+                    if (appUpdateInfo.updateAvailability()
+                        == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                        coroutineScope.launch {
+                            try{
+                                startImmediateUpdate(activity)
+                            }catch (_:Exception) {
 
-        appUpdateManager?.appUpdateInfo
-            ?.addOnSuccessListener { appUpdateInfo ->
-                if (appUpdateInfo.updateAvailability()
-                    == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
-                ) {
-                    coroutineScope.launch {
-                        startImmediateUpdate(activity)
+                            }
+                        }
                     }
                 }
-            }
+        }
     }
 
 

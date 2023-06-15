@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:fimber/fimber.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
@@ -38,7 +37,6 @@ class VersionChecker {
 
     if (Platform.isAndroid) {
       final packageId = googlePlayId ?? packageInfo.packageName;
-      Fimber.d('check version packageId :$packageId, version :$version ');
 
       return _checkAndroidVersion(
           localVersion: version,

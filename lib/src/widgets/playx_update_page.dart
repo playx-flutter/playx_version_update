@@ -1,4 +1,3 @@
-import 'package:fimber/fimber.dart';
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -191,26 +190,4 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
       !widget.versionUpdateInfo.forceUpdate ||
       (widget.versionUpdateInfo.forceUpdate &&
           widget.showDismissButtonOnForceUpdate);
-
-  Future<void> updateAndroidApp() async {
-    final Uri url = Uri.parse(widget.versionUpdateInfo.storeUrl);
-    if (await canLaunchUrl(url)) {
-      try {
-        launchUrl(url, mode: widget.launchMode);
-      } catch (e) {
-        Fimber.e("couldn't open store");
-      }
-    }
-  }
-
-  Future<void> updateIosApp() async {
-    final Uri url = Uri.parse(widget.versionUpdateInfo.storeUrl);
-    if (await canLaunchUrl(url)) {
-      try {
-        launchUrl(url, mode: widget.launchMode);
-      } catch (e) {
-        Fimber.e("couldn't open store");
-      }
-    }
-  }
 }

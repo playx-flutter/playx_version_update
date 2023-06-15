@@ -111,7 +111,7 @@ abstract class PlayxVersionUpdate {
 
     return result.map(success: (result) {
       final info = result.data;
-      if (info.forceUpdate) {
+      if (info.forceUpdate && showPageOnForceUpdate) {
         Navigator.push(
           context,
           MaterialPageRoute<void>(
@@ -164,7 +164,7 @@ abstract class PlayxVersionUpdate {
   /// When you detect the [PlayxDownloadStatus.downloaded] state, you need to restart the app to install the update.
   ///Unlike with immediate updates, Google Play does not automatically trigger an app restart for a flexible update.
   ///So you need to complete the update after it's downloaded.
-  /// it's also recommended to use this method on App resume to  check whether your app has an update waiting to be installed.
+  /// it's also recommended to check whether your app has an update waiting to be installed on App resume.
   /// If your app has an update in the DOWNLOADED state, prompt the user to install the update.
   /// Otherwise, the update data continues to occupy the user's device storage.
   /// To check if flexible update needs to be completed call [isFlexibleUpdateNeedToBeInstalled] and to complete the update call [completeFlexibleUpdate]
@@ -220,7 +220,7 @@ abstract class PlayxVersionUpdate {
 
       return result.map(success: (result) {
         final info = result.data;
-        if (info.forceUpdate) {
+        if (info.forceUpdate && showPageOnForceUpdate) {
           Navigator.push(
             context,
             MaterialPageRoute<void>(
@@ -295,7 +295,7 @@ abstract class PlayxVersionUpdate {
 
   // Checks that the platform will allow the specified type of update or not.
   ///returns [PlayxVersionUpdateResult] with [bool] isAllowed value on success.
-  Future<PlayxVersionUpdateResult<bool>> isUpdateAllowed(
+  static Future<PlayxVersionUpdateResult<bool>> isUpdateAllowed(
       {required PlayxAppUpdateType type}) async {
     return PlayxVersionUpdatePlatform.instance.isUpdateAllowed(type);
   }
@@ -312,7 +312,7 @@ abstract class PlayxVersionUpdate {
   }
 
   ///Starts Flexible update flow.
-  ///In the immediate flow, the method returns one of the following values:
+  ///In the flexible flow, the method returns one of the following values:
   /// [bool] : The user accepted the request to update.
   ///[ActivityNotFoundError] : : When the user started the update flow from background.
   ///[PlayxRequestCanceledError] : The user denied the request to update.
@@ -356,9 +356,7 @@ abstract class PlayxVersionUpdate {
   }
 
   ///Refreshes app update manger.
-  ///Each Update manger instance can be used only in a single call to this method.
-  /// If you need to call it multiple times - for instance, when retrying to start a flow in case of failure - you need to get a fresh Update manger.
-  ///   ///returns [PlayxVersionUpdateResult] with [bool] on success of whether refreshed or not.
+  ///returns [PlayxVersionUpdateResult] with [bool] on success of whether refreshed or not.
   static Future<PlayxVersionUpdateResult<bool>> refreshInAppUpdate() {
     return PlayxVersionUpdatePlatform.instance.refreshInAppUpdate();
   }

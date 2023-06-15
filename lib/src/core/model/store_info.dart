@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:fimber/fimber.dart';
 import 'package:playx_version_update/src/core/utils/utils.dart';
 
 class StoreInfo {
@@ -36,25 +35,17 @@ class StoreInfo {
           regexpDescription.firstMatch(body)?.group(2)?.toLowerCase();
 
       if (description != null && description.isNotEmpty) {
-        Fimber.d('store info : 2 minimum :$minVersion');
-
         final minimumVersionPrefix = '[Minimum Version :'.toLowerCase();
         if (description.contains(minimumVersionPrefix)) {
-          Fimber.d('store info : 4 minimum :$minVersion');
-
           minVersion = description
               .substring(description.indexOf(minimumVersionPrefix))
               .split(minimumVersionPrefix)[1]
               .split(']')[0]
               .trim();
-
-          Fimber.d('store info2 : minimum :$minVersion');
         }
       }
     } catch (_) {}
-    Fimber.d('store info :3 minimum :$minVersion');
 
-    // [Minimum Version :
     return StoreInfo(
         version: storeVersion ?? '',
         minVersion: minVersion,
@@ -77,11 +68,11 @@ class StoreInfo {
       final description = jsonObj['results'][0]['description'];
 
       if (description != null && description.isNotEmpty) {
-        if (description.contains('[minimum version :'.toLowerCase())) {
+        final minimumVersionPrefix = '[Minimum Version :'.toLowerCase();
+        if (description.contains(minimumVersionPrefix)) {
           minVersion = description
-              .substring(
-                  description.indexOf('[minimum version :'.toLowerCase()))
-              .split('[minimum version :'.toLowerCase())[1]
+              .substring(description.indexOf(minimumVersionPrefix))
+              .split(minimumVersionPrefix)[1]
               .split(']')[0]
               .trim();
         }

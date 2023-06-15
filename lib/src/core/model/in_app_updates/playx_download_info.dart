@@ -20,9 +20,15 @@ class PlayxDownloadInfo {
         totalBytesToDownload: map["totalBytesToDownload"] as int,
         installErrorCode: map["installErrorCode"] as int);
   }
+
+  @override
+  String toString() {
+    return "DownloadInfo : status :$status , totalBytesToDownload :$totalBytesToDownload : bytesDownloaded :$bytesDownloaded , installErrorCode :$installErrorCode";
+  }
 }
 
 enum PlayxDownloadStatus {
+  unknown,
   pending,
   downloading,
   downloaded,
@@ -33,7 +39,7 @@ enum PlayxDownloadStatus {
 
   static PlayxDownloadStatus from(num? index) {
     if (index == null || index >= PlayxDownloadStatus.values.length) {
-      return PlayxDownloadStatus.pending;
+      return PlayxDownloadStatus.unknown;
     }
 
     return PlayxDownloadStatus.values[index.toInt()];

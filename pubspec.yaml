@@ -1,7 +1,6 @@
 name: playx_version_update
-description: Playx Version Update
+description: Easily show material update dialog in Android or Cupertino dialog in IOS with support for Google play in app updates.
 version: 0.0.1
-homepage:
 
 environment:
   sdk: '>=3.0.3 <4.0.0'
@@ -15,7 +14,6 @@ dependencies:
   version: ^3.0.2
   url_launcher: ^6.1.11
   dio: ^5.2.1
-  fimber: ^0.6.6
 
 dev_dependencies:
   flutter_test:
