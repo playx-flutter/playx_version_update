@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
+import 'package:playx_version_update/src/core/utils/callbacks.dart';
 import 'package:playx_version_update/src/platform/playx_version_update_platform_interface.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -16,7 +17,7 @@ abstract class PlayxVersionUpdate {
   ///Takes [localVersion] : which is the current version of the app, If not provided It will get it from the app information.
   ///If [newVersion] is provided it will compare it with the current version. If not it will get it from the store information.
   ///[forceUpdate] whether to force the update or not. If [minVersion] is provided it will compare it with the current version.
-  /// If current version is lower than the minimum version it will return [forceUpdate] as true to force the update.
+  /// If current version is lower than the minimum version it will return [forceUpdate] as true to force the update if forceUpdate is not set.
   ///  [googlePlayId],[appStoreId] the app package or bundle id. If not provided it will get it from the app information.
   /// [country], [language] decides which country and language we will get app information from the store. default is 'us' and 'en'.
   ///returns [PlayxVersionUpdateResult] : which on success returns [PlayxVersionUpdateInfo] which contains information about the current version and the latest version.
@@ -26,7 +27,7 @@ abstract class PlayxVersionUpdate {
     String? localVersion,
     String? newVersion,
     String? minVersion,
-    bool forceUpdate = false,
+    bool? forceUpdate,
     String? googlePlayId,
     String? appStoreId,
     String country = 'us',
@@ -72,7 +73,9 @@ abstract class PlayxVersionUpdate {
   ///Check the version of the app on Google play store in Android Or App Store in IOS.
   ///Then shows [PlayxUpdateDialog] which shows material update dialog for android and Cupertino Dialog for IOS.
   /// If the app needs to force update you can show [PlayxUpdatePage] instead of the dialog by setting [showPageOnForceUpdate] : to true.
+  /// Update [isDismissible] to set if the [PlayxUpdateDialog] or [PlayxUpdatePage] are dismissible or not if not provided it will be not dismissible on force update.
   /// check out [checkVersion] and [PlayxUpdateDialog] and [PlayxUpdatePage] to learn more about the parameters used.
+  /// When the user clicks on update action the app open the store, If you want to override this behavior you can call [onUpdate].
   ///returns [PlayxVersionUpdateResult] with [bool] on success.
   ///and  returns [PlayxVersionUpdateError] on error which contains information about the error.
   static Future<PlayxVersionUpdateResult<bool>> showUpdateDialog({
@@ -84,17 +87,18 @@ abstract class PlayxVersionUpdate {
     String? appStoreId,
     String country = 'us',
     String language = 'en',
-    bool forceUpdate = false,
+    bool? forceUpdate,
     bool showPageOnForceUpdate = false,
-    String? title,
-    String? description,
-    String? releaseNotesTitle,
+    bool? isDismissible,
+    UpdateNameInfoCallback? title,
+    UpdateNameInfoCallback? description,
+    UpdateNameInfoCallback? releaseNotesTitle,
     bool showReleaseNotes = false,
     bool showDismissButtonOnForceUpdate = true,
     String? updateActionTitle,
     String? dismissActionTitle,
-    VoidCallback? onUpdate,
-    Function(bool forceUpdate)? onCancel,
+    UpdatePressedCallback? onUpdate,
+    UpdateCancelPressedCallback? onCancel,
     LaunchMode launchMode = LaunchMode.externalApplication,
     Widget? leading,
   }) async {
@@ -115,43 +119,56 @@ abstract class PlayxVersionUpdate {
         return PlayxVersionUpdateResult.error(PlayxVersionCantUpdateError(
             currentVersion: info.localVersion, newVersion: info.newVersion));
       }
-      if (info.forceUpdate && showPageOnForceUpdate) {
-        Navigator.push(
-          context,
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => PlayxUpdatePage(
-              versionUpdateInfo: info,
-              title: title,
-              description: description,
-              releaseNotesTitle: releaseNotesTitle,
-              showReleaseNotes: showReleaseNotes,
-              updateActionTitle: updateActionTitle,
-              dismissActionTitle: dismissActionTitle,
-              showDismissButtonOnForceUpdate: showDismissButtonOnForceUpdate,
-              launchMode: launchMode,
-              onUpdate: onUpdate,
-              onCancel: onCancel,
-              leading: leading,
-            ),
-          ),
+
+      final shouldForceUpdate = info.forceUpdate;
+      final isDialogDismissible = isDismissible ?? !shouldForceUpdate;
+
+      if (shouldForceUpdate && showPageOnForceUpdate) {
+        final page = PlayxUpdatePage(
+          versionUpdateInfo: info,
+          title: title,
+          description: description,
+          releaseNotesTitle: releaseNotesTitle,
+          showReleaseNotes: showReleaseNotes,
+          updateActionTitle: updateActionTitle,
+          dismissActionTitle: dismissActionTitle,
+          showDismissButtonOnForceUpdate: showDismissButtonOnForceUpdate,
+          launchMode: launchMode,
+          onUpdate: onUpdate,
+          onCancel: onCancel,
+          leading: leading,
         );
+        if (isDialogDismissible) {
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(builder: (BuildContext context) => page),
+          );
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute<void>(builder: (BuildContext context) => page),
+            (route) => false,
+          );
+        }
       } else {
         showDialog(
-            context: context,
-            builder: (context) => PlayxUpdateDialog(
-                  versionUpdateInfo: info,
-                  title: title,
-                  description: description,
-                  releaseNotesTitle: releaseNotesTitle,
-                  showReleaseNotes: showReleaseNotes,
-                  updateActionTitle: updateActionTitle,
-                  dismissActionTitle: dismissActionTitle,
-                  showDismissButtonOnForceUpdate:
-                      showDismissButtonOnForceUpdate,
-                  launchMode: launchMode,
-                  onUpdate: onUpdate,
-                  onCancel: onCancel,
-                ));
+          context: context,
+          barrierDismissible: isDialogDismissible,
+          builder: (context) => PlayxUpdateDialog(
+            versionUpdateInfo: info,
+            title: title,
+            description: description,
+            releaseNotesTitle: releaseNotesTitle,
+            showReleaseNotes: showReleaseNotes,
+            updateActionTitle: updateActionTitle,
+            dismissActionTitle: dismissActionTitle,
+            showDismissButtonOnForceUpdate: showDismissButtonOnForceUpdate,
+            launchMode: launchMode,
+            onUpdate: onUpdate,
+            onCancel: onCancel,
+            isDismissible: isDialogDismissible,
+          ),
+        );
       }
       return const PlayxVersionUpdateResult.success(true);
     }, error: (error) {
@@ -177,13 +194,15 @@ abstract class PlayxVersionUpdate {
   ///Check the version of the app on the App Store.
   ///Then shows [PlayxUpdateDialog] which shows Cupertino Dialog for IOS.
   /// If the app needs to force update you can show [PlayxUpdatePage] instead of the dialog by setting [showPageOnForceUpdate] : to true.
+  /// Update [isDismissible] to set if the [PlayxUpdateDialog] or [PlayxUpdatePage] are dismissible or not if not provided it will be not dismissible on force update.
   /// check out [checkVersion] and [PlayxUpdateDialog] and [PlayxUpdatePage] to learn more about the parameters used.
+  /// When the user clicks on update action the app open the app store, If you want to override this behavior you can call [onIosUpdate].
   ///returns [PlayxVersionUpdateResult] with [bool] on success.
   ///and  returns [PlayxVersionUpdateError] on error which contains information about the error.
   static Future<PlayxVersionUpdateResult<bool>> showInAppUpdateDialog({
     required BuildContext context,
     required PlayxAppUpdateType type,
-    bool forceUpdate = false,
+    bool? forceUpdate,
     String? localVersion,
     String? newVersion,
     String? minVersion,
@@ -192,15 +211,16 @@ abstract class PlayxVersionUpdate {
     String country = 'us',
     String language = 'en',
     bool showPageOnForceUpdate = false,
-    String? title,
-    String? description,
-    String? releaseNotesTitle,
+    bool? isDismissible = true,
+    UpdateNameInfoCallback? title,
+    UpdateNameInfoCallback? description,
+    UpdateNameInfoCallback? releaseNotesTitle,
     bool showReleaseNotes = false,
     bool showDismissButtonOnForceUpdate = true,
     String? updateActionTitle,
     String? dismissActionTitle,
-    VoidCallback? onUpdate,
-    Function(bool forceUpdate)? onCancel,
+    UpdatePressedCallback? onIosUpdate,
+    UpdateCancelPressedCallback? onIosCancel,
     LaunchMode launchMode = LaunchMode.externalApplication,
     Widget? leading,
   }) async {
@@ -230,29 +250,39 @@ abstract class PlayxVersionUpdate {
               currentVersion: info.localVersion, newVersion: info.newVersion));
         }
 
-        if (info.forceUpdate && showPageOnForceUpdate) {
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(
-              builder: (BuildContext context) => PlayxUpdatePage(
-                versionUpdateInfo: info,
-                title: title,
-                description: description,
-                releaseNotesTitle: releaseNotesTitle,
-                showReleaseNotes: showReleaseNotes,
-                updateActionTitle: updateActionTitle,
-                dismissActionTitle: dismissActionTitle,
-                showDismissButtonOnForceUpdate: showDismissButtonOnForceUpdate,
-                launchMode: launchMode,
-                onUpdate: onUpdate,
-                onCancel: onCancel,
-                leading: leading,
-              ),
-            ),
+        final shouldForceUpdate = info.forceUpdate;
+        final isDialogDismissible = isDismissible ?? !shouldForceUpdate;
+        if (shouldForceUpdate && showPageOnForceUpdate) {
+          final page = PlayxUpdatePage(
+            versionUpdateInfo: info,
+            title: title,
+            description: description,
+            releaseNotesTitle: releaseNotesTitle,
+            showReleaseNotes: showReleaseNotes,
+            updateActionTitle: updateActionTitle,
+            dismissActionTitle: dismissActionTitle,
+            showDismissButtonOnForceUpdate: showDismissButtonOnForceUpdate,
+            launchMode: launchMode,
+            onUpdate: onIosUpdate,
+            onCancel: onIosCancel,
+            leading: leading,
           );
+          if (isDialogDismissible) {
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(builder: (BuildContext context) => page),
+            );
+          } else {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute<void>(builder: (BuildContext context) => page),
+              (route) => false,
+            );
+          }
         } else {
           showDialog(
               context: context,
+              barrierDismissible: isDialogDismissible,
               builder: (context) => PlayxUpdateDialog(
                     versionUpdateInfo: info,
                     title: title,
@@ -264,8 +294,9 @@ abstract class PlayxVersionUpdate {
                     showDismissButtonOnForceUpdate:
                         showDismissButtonOnForceUpdate,
                     launchMode: launchMode,
-                    onUpdate: onUpdate,
-                    onCancel: onCancel,
+                    onUpdate: onIosUpdate,
+                    onCancel: onIosCancel,
+                    isDismissible: isDialogDismissible,
                   ));
         }
         return const PlayxVersionUpdateResult.success(true);
@@ -315,8 +346,10 @@ abstract class PlayxVersionUpdate {
   /// [bool] : The user accepted and the update succeeded.
   /// (which, in practice, your app never should never receive because it already updated).
   ///[ActivityNotFoundError] : When the user started the update flow from background.
-  ///[PlayxRequestCanceledError] : The user denied or canceled the update.
+  ///[PlayxInAppUpdateCanceledError] : The user denied or canceled the update.
+  ///[PlayxInAppUpdateInfoRequestCanceledError] : Checking update availability was canceled.
   /// [PlayxInAppUpdateFailedError] : The flow failed either during the user confirmation, the download, or the installation.
+  /// [DefaultFailureError] : other errors that may occur during the update flow.
   static Future<PlayxVersionUpdateResult<bool>> startImmediateUpdate() async {
     return PlayxVersionUpdatePlatform.instance.startImmediateUpdate();
   }
@@ -325,8 +358,10 @@ abstract class PlayxVersionUpdate {
   ///In the flexible flow, the method returns one of the following values:
   /// [bool] : The user accepted the request to update.
   ///[ActivityNotFoundError] : : When the user started the update flow from background.
-  ///[PlayxRequestCanceledError] : The user denied the request to update.
+  ///[PlayxInAppUpdateCanceledError] : The user denied the request to update.
+  ///[PlayxInAppUpdateInfoRequestCanceledError] : Checking update availability was canceled.
   ///[PlayxInAppUpdateFailedError] :: Something failed during the request for user confirmation. For example, the user terminates the app before responding to the request.
+  /// [DefaultFailureError] : other errors that may occur during the update flow.
   static Future<PlayxVersionUpdateResult<bool>> startFlexibleUpdate() async {
     return PlayxVersionUpdatePlatform.instance.startFlexibleUpdate();
   }

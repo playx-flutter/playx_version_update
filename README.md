@@ -3,25 +3,25 @@
 # Playx  Version Update
 Easily show material update dialog in Android or Cupertino dialog in IOS with support for Google play in app updates.
 
-## Features  
- - Show material update dialog in Android or Cupertino dialog in IOS to inform user about new app updates.
- - Easily start Google play flexible or immediate updates.
- - Ability to show Google play in app updates in Android or Cupertino dialog in IOS.
- - Ability to check store version and display custom UI.
- - Ability to show release notes from the store.
- - Ability to set minimum version for app update to force updates.
- - Ability to show an update page, useful for in app updates.
+## Features
+- Show material update dialog in Android or Cupertino dialog in IOS to inform user about new app updates.
+- Easily start Google play flexible or immediate updates.
+- Ability to show Google play in app updates in Android or Cupertino dialog in IOS.
+- Ability to check store version and display custom UI.
+- Ability to show release notes from the store.
+- Ability to set minimum version for app update to force updates.
+- Ability to show an update page, useful for in app updates.
 
-## Installation  
-  
-In `pubspec.yaml` add these lines to `dependencies`  
- 
+## Installation
+
+In `pubspec.yaml` add these lines to `dependencies`
+
 ```yaml  
-playx_version_update: ^0.0.1 
+playx_version_update: ^0.0.2 
 ```  
 
-  ## Usage  
-  
+## Usage
+
 1.  To show material update dialog in Android or Cupertino dialog in IOS that shows that the app needs to update.
 
     <p float="left" align="middle">
@@ -39,18 +39,21 @@ playx_version_update: ^0.0.1
            //sets min version that force app to update if below this version
            minVersion: '1.0.0',
           //customize dialog layout like title.
-          title: 'A new update is available',
+          title:(info)=> 'A new update is available',
           //forces app update.
           forceUpdate: true,  
           //shows update page instead of dialog on force update
           showPageOnForceUpdate: true,
+          ///Decide wheteher the app should dismiss [PlayxUpdateDialog] or pop [PlayxUpdatePage] from the backstack or not, If not provided it will be not dismissible on force update.
+          isDismissible:false,
           //handle what the app should do after canceling the dialog.
-          onCancel: (forceUpdate){
-                   //exit the app on force update.
-                   if(forceUpdate){
-                        exit(0);
-                    }
-                }
+          onCancel: (info){
+            //exit the app on force update.
+            final forceUpdate = info.forceUpdate;
+             if(forceUpdate){
+                 exit(0);
+               }
+             }
        );
       result.when(success: (isShowed) {
              print(' showUpdateDialog success :');
@@ -58,10 +61,10 @@ playx_version_update: ^0.0.1
             print( ' showUpdateDialog error : ${error.message}');
        });
     ```
-       
+
 
     Just like that you are able show an update  dialog for android and IOS.
-      
+
 2.  To show in app update for Android and Cupertino dialog in IOS, You can use this:
     <p float="left" align="middle">
       <img src="https://github.com/playx-flutter/playx_version_update/blob/main/screenshots/screenshot1.jpg?raw=true" width="30%" >  
@@ -75,11 +78,23 @@ playx_version_update: ^0.0.1
            //Type for google play in app update either flexible or immediate update.
            type: PlayxAppUpdateType.flexible,
            //customize app store id in ios
-           appStoreId: 'com.apple.tv',
+           appStoreId: 'app bundle id',
            //show release notes or not in ios
            showReleaseNotes: true,
            //customize dialog layout like release notes title  in ios.
-           releaseNotesTitle: 'Recent Updates',           
+           releaseNotesTitle: (info) => 'Recent Updates of ${info.newVersion}',
+           // When the user clicks on update action the app open the app store,
+           // If you want to override this behavior you can call [onIosUpdate].
+           onIosUpdate: (info, launchMode) async {
+             final storeUrl = info.storeUrl;
+             final res = await PlayxVersionUpdate.openStore(storeUrl: storeUrl);
+             res.when(success: (success) {
+                print('playx_open_store: success :$success');
+              }, error: (error) {
+               print('playx_open_store: error :$error');
+             });
+           },
+      
          );
          result.when(success: (isShowed) {
              print( ' showInAppUpdateDialog success : $isShowed');
@@ -89,55 +104,55 @@ playx_version_update: ^0.0.1
       ```
        Now we can show in app update either flexible or immediate update in android or dialog in IOS.
        We will go in details about in app updates below.
- 
- 3. You can easily check Google play and App store version and create your own custom UI with :
-For example we can show `PlayxUpdatePage` which displays information about app update.
-     <p float="left" align="middle">
-      <img src="https://github.com/playx-flutter/playx_version_update/blob/main/screenshots/screenshot5.jpg?raw=true" height=500 > 
-     </p>
 
-    ```dart
-      final result = await PlayxVersionUpdate.checkVersion(
-           //local app version if not provided It will get it from app version
-           localVersion: '1.0.0',
-           //new app version if not provided It will get it from store information.
-           newVersion: '1.1.0',
-           //If should force the update or not.
-           forceUpdate: true,
-           //googlePlayId and appStoreId if not provided It will get it from app version 
-           googlePlayId: 'your app package name',
-           appStoreId: 'your app bundle id',
-           // country to fetch store information from.
-           country: 'us',
-           // language to fetch store information from. release notes will be in this language.
-           language: 'en',
-         );
-     
-         result.when(success: (info) {
-         //When result is successful it returns instance of [PlayxVersionUpdateInfo] 
-         //Which contains information about app whether it should update or not , force update,
-         //App version and store URL and more.
-         // You can use these info to show your custom ui.
-           Navigator.push(
-           context,
-           MaterialPageRoute<void>(
-             builder: (BuildContext context) => PlayxUpdatePage(
-               versionUpdateInfo: info,
-               showReleaseNotes: false,
-               showDismissButtonOnForceUpdate: false,
-               //show image or lottie animation on top of the page.
-               leading: Image.network('image url'),
-               title: "It's time to update",
-               description:
-                  'A new version of the app is now available.\nThe app needs to be updated to the latest version in order to work properly.\nEnjoy the latest version features now.',
-             ),
-           ),
-         );
-     
-         }, error: (error) {
-           //handle the error that happened here.
-         });
-     ```
+3. You can easily check Google play and App store version and create your own custom UI with :
+   For example we can show `PlayxUpdatePage` which displays information about app update.
+    <p float="left" align="middle">
+     <img src="https://github.com/playx-flutter/playx_version_update/blob/main/screenshots/screenshot5.jpg?raw=true" height=500 > 
+    </p>
+
+   ```dart
+     final result = await PlayxVersionUpdate.checkVersion(
+          //local app version if not provided It will get it from app version
+          localVersion: '1.0.0',
+          //new app version if not provided It will get it from store information.
+          newVersion: '1.1.0',
+          //If should force the update or not.
+          forceUpdate: true,
+          //googlePlayId and appStoreId if not provided It will get it from app version 
+          googlePlayId: 'your app package name',
+          appStoreId: 'your app bundle id',
+          // country to fetch store information from.
+          country: 'us',
+          // language to fetch store information from. release notes will be in this language.
+          language: 'en',
+        );
+    
+        result.when(success: (info) {
+        //When result is successful it returns instance of [PlayxVersionUpdateInfo] 
+        //Which contains information about app whether it should update or not , force update,
+        //App version and store URL and more.
+        // You can use these info to show your custom ui.
+          Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => PlayxUpdatePage(
+              versionUpdateInfo: info,
+              showReleaseNotes: false,
+              showDismissButtonOnForceUpdate: false,
+              //show image or lottie animation on top of the page.
+              leading: Image.network('image url'),
+              title:(info)=> "It's time to update",
+              description:(info)=>
+                 'A new version of the app is now available.\nThe app needs to be updated to the latest version in order to work properly.\nEnjoy the latest version features now.',
+            ),
+          ),
+        );
+    
+        }, error: (error) {
+          //handle the error that happened here.
+        });
+    ```
 
 ### Minimum App Version
 You can set minimum version for the app that will force the app to update if the current version is below the minimum version.
@@ -151,7 +166,7 @@ The package uses Google play in app updates SDK to show either flexible or immed
 
 ## Immediate updates
 
-Immediate updates are full screen UX flows that require the user to update and restart the app in order to continue using it. This UX flow is best for cases where an update is critical to the core functionality of your app. After a user accepts an immediate update, Google Play handles the update installation and app restart.  
+Immediate updates are full screen UX flows that require the user to update and restart the app in order to continue using it. This UX flow is best for cases where an update is critical to the core functionality of your app. After a user accepts an immediate update, Google Play handles the update installation and app restart.
 <p float="left" align="middle">
       <img src="https://developer.android.com/static/images/app-bundle/immediate_flow.png" width="80%" > 
      </p>
@@ -288,10 +303,11 @@ For example listen to on app resume lifecycle using [`WidgetsBindingObserver`](h
 ```
 
 
-## Important Notice 
+## Important Notice
 The in app updates will not work unless the app is downloaded From Google Play.
 To test in app updates you can use Google play [`Internal app sharing`](https://play.google.com/console/about/internalappsharing/) or [`Internal testing`](https://play.google.com/console/about/internal-testing/) .
 
+Check out all possible errors from the [Api Reference](https://pub.dev/documentation/playx_version_update/latest/playx_version_update/PlayxVersionUpdateError-class.html).
 
 ## Documentation && References
 

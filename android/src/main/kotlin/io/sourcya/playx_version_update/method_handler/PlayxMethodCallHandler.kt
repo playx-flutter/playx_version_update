@@ -2,7 +2,7 @@ package io.sourcya.playx_version_update.method_handler
 
 import android.app.Activity
 import android.content.Intent
-import com.google.android.play.core.install.model.ActivityResult
+import com.google.android.play.core.install.model.ActivityResult.RESULT_IN_APP_UPDATE_FAILED
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.EventChannel
@@ -13,7 +13,7 @@ import io.sourcya.playx_version_update.core.manger.UpdateManger
 import io.sourcya.playx_version_update.core.model.ActivityNotFoundException
 import io.sourcya.playx_version_update.core.model.PlayxAppUpdateType
 import io.sourcya.playx_version_update.core.model.PlayxInAppUpdateFailed
-import io.sourcya.playx_version_update.core.model.PlayxRequestCanceledException
+import io.sourcya.playx_version_update.core.model.PlayxUpdateCanceledException
 import io.sourcya.playx_version_update.core.model.PlayxUpdateException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -297,8 +297,6 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
         } else {
             result.error("DEFAULT_FAILURE_ERROR", e.message, e)
         }
-
-
     }
 
     // result of start update method whether flexible or immediate update.
@@ -308,8 +306,8 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
                 startedFlexibleUpdateResult?.let {
                     when (resultCode) {
                         Activity.RESULT_OK -> it.success(true)
-                            Activity.RESULT_CANCELED -> handleMethodException(PlayxRequestCanceledException(), it)
-                            ActivityResult.RESULT_IN_APP_UPDATE_FAILED ->handleMethodException(PlayxInAppUpdateFailed(), it)
+                            Activity.RESULT_CANCELED -> handleMethodException(PlayxUpdateCanceledException(), it)
+                            RESULT_IN_APP_UPDATE_FAILED ->handleMethodException(PlayxInAppUpdateFailed(), it)
                         else-> handleMethodException(PlayxInAppUpdateFailed(), it)
                     }
                 }
@@ -320,8 +318,8 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
                 startedImmediateUpdateResult?.let {
                     when (resultCode) {
                         Activity.RESULT_OK -> it.success(true)
-                        Activity.RESULT_CANCELED -> handleMethodException(PlayxRequestCanceledException(), it)
-                        ActivityResult.RESULT_IN_APP_UPDATE_FAILED ->handleMethodException(PlayxInAppUpdateFailed(), it)
+                        Activity.RESULT_CANCELED -> handleMethodException(PlayxUpdateCanceledException(), it)
+                        RESULT_IN_APP_UPDATE_FAILED ->handleMethodException(PlayxInAppUpdateFailed(), it)
                         else-> handleMethodException(PlayxInAppUpdateFailed(), it)
                     }
                 }

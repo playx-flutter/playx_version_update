@@ -21,11 +21,7 @@ class PlayxVersionUpdatePlugin : FlutterPlugin, ActivityAware, LifecycleEventObs
         playxMethodCallHandler = PlayxMethodCallHandler().apply {
             startListening(flutterPluginBinding)
         }
-
-
-
     }
-
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         playxMethodCallHandler?.stopListening()

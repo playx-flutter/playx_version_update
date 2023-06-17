@@ -1,6 +1,9 @@
 const String _activityNotFoundErrorCode = 'ACTIVITY_NOT_FOUND';
 const String _appUpdateMangerNotFoundErrorCode = 'APP_UPDATE_MANGER_NOT_FOUND';
-const String _playxRequestCanceledErrorCode = 'PLAYX_REQUEST_CANCELLED';
+const String _playxInAppUpdateInfoRequestCanceledErrorCode =
+    'PLAYX_REQUEST_CANCELLED';
+const String _playxInAppUpdateCanceledErrorCode = 'PLAYX_UPDATE_CANCELLED';
+
 const String _playxUpdateNotAvailableErrorCode = 'PLAYX_UPDATE_NOT_AVAILABLE';
 const String _playxUpdateNotAllowedErrorCode = 'PLAYX_UPDATE_NOT_ALLOWED';
 const String _playxUnknownUpdateTypeError = 'PLAYX_UNKNOWN_UPDATE_TYPE';
@@ -19,7 +22,9 @@ sealed class PlayxVersionUpdateError {
     return switch (errorCode) {
       _activityNotFoundErrorCode => ActivityNotFoundError(),
       _appUpdateMangerNotFoundErrorCode => AppUpdateMangerNotFoundError(),
-      _playxRequestCanceledErrorCode => PlayxRequestCanceledError(),
+      _playxInAppUpdateInfoRequestCanceledErrorCode =>
+        PlayxInAppUpdateInfoRequestCanceledError(),
+      _playxInAppUpdateCanceledErrorCode => PlayxInAppUpdateCanceledError(),
       _playxUpdateNotAvailableErrorCode => PlayxUpdateNotAvailableError(),
       _playxUpdateNotAllowedErrorCode => PlayxUpdateNotAllowedError(),
       _playxUnknownUpdateTypeError => PlayxUnknownUpdateTypeError(),
@@ -30,6 +35,7 @@ sealed class PlayxVersionUpdateError {
   }
 }
 
+/// Error happens when the current activity is not available like when the app is in the background.
 class ActivityNotFoundError extends PlayxVersionUpdateError {
   @override
   String get message =>
@@ -39,6 +45,7 @@ class ActivityNotFoundError extends PlayxVersionUpdateError {
   String get errorCode => _activityNotFoundErrorCode;
 }
 
+/// Error happens when the App update manger is not available.
 class AppUpdateMangerNotFoundError extends PlayxVersionUpdateError {
   @override
   String get message => "App update manger is not available.";
@@ -47,22 +54,35 @@ class AppUpdateMangerNotFoundError extends PlayxVersionUpdateError {
   String get errorCode => _appUpdateMangerNotFoundErrorCode;
 }
 
-class PlayxRequestCanceledError extends PlayxVersionUpdateError {
+/// Error happens when the request to check if update is available is canceled .
+class PlayxInAppUpdateInfoRequestCanceledError extends PlayxVersionUpdateError {
   @override
-  String get message => "Getting update info request was cancelled.";
+  String get message =>
+      "In app update info request was cancelled when checking update availability.";
 
   @override
-  String get errorCode => _playxRequestCanceledErrorCode;
+  String get errorCode => _playxInAppUpdateInfoRequestCanceledErrorCode;
 }
 
+/// Error happens when the in app update was canceled .
+class PlayxInAppUpdateCanceledError extends PlayxVersionUpdateError {
+  @override
+  String get message => "In app update was cancelled.";
+
+  @override
+  String get errorCode => _playxInAppUpdateCanceledErrorCode;
+}
+
+/// Error happens when in app update is not available .
 class PlayxUpdateNotAvailableError extends PlayxVersionUpdateError {
   @override
-  String get message => "Update is not available.";
+  String get message => "In app update is not available.";
 
   @override
   String get errorCode => _playxUpdateNotAvailableErrorCode;
 }
 
+/// Error happens when in app update is not allowed .
 class PlayxUpdateNotAllowedError extends PlayxVersionUpdateError {
   @override
   String get message => "Update is not allowed.";
@@ -71,6 +91,7 @@ class PlayxUpdateNotAllowedError extends PlayxVersionUpdateError {
   String get errorCode => _playxUpdateNotAllowedErrorCode;
 }
 
+/// Error happens when in passing an unknown update type.
 class PlayxUnknownUpdateTypeError extends PlayxVersionUpdateError {
   @override
   String get message => "Unknown update type.";
@@ -79,6 +100,7 @@ class PlayxUnknownUpdateTypeError extends PlayxVersionUpdateError {
   String get errorCode => _playxUnknownUpdateTypeError;
 }
 
+/// Error happens when in app update was failed due to other error .
 class PlayxInAppUpdateFailedError extends PlayxVersionUpdateError {
   @override
   String get message => "In app update failed.";
@@ -87,6 +109,7 @@ class PlayxInAppUpdateFailedError extends PlayxVersionUpdateError {
   String get errorCode => _playxInAppUpdateFailedErrorCode;
 }
 
+/// Default failure error.
 class DefaultFailureError extends PlayxVersionUpdateError {
   final String? errorMsg;
 
@@ -100,6 +123,8 @@ class DefaultFailureError extends PlayxVersionUpdateError {
 }
 
 //Version Check errors
+
+/// Error happens when the package can't find the application on the store.
 class NotFoundError extends PlayxVersionUpdateError {
   const NotFoundError();
 
@@ -110,6 +135,17 @@ class NotFoundError extends PlayxVersionUpdateError {
   String get errorCode => 'NOT_FOUND_ERROR';
 }
 
+/// Error happens when the version check network request was canceled.
+class PlayxNetworkRequestCanceledError extends PlayxVersionUpdateError {
+  @override
+  String get message =>
+      "Getting update info request from network was cancelled.";
+
+  @override
+  String get errorCode => 'PLAYX_NETWORK_REQUEST_CANCELLED_ERROR';
+}
+
+/// Error happens when the version check network request had timeout.
 class SendTimeoutException extends PlayxVersionUpdateError {
   const SendTimeoutException();
 
@@ -120,6 +156,7 @@ class SendTimeoutException extends PlayxVersionUpdateError {
   String get errorCode => 'SEND_TIMEOUT_ERROR';
 }
 
+/// Error happens when there's no internet connection.
 class NoInternetConnectionException extends PlayxVersionUpdateError {
   const NoInternetConnectionException();
 
@@ -130,6 +167,7 @@ class NoInternetConnectionException extends PlayxVersionUpdateError {
   String get errorCode => 'NO_INTERNET_CONNECTION_ERROR';
 }
 
+/// Error happens when the version check network request received internal server error.
 class InternalServerErrorException extends PlayxVersionUpdateError {
   const InternalServerErrorException();
 
@@ -140,6 +178,7 @@ class InternalServerErrorException extends PlayxVersionUpdateError {
   String get errorCode => 'INTERNAL_SERVER_ERROR';
 }
 
+/// Error happens when the version check network request received unavailable service error.
 class ServiceUnavailableException extends PlayxVersionUpdateError {
   const ServiceUnavailableException();
 
@@ -150,6 +189,7 @@ class ServiceUnavailableException extends PlayxVersionUpdateError {
   String get errorCode => 'SERVICE_UNAVAILABLE_ERROR';
 }
 
+/// Error happens when the version check network request received request timeout error.
 class RequestTimeoutException extends PlayxVersionUpdateError {
   const RequestTimeoutException();
 
@@ -160,6 +200,7 @@ class RequestTimeoutException extends PlayxVersionUpdateError {
   String get errorCode => 'REQUEST_TIMEOUT_ERROR';
 }
 
+/// Error happens when the version check has unsupported version.
 class NotSupportedException extends PlayxVersionUpdateError {
   const NotSupportedException();
 
@@ -170,6 +211,7 @@ class NotSupportedException extends PlayxVersionUpdateError {
   String get errorCode => 'NOT_SUPPORTED_ERROR_CODE';
 }
 
+/// Error happens when the version check the app can't update because new version is below or the same as current one.
 class PlayxVersionCantUpdateError extends PlayxVersionUpdateError {
   final String currentVersion;
   final String newVersion;
@@ -184,6 +226,7 @@ class PlayxVersionCantUpdateError extends PlayxVersionUpdateError {
   String get errorCode => 'PLAYX_VERSION_CANT_UPDATE_ERROR_CODE';
 }
 
+/// Error happens when the version was not formatted correctly.
 class VersionFormatException extends PlayxVersionUpdateError {
   const VersionFormatException();
 
