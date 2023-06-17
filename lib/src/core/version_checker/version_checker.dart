@@ -23,7 +23,7 @@ class VersionChecker {
     String? localVersion,
     String? newVersion,
     String? minVersion,
-    bool forceUpdate = false,
+    bool? forceUpdate,
     String? googlePlayId,
     String? appStoreId,
     required String country,
@@ -66,7 +66,7 @@ class VersionChecker {
     required String country,
     required String language,
     required String? newVersion,
-    required bool forceUpdate,
+    required bool? forceUpdate,
   }) async {
     final storeInfo = await _dataSource.getPlayStoreInfo(
         packageId: packageId, country: country, language: language);
@@ -115,7 +115,7 @@ class VersionChecker {
     required String country,
     required String language,
     required String? newVersion,
-    required bool forceUpdate,
+    required bool? forceUpdate,
   }) async {
     final storeInfo = await _dataSource.getAppStoreInfo(
         packageId: packageId, country: country, language: language);
@@ -180,8 +180,8 @@ class VersionChecker {
   Future<bool> shouldForceUpdate(
       {required String version,
       required String? minVersion,
-      required bool playxForceUpdate}) async {
-    if (playxForceUpdate) return true;
+      required bool? playxForceUpdate}) async {
+    if (playxForceUpdate != null) return playxForceUpdate;
 
     if (minVersion == null || minVersion.isEmpty) return false;
 

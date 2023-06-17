@@ -77,7 +77,7 @@ abstract class ApiHandler {
 
         if (error is DioException) {
           networkExceptions = switch (error.type) {
-            DioExceptionType.cancel => PlayxRequestCanceledError(),
+            DioExceptionType.cancel => PlayxNetworkRequestCanceledError(),
             DioExceptionType.connectionTimeout =>
               const RequestTimeoutException(),
             DioExceptionType.unknown => error.error is SocketException

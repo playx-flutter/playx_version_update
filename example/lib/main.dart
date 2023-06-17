@@ -99,10 +99,21 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showUpdateDialog(
         context: context,
         showReleaseNotes: false,
-        googlePlayId: 'other app id',
-        minVersion: '1.0.0',
-        title: 'A new update is available',
-        onCancel: (forceUpdate) {
+        googlePlayId: 'app id',
+        forceUpdate: true,
+        isDismissible: true,
+        title: (info) => 'A new update is available',
+        onUpdate: (info, launchMode) async {
+          final storeUrl = info.storeUrl;
+          final res = await PlayxVersionUpdate.openStore(storeUrl: storeUrl);
+          res.when(success: (success) {
+            print('playx_open_store: success :$success');
+          }, error: (error) {
+            print('playx_open_store: error :$error');
+          });
+        },
+        onCancel: (info) {
+          final forceUpdate = info.forceUpdate;
           if (forceUpdate) {
             exit(0);
           }
@@ -122,12 +133,23 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
         context: context,
         type: PlayxAppUpdateType.flexible,
-        appStoreId: 'com.apple.tv',
+        appStoreId: 'app store app id',
         showReleaseNotes: true,
-        releaseNotesTitle: 'Recent Updates',
+        releaseNotesTitle: (info) => 'Recent Updates of ${info.newVersion}',
         forceUpdate: true,
         showPageOnForceUpdate: true,
-        onCancel: (forceUpdate) {
+        onIosUpdate: (info, launchMode) async {
+          final storeUrl = info.storeUrl;
+
+          final res = await PlayxVersionUpdate.openStore(storeUrl: storeUrl);
+          res.when(success: (success) {
+            print('playx_open_store: success :$success');
+          }, error: (error) {
+            print('playx_open_store: error :$error');
+          });
+        },
+        onIosCancel: (info) {
+          final forceUpdate = info.forceUpdate;
           if (forceUpdate) {
             exit(0);
           } else {
@@ -151,7 +173,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       type: PlayxAppUpdateType.immediate,
       //These for
       showReleaseNotes: true,
-      releaseNotesTitle: 'Recent Updates',
+      releaseNotesTitle: (info) => 'Recent Updates',
     );
     result.when(success: (isShowed) {
       setState(() {
@@ -188,7 +210,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       localVersion: '1.0.0',
       newVersion: '1.1.0',
       forceUpdate: true,
-      googlePlayId: 'app id',
+      googlePlayId: 'google play id',
       country: 'us',
       language: 'en',
     );
@@ -200,7 +222,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       });
       // decides what to show
       if (info.forceUpdate) {
-        Navigator.push(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute<void>(
             builder: (BuildContext context) => PlayxUpdatePage(
@@ -208,12 +230,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               showReleaseNotes: false,
               showDismissButtonOnForceUpdate: false,
               leading: Image.network(
-                  'https://img.freepik.com/premium-vector/concept-system-update-software-installation-premium-vector_199064-146.jpg'),
-              title: "It's time to update",
-              description:
-                  'A new version of the app is now available.\nThe app needs to be updated to the latest version in order to work properly.\nEnjoy the latest version features now.',
+                'https://img.freepik.com/premium-vector/concept-system-update-software-installation-premium-vector_199064-146.jpg',
+                fit: BoxFit.cover,
+              ),
+              title: (info) => "It's time to update",
+              description: (info) =>
+                  'A new version of the app is now available.\n'
+                  'The app needs to be updated to the latest version in order to work properly.\n'
+                  'Update now to V${info.newVersion} to enjoy the latest version features now.',
             ),
           ),
+          (route) => false,
         );
       } else {
         showDialog(
@@ -221,7 +248,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             builder: (context) => PlayxUpdateDialog(
                   versionUpdateInfo: info,
                   showReleaseNotes: true,
-                  title: 'New update available.',
+                  title: (info) => 'New update available.',
                 ));
       }
     }, error: (error) {
