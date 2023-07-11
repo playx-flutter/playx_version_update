@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' show Platform, exit;
 
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
@@ -28,13 +28,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    listenToFlexibleDownloadUpdates();
+    if (Platform.isAndroid) {
+      WidgetsBinding.instance.addObserver(this);
+      listenToFlexibleDownloadUpdates();
+    }
+
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    if (Platform.isAndroid) {
+      WidgetsBinding.instance.removeObserver(this);
+    }
     downloadInfoStreamSubscription?.cancel();
     downloadInfoStreamSubscription = null;
     super.dispose();
@@ -90,8 +95,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   ///check if flexible update needs to be installed on app resume.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      checkIfFlexibleUpdateNeedToBeInstalled();
+    if(Platform.isAndroid) {
+      if (state == AppLifecycleState.resumed) {
+        checkIfFlexibleUpdateNeedToBeInstalled();
+      }
     }
   }
 
@@ -99,12 +106,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showUpdateDialog(
         context: context,
         showReleaseNotes: false,
-        googlePlayId: 'app id',
+        googlePlayId: 'google play package name',
+        appStoreId: 'app store bundle id',
         forceUpdate: true,
         isDismissible: true,
         title: (info) => 'A new update is available',
         onUpdate: (info, launchMode) async {
           final storeUrl = info.storeUrl;
+          print('store url :$storeUrl');
           final res = await PlayxVersionUpdate.openStore(storeUrl: storeUrl);
           res.when(success: (success) {
             print('playx_open_store: success :$success');
@@ -130,10 +139,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> startFlexibleUpdate(BuildContext context) async {
+
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
         context: context,
         type: PlayxAppUpdateType.flexible,
-        appStoreId: 'app store app id',
+        appStoreId: 'app store bundle id',
         showReleaseNotes: true,
         releaseNotesTitle: (info) => 'Recent Updates of ${info.newVersion}',
         forceUpdate: true,
@@ -171,6 +181,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
       context: context,
       type: PlayxAppUpdateType.immediate,
+      appStoreId: 'app store bundle id',
       //These for
       showReleaseNotes: true,
       releaseNotesTitle: (info) => 'Recent Updates',
@@ -209,8 +220,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.checkVersion(
       localVersion: '1.0.0',
       newVersion: '1.1.0',
-      forceUpdate: true,
+      forceUpdate: false,
       googlePlayId: 'google play id',
+      appStoreId: 'app store bundle id',
       country: 'us',
       language: 'en',
     );
