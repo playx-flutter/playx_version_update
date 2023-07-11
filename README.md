@@ -70,7 +70,7 @@ playx_version_update: ^0.0.3
       <img src="https://github.com/playx-flutter/playx_version_update/blob/main/screenshots/screenshot1.jpg?raw=true" width="30%" >  
     <img src="https://github.com/playx-flutter/playx_version_update/blob/main/screenshots/screenshot3.jpg?raw=true" width="43%" > 
     </p>
-
+ 
 
      ```dart
        final result = await PlayxVersionUpdate.showInAppUpdateDialog(
