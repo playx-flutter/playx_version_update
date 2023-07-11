@@ -3,7 +3,6 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'playx_version_update_method_channel.dart';
 
-import 'dart:io' show Platform;
 
 abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   /// Constructs a PlayxVersionUpdatePlatform.
