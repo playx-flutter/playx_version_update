@@ -17,7 +17,7 @@ Easily show material update dialog in Android or Cupertino dialog in IOS with su
 In `pubspec.yaml` add these lines to `dependencies`
 
 ```yaml  
-playx_version_update: ^0.0.2 
+playx_version_update: ^0.0.3 
 ```  
 
 ## Usage

@@ -3,6 +3,8 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'playx_version_update_method_channel.dart';
 
+import 'dart:io' show Platform;
+
 abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   /// Constructs a PlayxVersionUpdatePlatform.
   PlayxVersionUpdatePlatform() : super(token: _token);
@@ -29,17 +31,16 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   //Check for update availability:
   //checks if there is an update available for your app.
   Future<PlayxVersionUpdateResult<PlayxAppUpdateAvailability>>
-      getUpdateAvailability() {
-    throw UnimplementedError('getUpdateAvailability has not been implemented.');
+      getUpdateAvailability() async {
+    return PlayxVersionUpdateResult<PlayxAppUpdateAvailability>.error(PlatformNotSupportedError());
   }
 
   // check the number of days since the update became available on the Play Store
   //If an update is available or in progress, this method returns the number of days
   // since the Google Play Store app on the user's device has learnt about an available update.
   //If update is not available, or if staleness information is unavailable, this method returns -1.
-  Future<PlayxVersionUpdateResult<int>> getUpdateStalenessDays() {
-    throw UnimplementedError(
-        'getUpdateStalenessDays has not been implemented.');
+  Future<PlayxVersionUpdateResult<int>> getUpdateStalenessDays() async {
+    return PlayxVersionUpdateResult<int>.error(PlatformNotSupportedError());
   }
 
   //The Google Play Developer API allows you to set the priority of each update.
@@ -49,14 +50,14 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   // All newly-added versions in the release are considered to be the same priority as the release.
   // Priority can only be set when rolling out a new release and cannot be changed later.
   // This method returns the current priority value.
-  Future<PlayxVersionUpdateResult<int>> getUpdatePriority() {
-    throw UnimplementedError('getUpdatePriority has not been implemented.');
+  Future<PlayxVersionUpdateResult<int>> getUpdatePriority() async {
+    return PlayxVersionUpdateResult<int>.error(PlatformNotSupportedError());
   }
 
   // Checks that the platform will allow the specified type of update.
   Future<PlayxVersionUpdateResult<bool>> isUpdateAllowed(
-      PlayxAppUpdateType type) {
-    throw UnimplementedError('isUpdateAllowed has not been implemented.');
+      PlayxAppUpdateType type) async {
+    return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
   }
 
   //Starts immediate update flow.
@@ -65,8 +66,8 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   //ActivityNotFoundException : When the user started the update flow from background.
   //PlayxRequestCanceledException : The user denied or canceled the update.
   //PlayxInAppUpdateFailed: The flow failed either during the user confirmation, the download, or the installation.
-  Future<PlayxVersionUpdateResult<bool>> startImmediateUpdate() {
-    throw UnimplementedError('startImmediateUpdate has not been implemented.');
+  Future<PlayxVersionUpdateResult<bool>> startImmediateUpdate() async {
+    return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
   }
 
   //Starts Flexible update flow.
@@ -75,12 +76,14 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   //ActivityNotFoundException : When the user started the update flow from background.
   //PlayxRequestCanceledException : The user denied the request to update.
   //PlayxInAppUpdateFailed: Something failed during the request for user confirmation. For example, the user terminates the app before responding to the request.
-  Future<PlayxVersionUpdateResult<bool>> startFlexibleUpdate() {
-    throw UnimplementedError('startFlexibleUpdate has not been implemented.');
+  Future<PlayxVersionUpdateResult<bool>> startFlexibleUpdate()async {
+    return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
   }
 
+  ///Stream to listen to current status of the in app update.
+  ///Only available in Android.
   Stream<PlayxDownloadInfo?> getDownloadInfo() {
-    throw UnimplementedError('getDownloadInfo has not been implemented.');
+   return const Stream.empty();
   }
 
   //Install a flexible update
@@ -90,21 +93,19 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   // This is because during a flexible update, the user has an expectation to continue interacting with the app until they decide that they want to install the update.
   //
   //It is recommended that you provide a notification (or some other UI indication) to inform the user that the update is ready to install and request confirmation before restarting the app.
-  Future<PlayxVersionUpdateResult<bool>> completeFlexibleUpdate() {
-    throw UnimplementedError(
-        'completeFlexibleUpdate has not been implemented.');
+  Future<PlayxVersionUpdateResult<bool>> completeFlexibleUpdate()async {
+    return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
   }
 
   //Whether or not the flexible update is ready to install .
-  Future<PlayxVersionUpdateResult<bool>> isFlexibleUpdateNeedToBeInstalled() {
-    throw UnimplementedError(
-        'isFlexibleUpdateNeedToBeInstalled not been implemented.');
+  Future<PlayxVersionUpdateResult<bool>> isFlexibleUpdateNeedToBeInstalled()async {
+    return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
   }
 
   // refreshes app update manger
   //Each Update manger instance can be used only in a single call to this method.
   // If you need to call it multiple times - for instance, when retrying to start a flow in case of failure - you need to get a fresh Update manger.
-  Future<PlayxVersionUpdateResult<bool>> refreshInAppUpdate() {
-    throw UnimplementedError('refreshInAppUpdate has not been implemented.');
+  Future<PlayxVersionUpdateResult<bool>> refreshInAppUpdate()async {
+    return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
   }
 }

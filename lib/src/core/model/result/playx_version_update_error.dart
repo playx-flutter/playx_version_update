@@ -9,6 +9,7 @@ const String _playxUpdateNotAllowedErrorCode = 'PLAYX_UPDATE_NOT_ALLOWED';
 const String _playxUnknownUpdateTypeError = 'PLAYX_UNKNOWN_UPDATE_TYPE';
 const String _playxInAppUpdateFailedErrorCode = 'PLAYX_IN_APP_UPDATE_FAILED';
 const String defaultFailureErrorCode = 'DEFAULT_FAILURE_ERROR';
+const String _platformNotSupportedErrorCode = 'PLATFORM_NOT_SUPPORTED_ERROR';
 
 sealed class PlayxVersionUpdateError {
   String get message;
@@ -30,10 +31,22 @@ sealed class PlayxVersionUpdateError {
       _playxUnknownUpdateTypeError => PlayxUnknownUpdateTypeError(),
       _playxInAppUpdateFailedErrorCode => PlayxInAppUpdateFailedError(),
       defaultFailureErrorCode => DefaultFailureError(errorMsg: errorMessage),
+      _platformNotSupportedErrorCode => PlatformNotSupportedError(),
       _ => DefaultFailureError(errorMsg: errorMessage)
     };
   }
 }
+
+/// Error happens when the current platform doesn't support the operation.
+class PlatformNotSupportedError extends PlayxVersionUpdateError {
+  @override
+  String get message =>
+      "This Platform is not supported.";
+
+  @override
+  String get errorCode => _platformNotSupportedErrorCode;
+}
+
 
 /// Error happens when the current activity is not available like when the app is in the background.
 class ActivityNotFoundError extends PlayxVersionUpdateError {

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
 import 'playx_version_update_platform_interface.dart';
+import 'dart:io' show Platform;
 
 const String _playxMethodChannelName = "PLAYX_METHOD_CHANNEL_NAME";
 const String _downloadEventChannelName = "DOWNLOAD_EVENT_CHANNEL_NAME";
@@ -37,6 +38,9 @@ class MethodChannelPlayxVersionUpdate extends PlayxVersionUpdatePlatform {
   @override
   Future<PlayxVersionUpdateResult<PlayxAppUpdateAvailability>>
       getUpdateAvailability() async {
+    if(!Platform.isAndroid){
+      return PlayxVersionUpdateResult<PlayxAppUpdateAvailability>.error(PlatformNotSupportedError());
+    }
     try {
       final index =
           await methodChannel.invokeMethod<num>(_getUpdateAvailability);
@@ -56,6 +60,10 @@ class MethodChannelPlayxVersionUpdate extends PlayxVersionUpdatePlatform {
 
   @override
   Future<PlayxVersionUpdateResult<int>> getUpdateStalenessDays() async {
+    if(!Platform.isAndroid){
+      return PlayxVersionUpdateResult<int>.error(PlatformNotSupportedError());
+    }
+
     try {
       final days =
           await methodChannel.invokeMethod<int>(_getUpdateStalenessDays) ?? -1;
@@ -73,6 +81,10 @@ class MethodChannelPlayxVersionUpdate extends PlayxVersionUpdatePlatform {
 
   @override
   Future<PlayxVersionUpdateResult<int>> getUpdatePriority() async {
+    if(!Platform.isAndroid){
+      return PlayxVersionUpdateResult<int>.error(PlatformNotSupportedError());
+    }
+
     try {
       final priority =
           await methodChannel.invokeMethod<int>(_getUpdatePriority) ?? -1;
@@ -91,6 +103,10 @@ class MethodChannelPlayxVersionUpdate extends PlayxVersionUpdatePlatform {
   @override
   Future<PlayxVersionUpdateResult<bool>> isUpdateAllowed(
       PlayxAppUpdateType type) async {
+    if(!Platform.isAndroid){
+      return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
+    }
+
     try {
       final isAllowed =
           await methodChannel.invokeMethod<bool>(_isUpdateAllowed, {
@@ -111,6 +127,10 @@ class MethodChannelPlayxVersionUpdate extends PlayxVersionUpdatePlatform {
 
   @override
   Future<PlayxVersionUpdateResult<bool>> startImmediateUpdate() async {
+    if(!Platform.isAndroid){
+      return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
+    }
+
     try {
       final isStarted =
           await methodChannel.invokeMethod<bool>(_startImmediateUpdate) ??
@@ -129,6 +149,10 @@ class MethodChannelPlayxVersionUpdate extends PlayxVersionUpdatePlatform {
 
   @override
   Future<PlayxVersionUpdateResult<bool>> startFlexibleUpdate() async {
+    if(!Platform.isAndroid){
+      return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
+    }
+
     try {
       final isStarted =
           await methodChannel.invokeMethod<bool>(_startFlexibleUpdate) ?? false;
@@ -146,6 +170,9 @@ class MethodChannelPlayxVersionUpdate extends PlayxVersionUpdatePlatform {
 
   @override
   Stream<PlayxDownloadInfo?> getDownloadInfo() {
+    if(!Platform.isAndroid){
+      return const Stream.empty();
+    }
     return downloadEventChannel.receiveBroadcastStream().distinct().map((info) {
       if (info is String && info.isNotEmpty) {
         return PlayxDownloadInfo.fromJson(info);
@@ -156,6 +183,10 @@ class MethodChannelPlayxVersionUpdate extends PlayxVersionUpdatePlatform {
 
   @override
   Future<PlayxVersionUpdateResult<bool>> completeFlexibleUpdate() async {
+    if(!Platform.isAndroid){
+      return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
+    }
+
     try {
       final isCompleted =
           await methodChannel.invokeMethod<bool>(_completeFlexibleUpdate) ??
@@ -175,6 +206,10 @@ class MethodChannelPlayxVersionUpdate extends PlayxVersionUpdatePlatform {
   @override
   Future<PlayxVersionUpdateResult<bool>>
       isFlexibleUpdateNeedToBeInstalled() async {
+    if(!Platform.isAndroid){
+      return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
+    }
+
     try {
       final isNeeded = await methodChannel
               .invokeMethod<bool>(_isFlexibleUpdateNeedToBeInstalled) ??
@@ -194,6 +229,10 @@ class MethodChannelPlayxVersionUpdate extends PlayxVersionUpdatePlatform {
 
   @override
   Future<PlayxVersionUpdateResult<bool>> refreshInAppUpdate() async {
+    if(!Platform.isAndroid){
+      return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
+    }
+
     try {
       final isRefreshed =
           await methodChannel.invokeMethod<bool>(_refreshPlayxUpdate) ?? false;
