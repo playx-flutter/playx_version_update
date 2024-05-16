@@ -1,23 +1,20 @@
 
 
 # Playx  Version Update
-Easily show material update dialog in Android or Cupertino dialog in IOS with support for Google play in app updates.
+Effortlessly manage app updates and provide a seamless user experience with Playx Version Update. Easily notify users about new updates, offer flexible or immediate update options, and customize the update process in your Flutter projects.
 
-## Features
-- Show material update dialog in Android or Cupertino dialog in IOS to inform user about new app updates.
-- Easily start Google play flexible or immediate updates.
-- Ability to show Google play in app updates in Android or Cupertino dialog in IOS.
-- Ability to check store version and display custom UI.
-- Ability to show release notes from the store.
-- Ability to set minimum version for app update to force updates.
-- Ability to show an update page, useful for in app updates.
+Features
+Update Dialog: Inform users about new app updates with material design dialog on Android and Cupertino dialog on iOS.
+Google Play Integration: Initiate flexible or immediate updates directly from your app.
+Customizable UI: Display custom update UI including release notes and minimum version requirements.
+In-app Update Page: Show update information and options within your app for a seamless user experience.
 
 ## Installation
 
 In `pubspec.yaml` add these lines to `dependencies`
 
 ```yaml  
-playx_version_update: ^0.0.3 
+playx_version_update: ^0.0.5 
 ```  
 
 ## Usage
@@ -311,6 +308,6 @@ Check out all possible errors from the [Api Reference](https://pub.dev/documenta
 
 ## Documentation && References
 
--   [In-app updates](https://developer.android.com/guide/playcore/in-app-updates), Google play in app updates sdk.
+- [In-app updates](https://developer.android.com/guide/playcore/in-app-updates), Google play in app updates sdk.
 - [new_version_plus](https://pub.dev/packages/new_version_plus) package.
      

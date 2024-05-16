@@ -1,3 +1,7 @@
+## 0.0.5
+- Update packages.
+- Enhance network requests logging in debug.
+
 ## 0.0.4
 - Update packages.
 - Bump Dart version to 3.2.0 and flutter to 13.16.0

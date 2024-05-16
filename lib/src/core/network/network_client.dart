@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
 import 'package:playx_version_update/src/core/network/handler/api_handler.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 typedef JsonMapper<T> = T Function(dynamic json);
 
@@ -13,14 +15,24 @@ class NetworkClient {
 
   NetworkClient._internal();
 
-  final dio = Dio(
-    BaseOptions(
-      validateStatus: (_) => true,
-      followRedirects: true,
-      connectTimeout: const Duration(seconds: 30),
-      sendTimeout: const Duration(seconds: 15),
-    ),
-  )..interceptors.add(LogInterceptor());
+  late final Dio dio = _createDioClient();
+
+  Dio _createDioClient() {
+    final dio = Dio(
+      BaseOptions(
+        validateStatus: (_) => true,
+        followRedirects: true,
+        connectTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 15),
+      ),
+    );
+    if (kDebugMode) {
+      dio.interceptors.add(PrettyDioLogger(
+        responseBody: false,
+      ));
+    }
+    return dio;
+  }
 
   /// sends a [GET] request to the given [url]
   /// and returns object of Type [T] not list
