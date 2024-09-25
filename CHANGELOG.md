@@ -1,6 +1,7 @@
-## 0.0.6
+## 0.0.6 - 0.0.7
 - Update packages.
 - Add `namespace` to build.gradle for the plugin.
+- Remove package name for manifest.
 
 ## 0.0.5
 - Update packages.

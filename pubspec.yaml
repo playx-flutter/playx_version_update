@@ -1,6 +1,6 @@
 name: playx_version_update
 description: Easily show material update dialog in Android or Cupertino dialog in IOS with support for Google play in app updates.
-version: 0.0.6
+version: 0.0.7
 homepage: https://sourcya.com/
 repository: https://github.com/playx-flutter/playx_version_update
 issue_tracker: https://github.com/playx-flutter/playx_version_update/issues
