@@ -1,3 +1,7 @@
+## 0.0.6
+- Update packages.
+- Add `namespace` to build.gradle for the plugin.
+
 ## 0.0.5
 - Update packages.
 - Enhance network requests logging in debug.
