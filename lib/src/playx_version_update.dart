@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 import 'package:playx_version_update/src/core/utils/callbacks.dart';
 import 'package:playx_version_update/src/platform/playx_version_update_platform_interface.dart';
@@ -404,5 +405,17 @@ abstract class PlayxVersionUpdate {
   ///returns [PlayxVersionUpdateResult] with [bool] on success of whether refreshed or not.
   static Future<PlayxVersionUpdateResult<bool>> refreshInAppUpdate() {
     return PlayxVersionUpdatePlatform.instance.refreshInAppUpdate();
+  }
+
+  /// Get the current version of the app.
+  static Future<String> getAppVersion() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version;
+  }
+
+  /// Get the current build number of the app.
+  static Future<String> getAppBuildNumber() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.buildNumber;
   }
 }

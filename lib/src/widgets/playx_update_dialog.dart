@@ -57,12 +57,14 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
       return const SizedBox.shrink();
     }
     if (Platform.isAndroid) {
-      return WillPopScope(
-          onWillPop: () async => isDismissible,
+      return PopScope(
+          canPop: isDismissible,
+          onPopInvokedWithResult: (didPop, _) {},
           child: _buildAndroidDialog(context));
     } else if (Platform.isIOS) {
-      return WillPopScope(
-          onWillPop: () async => isDismissible,
+      return PopScope(
+          canPop: isDismissible,
+          onPopInvokedWithResult: (didPop, _) {},
           child: _buildIosDialog(context));
     } else {
       return const SizedBox.shrink();
