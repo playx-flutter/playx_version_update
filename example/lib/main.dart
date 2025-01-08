@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform, exit;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
@@ -28,7 +29,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       WidgetsBinding.instance.addObserver(this);
       listenToFlexibleDownloadUpdates();
     }
@@ -36,7 +37,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       WidgetsBinding.instance.removeObserver(this);
     }
     downloadInfoStreamSubscription?.cancel();
@@ -53,6 +54,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          spacing: 10,
           children: [
             Text(message),
             ElevatedButton(
@@ -103,7 +105,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   ///check if flexible update needs to be installed on app resume.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       if (state == AppLifecycleState.resumed) {
         checkIfFlexibleUpdateNeedToBeInstalled();
       }

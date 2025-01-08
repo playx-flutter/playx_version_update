@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/playx_version_update.dart';
@@ -225,7 +226,7 @@ abstract class PlayxVersionUpdate {
     LaunchMode launchMode = LaunchMode.externalApplication,
     Widget? leading,
   }) async {
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       if (type == PlayxAppUpdateType.flexible) {
         return startFlexibleUpdate();
       } else {
