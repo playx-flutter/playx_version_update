@@ -32,7 +32,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       WidgetsBinding.instance.addObserver(this);
       listenToFlexibleDownloadUpdates();
     }
-
   }
 
   @override
@@ -56,6 +55,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(message),
+            ElevatedButton(
+              onPressed: () async {
+                final version = await PlayxVersionUpdate.getAppVersion();
+                setState(() {
+                  message = 'Version: v$version';
+                });
+              },
+              child: const Text('App Version'),
+            ),
             ElevatedButton(
               onPressed: () {
                 checkVersion(context);
@@ -95,7 +103,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   ///check if flexible update needs to be installed on app resume.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if(Platform.isAndroid) {
+    if (Platform.isAndroid) {
       if (state == AppLifecycleState.resumed) {
         checkIfFlexibleUpdateNeedToBeInstalled();
       }
@@ -106,7 +114,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showUpdateDialog(
         context: context,
         showReleaseNotes: false,
-        googlePlayId: 'google play package name',
+        googlePlayId: 'google play id',
         appStoreId: 'app store bundle id',
         forceUpdate: true,
         isDismissible: true,
@@ -139,7 +147,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> startFlexibleUpdate(BuildContext context) async {
-
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
         context: context,
         type: PlayxAppUpdateType.flexible,
