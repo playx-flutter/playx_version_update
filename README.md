@@ -16,14 +16,17 @@ In `pubspec.yaml` add these lines to `dependencies`
 ```yaml
  playx_version_update: ^0.1.0   
 ```   
+
 ## Requirements
+> Note: The package currently supports Android and IOS platforms only. We will add support for other platforms in the future in the future.
 -   Flutter >=3.19.0
 -   Dart >=3.3.0 <4.0.0
 -   Android  `compileSDK`  34
+-   Minimum Android sdk is 23
 -   Java 17
 -   Android Gradle Plugin >=8.3.0
 -   Gradle wrapper >=8.4
--  Minimum Android sdk is 23
+
 
 
 ## Usage

@@ -14,6 +14,7 @@
 - Update packages.
 - The plugin now supports wasm for web.
 - Add new methods `getAppVersion` and `getAppBuildNumber` in `PlayxVersionUpdate` to get the app version and build number.
+- Enhance compatibility with web.
 - Update example app to latest android version and added other platforms.
 
 ## 0.0.6 - 0.0.7
