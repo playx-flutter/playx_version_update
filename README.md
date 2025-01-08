@@ -13,9 +13,18 @@ In-app Update Page: Show update information and options within your app for a se
 
 In `pubspec.yaml` add these lines to `dependencies`
 
-```yaml  
-playx_version_update: ^0.0.5 
-```  
+```yaml
+ playx_version_update: ^0.1.0   
+```   
+## Requirements
+-   Flutter >=3.19.0
+-   Dart >=3.3.0 <4.0.0
+-   Android  `compileSDK`  34
+-   Java 17
+-   Android Gradle Plugin >=8.3.0
+-   Gradle wrapper >=8.4
+-  Minimum Android sdk is 23
+
 
 ## Usage
 
