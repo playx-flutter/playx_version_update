@@ -1,3 +1,22 @@
+# Changelog
+
+## 0.1.0
+> Note : This release is a major release and may break some of the existing implementations. Please read the documentation carefully.
+
+- Plugin now requires the following:
+    * Flutter >=3.19.0
+    * Dart >=3.3.0
+    * compileSDK 34 for Android part
+    * Java 17 for Android part
+    * Gradle 8.4 for Android part
+    * minimum Android sdk is 23
+
+- Update packages.
+- The plugin now supports wasm for web.
+- Add new methods `getAppVersion` and `getAppBuildNumber` in `PlayxVersionUpdate` to get the app version and build number.
+- Enhance compatibility with web.
+- Update example app to latest android version and added other platforms.
+
 ## 0.0.6 - 0.0.7
 - Update packages.
 - Add `namespace` to build.gradle for the plugin.

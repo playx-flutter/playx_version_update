@@ -86,4 +86,28 @@ class StoreInfo {
       storeUrl: appStoreLink,
     );
   }
+
+  @override
+  String toString() {
+    return 'StoreInfo{version: $version, minVersion: $minVersion, releaseNotes: $releaseNotes, storeUrl: $storeUrl}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is StoreInfo &&
+        other.version == version &&
+        other.minVersion == minVersion &&
+        other.releaseNotes == releaseNotes &&
+        other.storeUrl == storeUrl;
+  }
+
+  @override
+  int get hashCode {
+    return version.hashCode ^
+        minVersion.hashCode ^
+        releaseNotes.hashCode ^
+        storeUrl.hashCode;
+  }
 }

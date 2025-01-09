@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 import 'package:playx_version_update/src/core/utils/callbacks.dart';
@@ -56,13 +57,19 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
     if (!widget.versionUpdateInfo.canUpdate) {
       return const SizedBox.shrink();
     }
+    if (kIsWeb) {
+      return const SizedBox.shrink();
+    }
+
     if (Platform.isAndroid) {
-      return WillPopScope(
-          onWillPop: () async => isDismissible,
+      return PopScope(
+          canPop: isDismissible,
+          onPopInvokedWithResult: (didPop, _) {},
           child: _buildAndroidDialog(context));
     } else if (Platform.isIOS) {
-      return WillPopScope(
-          onWillPop: () async => isDismissible,
+      return PopScope(
+          canPop: isDismissible,
+          onPopInvokedWithResult: (didPop, _) {},
           child: _buildIosDialog(context));
     } else {
       return const SizedBox.shrink();

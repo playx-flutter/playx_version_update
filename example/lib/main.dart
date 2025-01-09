@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform, exit;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
@@ -28,16 +29,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       WidgetsBinding.instance.addObserver(this);
       listenToFlexibleDownloadUpdates();
     }
-
   }
 
   @override
   void dispose() {
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       WidgetsBinding.instance.removeObserver(this);
     }
     downloadInfoStreamSubscription?.cancel();
@@ -54,8 +54,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          spacing: 10,
           children: [
             Text(message),
+            ElevatedButton(
+              onPressed: () async {
+                final version = await PlayxVersionUpdate.getAppVersion();
+                setState(() {
+                  message = 'Version: v$version';
+                });
+              },
+              child: const Text('App Version'),
+            ),
             ElevatedButton(
               onPressed: () {
                 checkVersion(context);
@@ -95,7 +105,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   ///check if flexible update needs to be installed on app resume.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if(Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       if (state == AppLifecycleState.resumed) {
         checkIfFlexibleUpdateNeedToBeInstalled();
       }
@@ -106,19 +116,25 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showUpdateDialog(
         context: context,
         showReleaseNotes: false,
-        googlePlayId: 'google play package name',
+        googlePlayId: 'google play id',
         appStoreId: 'app store bundle id',
         forceUpdate: true,
         isDismissible: true,
         title: (info) => 'A new update is available',
         onUpdate: (info, launchMode) async {
           final storeUrl = info.storeUrl;
-          print('store url :$storeUrl');
+          if (kDebugMode) {
+            print('store url :$storeUrl');
+          }
           final res = await PlayxVersionUpdate.openStore(storeUrl: storeUrl);
           res.when(success: (success) {
-            print('playx_open_store: success :$success');
+            if (kDebugMode) {
+              print('playx_open_store: success :$success');
+            }
           }, error: (error) {
-            print('playx_open_store: error :$error');
+            if (kDebugMode) {
+              print('playx_open_store: error :$error');
+            }
           });
         },
         onCancel: (info) {
@@ -139,7 +155,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> startFlexibleUpdate(BuildContext context) async {
-
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
         context: context,
         type: PlayxAppUpdateType.flexible,
@@ -153,9 +168,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
           final res = await PlayxVersionUpdate.openStore(storeUrl: storeUrl);
           res.when(success: (success) {
-            print('playx_open_store: success :$success');
+            if (kDebugMode) {
+              print('playx_open_store: success :$success');
+            }
           }, error: (error) {
-            print('playx_open_store: error :$error');
+            if (kDebugMode) {
+              print('playx_open_store: error :$error');
+            }
           });
         },
         onIosCancel: (info) {

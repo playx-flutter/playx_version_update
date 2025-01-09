@@ -1,6 +1,6 @@
 {
-    "name": "example",
-    "short_name": "example",
+    "name": "playx_version_update_example",
+    "short_name": "playx_version_update_example",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

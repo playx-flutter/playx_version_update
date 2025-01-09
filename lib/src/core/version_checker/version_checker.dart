@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
 import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
@@ -34,6 +35,10 @@ class VersionChecker {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
     String version = packageInfo.version;
+
+    if (kIsWeb) {
+      return const PlayxVersionUpdateResult.error(NotSupportedException());
+    }
 
     if (Platform.isAndroid) {
       final packageId = googlePlayId ?? packageInfo.packageName;

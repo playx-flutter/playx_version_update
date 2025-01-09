@@ -67,12 +67,6 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.all(8.0),
-                        // height: MediaQuery.of(context).size.height *
-                        //     (widget.leading != null
-                        //         ? shouldShowReleaseNotes
-                        //             ? .2
-                        //             : .1
-                        //         : .5),
                         child: Center(
                           child: SingleChildScrollView(
                             child: Column(
