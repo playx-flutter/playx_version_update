@@ -123,12 +123,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         title: (info) => 'A new update is available',
         onUpdate: (info, launchMode) async {
           final storeUrl = info.storeUrl;
-          print('store url :$storeUrl');
+          if (kDebugMode) {
+            print('store url :$storeUrl');
+          }
           final res = await PlayxVersionUpdate.openStore(storeUrl: storeUrl);
           res.when(success: (success) {
-            print('playx_open_store: success :$success');
+            if (kDebugMode) {
+              print('playx_open_store: success :$success');
+            }
           }, error: (error) {
-            print('playx_open_store: error :$error');
+            if (kDebugMode) {
+              print('playx_open_store: error :$error');
+            }
           });
         },
         onCancel: (info) {
@@ -162,9 +168,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
           final res = await PlayxVersionUpdate.openStore(storeUrl: storeUrl);
           res.when(success: (success) {
-            print('playx_open_store: success :$success');
+            if (kDebugMode) {
+              print('playx_open_store: success :$success');
+            }
           }, error: (error) {
-            print('playx_open_store: error :$error');
+            if (kDebugMode) {
+              print('playx_open_store: error :$error');
+            }
           });
         },
         onIosCancel: (info) {

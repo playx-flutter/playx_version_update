@@ -3,7 +3,6 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'playx_version_update_method_channel.dart';
 
-
 abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   /// Constructs a PlayxVersionUpdatePlatform.
   PlayxVersionUpdatePlatform() : super(token: _token);
@@ -31,7 +30,8 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   //checks if there is an update available for your app.
   Future<PlayxVersionUpdateResult<PlayxAppUpdateAvailability>>
       getUpdateAvailability() async {
-    return PlayxVersionUpdateResult<PlayxAppUpdateAvailability>.error(PlatformNotSupportedError());
+    return PlayxVersionUpdateResult<PlayxAppUpdateAvailability>.error(
+        PlatformNotSupportedError());
   }
 
   // check the number of days since the update became available on the Play Store
@@ -75,14 +75,14 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   //ActivityNotFoundException : When the user started the update flow from background.
   //PlayxRequestCanceledException : The user denied the request to update.
   //PlayxInAppUpdateFailed: Something failed during the request for user confirmation. For example, the user terminates the app before responding to the request.
-  Future<PlayxVersionUpdateResult<bool>> startFlexibleUpdate()async {
+  Future<PlayxVersionUpdateResult<bool>> startFlexibleUpdate() async {
     return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
   }
 
   ///Stream to listen to current status of the in app update.
   ///Only available in Android.
   Stream<PlayxDownloadInfo?> getDownloadInfo() {
-   return const Stream.empty();
+    return const Stream.empty();
   }
 
   //Install a flexible update
@@ -92,19 +92,20 @@ abstract class PlayxVersionUpdatePlatform extends PlatformInterface {
   // This is because during a flexible update, the user has an expectation to continue interacting with the app until they decide that they want to install the update.
   //
   //It is recommended that you provide a notification (or some other UI indication) to inform the user that the update is ready to install and request confirmation before restarting the app.
-  Future<PlayxVersionUpdateResult<bool>> completeFlexibleUpdate()async {
+  Future<PlayxVersionUpdateResult<bool>> completeFlexibleUpdate() async {
     return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
   }
 
   //Whether or not the flexible update is ready to install .
-  Future<PlayxVersionUpdateResult<bool>> isFlexibleUpdateNeedToBeInstalled()async {
+  Future<PlayxVersionUpdateResult<bool>>
+      isFlexibleUpdateNeedToBeInstalled() async {
     return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
   }
 
   // refreshes app update manger
   //Each Update manger instance can be used only in a single call to this method.
   // If you need to call it multiple times - for instance, when retrying to start a flow in case of failure - you need to get a fresh Update manger.
-  Future<PlayxVersionUpdateResult<bool>> refreshInAppUpdate()async {
+  Future<PlayxVersionUpdateResult<bool>> refreshInAppUpdate() async {
     return PlayxVersionUpdateResult<bool>.error(PlatformNotSupportedError());
   }
 }

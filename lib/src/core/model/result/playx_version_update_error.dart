@@ -40,13 +40,11 @@ sealed class PlayxVersionUpdateError {
 /// Error happens when the current platform doesn't support the operation.
 class PlatformNotSupportedError extends PlayxVersionUpdateError {
   @override
-  String get message =>
-      "This Platform is not supported.";
+  String get message => "This Platform is not supported.";
 
   @override
   String get errorCode => _platformNotSupportedErrorCode;
 }
-
 
 /// Error happens when the current activity is not available like when the app is in the background.
 class ActivityNotFoundError extends PlayxVersionUpdateError {

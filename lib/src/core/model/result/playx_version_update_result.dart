@@ -18,7 +18,8 @@ sealed class PlayxVersionUpdateResult<T> {
 
   const factory PlayxVersionUpdateResult.success(T data) = Success;
 
-  const factory PlayxVersionUpdateResult.error(PlayxVersionUpdateError error) =   Error;
+  const factory PlayxVersionUpdateResult.error(PlayxVersionUpdateError error) =
+      Error;
 
   PlayxVersionUpdateResult<T> when({
     required Function(T success) success,
