@@ -1,9 +1,7 @@
 # Changelog
 
-## 0.1.1
+## 0.2.0
 > Note : This release is a major release and may break some of the existing implementations. Please read the documentation carefully.
-const factory PlayxVersionUpdateResult.success(T data) = PlayxVersionUpdateSuccessResult;
-const factory PlayxVersionUpdateResult.error(PlayxVersionUpdateError error) = PlayxVersionUpdateErrorResult;
 
 #### PlayxVersionUpdateResult
 #### **Breaking Changes**
@@ -12,8 +10,8 @@ const factory PlayxVersionUpdateResult.error(PlayxVersionUpdateError error) = Pl
 - Renamed `Success` and `ERROR` classes to `PlayxVersionUpdateSuccessResult` and  `PlayxVersionUpdateErrorResult`.
 
 #### **Updates**
-✅ **New `isSuccess` and `isError` Getters** – Easily check the result type.  
-✅ **More Flexible `when`, `map`, and `mapAsync` Methods** – Now return transformed values instead of requiring extra wrapping.  
+- **New `isSuccess` and `isError` Getters** – Easily check the result type.  
+- **More Flexible `when`, `map`, and `mapAsync` Methods** – Now return transformed values instead of requiring extra wrapping.  
 
 ### Enhancements
 - Update packages.
