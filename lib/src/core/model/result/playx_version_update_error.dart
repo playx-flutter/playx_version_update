@@ -1,3 +1,5 @@
+import 'package:playx_network/playx_network.dart' as network;
+
 const String _activityNotFoundErrorCode = 'ACTIVITY_NOT_FOUND';
 const String _appUpdateMangerNotFoundErrorCode = 'APP_UPDATE_MANGER_NOT_FOUND';
 const String _playxInAppUpdateInfoRequestCanceledErrorCode =
@@ -33,6 +35,28 @@ sealed class PlayxVersionUpdateError {
       defaultFailureErrorCode => DefaultFailureError(errorMsg: errorMessage),
       _platformNotSupportedErrorCode => PlatformNotSupportedError(),
       _ => DefaultFailureError(errorMsg: errorMessage)
+    };
+  }
+
+  factory PlayxVersionUpdateError.fromNetworkException(
+      network.NetworkException exception) {
+    return switch (exception) {
+      network.NotFoundException _ => const NotFoundError(),
+      network.SendTimeoutException _ => const SendTimeoutException(),
+      network.NoInternetConnectionException _ =>
+        const NoInternetConnectionException(),
+      network.InternalServerErrorException _ =>
+        const InternalServerErrorException(),
+      network.ServiceUnavailableException _ =>
+        const ServiceUnavailableException(),
+      network.RequestTimeoutException _ => const RequestTimeoutException(),
+      network.ApiException() =>
+        DefaultFailureError(errorMsg: exception.message),
+      network.RequestCanceledException() => PlayxNetworkRequestCanceledError(),
+      network.InvalidFormatException() =>
+        DefaultFailureError(errorMsg: exception.message),
+      network.UnexpectedErrorException() =>
+        DefaultFailureError(errorMsg: exception.message),
     };
   }
 }
@@ -140,7 +164,8 @@ class NotFoundError extends PlayxVersionUpdateError {
   const NotFoundError();
 
   @override
-  String get message => "couldn't find the application";
+  String get message =>
+      "couldn't find the application. Make sure the app is available on the store.";
 
   @override
   String get errorCode => 'NOT_FOUND_ERROR';
@@ -226,6 +251,7 @@ class NotSupportedException extends PlayxVersionUpdateError {
 class PlayxVersionCantUpdateError extends PlayxVersionUpdateError {
   final String currentVersion;
   final String newVersion;
+
   const PlayxVersionCantUpdateError(
       {required this.currentVersion, required this.newVersion});
 

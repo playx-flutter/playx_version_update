@@ -53,8 +53,9 @@ class StoreInfo {
   }
 
   factory StoreInfo.fromAppStore(dynamic body) {
-    final jsonObj = json.decode(body);
-    final List results = jsonObj['results'];
+    try {
+      final jsonObj = json.decode(body);
+    final List results = jsonObj['results'] as List? ??[];
     if (results.isEmpty) {
       throw Exception('Not found');
     }
@@ -64,7 +65,6 @@ class StoreInfo {
 
     String? minVersion;
 
-    try {
       final description = jsonObj['results'][0]['description'];
 
       if (description != null && description.isNotEmpty) {
@@ -77,14 +77,16 @@ class StoreInfo {
               .trim();
         }
       }
-    } catch (_) {}
+      return StoreInfo(
+        version: storeVersion ?? '',
+        minVersion: minVersion,
+        releaseNotes: releaseNotes,
+        storeUrl: appStoreLink,
+      );
+    } catch (_) {
+      throw Exception('Not found');
+    }
 
-    return StoreInfo(
-      version: storeVersion ?? '',
-      minVersion: minVersion,
-      releaseNotes: releaseNotes,
-      storeUrl: appStoreLink,
-    );
   }
 
   @override

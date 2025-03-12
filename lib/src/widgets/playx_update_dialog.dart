@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 import 'package:playx_version_update/src/core/utils/callbacks.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -108,10 +109,12 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
         if (shouldShowDismissButton)
           TextButton(
             onPressed: () {
+              Navigator.pop(context, 'Later');
               if (isDismissible) {
-                Navigator.pop(context, 'Later');
+                widget.onCancel?.call(widget.versionUpdateInfo);
+              }else{
+                widget.onCancel?.call(widget.versionUpdateInfo) ??SystemNavigator.pop();
               }
-              widget.onCancel?.call(widget.versionUpdateInfo);
             },
             child: Text(_getDismissActionTitle()),
           ),
@@ -167,10 +170,12 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
         if (shouldShowDismissButton)
           CupertinoDialogAction(
             onPressed: () {
+              Navigator.pop(context, 'Later');
               if (isDismissible) {
-                Navigator.pop(context, 'Later');
+                widget.onCancel?.call(widget.versionUpdateInfo);
+              }else{
+                widget.onCancel?.call(widget.versionUpdateInfo) ??SystemNavigator.pop();
               }
-              widget.onCancel?.call(widget.versionUpdateInfo);
             },
             child: Text(_getDismissActionTitle()),
           ),
@@ -228,5 +233,5 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
           widget.showDismissButtonOnForceUpdate);
 
   bool get isDismissible =>
-      widget.isDismissible ?? !widget.versionUpdateInfo.forceUpdate;
+      widget.isDismissible == true && !widget.versionUpdateInfo.forceUpdate;
 }

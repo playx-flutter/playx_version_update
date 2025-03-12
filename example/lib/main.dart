@@ -3,6 +3,7 @@ import 'dart:io' show Platform, exit;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
 final GlobalKey<ScaffoldMessengerState> globalKey =
@@ -137,12 +138,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             }
           });
         },
-        onCancel: (info) {
-          final forceUpdate = info.forceUpdate;
-          if (forceUpdate) {
-            exit(0);
-          }
-        });
+    );
     result.when(success: (isShowed) {
       setState(() {
         message = ' showUpdateDialog success : $isShowed';
@@ -180,7 +176,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         onIosCancel: (info) {
           final forceUpdate = info.forceUpdate;
           if (forceUpdate) {
-            exit(0);
+           SystemNavigator.pop();
           } else {
             //Do nothing
           }
