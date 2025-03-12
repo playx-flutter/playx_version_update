@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.1.1
+> Note : This release is a major release and may break some of the existing implementations. Please read the documentation carefully.
+const factory PlayxVersionUpdateResult.success(T data) = PlayxVersionUpdateSuccessResult;
+const factory PlayxVersionUpdateResult.error(PlayxVersionUpdateError error) = PlayxVersionUpdateErrorResult;
+
+#### PlayxVersionUpdateResult
+#### **Breaking Changes**
+- `PlayxVersionUpdateResult.when` now returns a value instead of requiring callbacks to handle data.
+- `map` and `mapAsync` now directly return transformed results instead of requiring wrapped factory calls.
+- Renamed `Success` and `ERROR` classes to `PlayxVersionUpdateSuccessResult` and  `PlayxVersionUpdateErrorResult`.
+
+#### **Updates**
+✅ **New `isSuccess` and `isError` Getters** – Easily check the result type.  
+✅ **More Flexible `when`, `map`, and `mapAsync` Methods** – Now return transformed values instead of requiring extra wrapping.  
+
+### Enhancements
+- Update packages.
+- Use `playx_network` for network requests for better error handling.
+- Dialog with `forceUpdate` can close the app using `SystemNavigator.pop()` if no `onCancel` callback is provided.
+
+
+
 ## 0.1.0
 > Note : This release is a major release and may break some of the existing implementations. Please read the documentation carefully.
 

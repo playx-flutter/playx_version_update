@@ -83,9 +83,7 @@ class VersionChecker {
       final canUpdateResult = await shouldUpdate(
           version: localVersion, currentVersion: currentVersion);
 
-      return canUpdateResult.mapAsync(success: (shouldUpdateResult) async {
-        final shouldUpdate = shouldUpdateResult.data;
-
+      return canUpdateResult.mapAsync(success: (shouldUpdate) async {
         final minVersion = await getMinVersionVersion(
             minVersion: info.minVersion, storeVersion: info.version);
         bool shouldAppForcedToUpdate = await shouldForceUpdate(
@@ -107,10 +105,11 @@ class VersionChecker {
 
         return PlayxVersionUpdateResult.success(updateInfo);
       }, error: (error) async {
-        return PlayxVersionUpdateResult.error(error.error);
+        return PlayxVersionUpdateResult<PlayxVersionUpdateInfo>.error(error);
       });
     }, error: (error) async {
-      return PlayxVersionUpdateResult.error(error.error);
+      return PlayxVersionUpdateResult.error(
+          PlayxVersionUpdateError.fromNetworkException(error.error));
     });
   }
 
@@ -132,8 +131,7 @@ class VersionChecker {
       final canUpdateResult = await shouldUpdate(
           version: localVersion, currentVersion: currentVersion);
 
-      return canUpdateResult.mapAsync(success: (shouldUpdateResult) async {
-        final shouldUpdate = shouldUpdateResult.data;
+      return canUpdateResult.mapAsync(success: (shouldUpdate) async {
 
         final minVersion = await getMinVersionVersion(
             minVersion: info.minVersion, storeVersion: info.version);
@@ -155,10 +153,11 @@ class VersionChecker {
 
         return PlayxVersionUpdateResult.success(updateInfo);
       }, error: (error) async {
-        return PlayxVersionUpdateResult.error(error.error);
+        return PlayxVersionUpdateResult<PlayxVersionUpdateInfo>.error(error);
       });
     }, error: (error) async {
-      return PlayxVersionUpdateResult.error(error.error);
+      return PlayxVersionUpdateResult.error(
+          PlayxVersionUpdateError.fromNetworkException(error.error));
     });
   }
 

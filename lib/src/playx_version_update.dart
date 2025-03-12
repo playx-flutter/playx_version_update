@@ -115,8 +115,7 @@ abstract class PlayxVersionUpdate {
       language: language,
     );
 
-    return result.map(success: (result) {
-      final info = result.data;
+    return result.map(success: (info) {
       if (!info.canUpdate) {
         return PlayxVersionUpdateResult.error(PlayxVersionCantUpdateError(
             currentVersion: info.localVersion, newVersion: info.newVersion));
@@ -174,7 +173,7 @@ abstract class PlayxVersionUpdate {
       }
       return const PlayxVersionUpdateResult.success(true);
     }, error: (error) {
-      return PlayxVersionUpdateResult.error(error.error);
+      return PlayxVersionUpdateResult.error(error);
     });
   }
 
@@ -244,8 +243,7 @@ abstract class PlayxVersionUpdate {
         language: language,
       );
 
-      return result.map(success: (result) {
-        final info = result.data;
+      return result.map(success: (info) {
 
         if (!info.canUpdate) {
           return PlayxVersionUpdateResult.error(PlayxVersionCantUpdateError(
@@ -303,7 +301,7 @@ abstract class PlayxVersionUpdate {
         }
         return const PlayxVersionUpdateResult.success(true);
       }, error: (error) {
-        return PlayxVersionUpdateResult.error(error.error);
+        return PlayxVersionUpdateResult.error(error);
       });
     }
   }
