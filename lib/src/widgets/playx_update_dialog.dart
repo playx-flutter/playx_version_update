@@ -112,8 +112,9 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
               Navigator.pop(context, 'Later');
               if (isDismissible) {
                 widget.onCancel?.call(widget.versionUpdateInfo);
-              }else{
-                widget.onCancel?.call(widget.versionUpdateInfo) ??SystemNavigator.pop();
+              } else {
+                widget.onCancel?.call(widget.versionUpdateInfo) ??
+                    SystemNavigator.pop();
               }
             },
             child: Text(_getDismissActionTitle()),
@@ -173,8 +174,9 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
               Navigator.pop(context, 'Later');
               if (isDismissible) {
                 widget.onCancel?.call(widget.versionUpdateInfo);
-              }else{
-                widget.onCancel?.call(widget.versionUpdateInfo) ??SystemNavigator.pop();
+              } else {
+                widget.onCancel?.call(widget.versionUpdateInfo) ??
+                    SystemNavigator.pop();
               }
             },
             child: Text(_getDismissActionTitle()),

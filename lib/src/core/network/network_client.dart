@@ -1,17 +1,16 @@
 import 'package:playx_network/playx_network.dart';
 
-
 class NetworkClient {
-
- static PlayxNetworkClient createClient (){
+  static PlayxNetworkClient createClient() {
     final dio = PlayxNetworkClient.createDefaultDioClient(baseUrl: '');
-    return PlayxNetworkClient(dio: dio, settings: PlayxNetworkClientSettings(
-      logSettings: PlayxNetworkLoggerSettings(
-        responseBody: false,
-      ),
-      useIsolateForMappingJson: false,
-      useWorkMangerForMappingJsonInIsolate: false,
-    ));
+    return PlayxNetworkClient(
+        dio: dio,
+        settings: PlayxNetworkClientSettings(
+          logSettings: PlayxNetworkLoggerSettings(
+            responseBody: false,
+          ),
+          useIsolateForMappingJson: false,
+          useWorkMangerForMappingJsonInIsolate: false,
+        ));
   }
-
 }
