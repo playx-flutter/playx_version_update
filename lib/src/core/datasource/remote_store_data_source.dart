@@ -1,5 +1,4 @@
 import 'package:playx_network/playx_network.dart';
-import 'package:playx_version_update/playx_version_update.dart';
 import 'package:playx_version_update/src/core/model/store_info.dart';
 import 'package:playx_version_update/src/core/network/network_client.dart';
 

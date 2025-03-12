@@ -115,29 +115,29 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   Future<void> showUpdateDialog(BuildContext context) async {
     final result = await PlayxVersionUpdate.showUpdateDialog(
-        context: context,
-        showReleaseNotes: false,
-        googlePlayId: 'google play id',
-        appStoreId: 'app store bundle id',
-        forceUpdate: true,
-        isDismissible: true,
-        title: (info) => 'A new update is available',
-        onUpdate: (info, launchMode) async {
-          final storeUrl = info.storeUrl;
+      context: context,
+      showReleaseNotes: false,
+      googlePlayId: 'google play id',
+      appStoreId: 'app store bundle id',
+      forceUpdate: true,
+      isDismissible: true,
+      title: (info) => 'A new update is available',
+      onUpdate: (info, launchMode) async {
+        final storeUrl = info.storeUrl;
+        if (kDebugMode) {
+          print('store url :$storeUrl');
+        }
+        final res = await PlayxVersionUpdate.openStore(storeUrl: storeUrl);
+        res.when(success: (success) {
           if (kDebugMode) {
-            print('store url :$storeUrl');
+            print('playx_open_store: success :$success');
           }
-          final res = await PlayxVersionUpdate.openStore(storeUrl: storeUrl);
-          res.when(success: (success) {
-            if (kDebugMode) {
-              print('playx_open_store: success :$success');
-            }
-          }, error: (error) {
-            if (kDebugMode) {
-              print('playx_open_store: error :$error');
-            }
-          });
-        },
+        }, error: (error) {
+          if (kDebugMode) {
+            print('playx_open_store: error :$error');
+          }
+        });
+      },
     );
     result.when(success: (isShowed) {
       setState(() {
@@ -176,7 +176,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         onIosCancel: (info) {
           final forceUpdate = info.forceUpdate;
           if (forceUpdate) {
-           SystemNavigator.pop();
+            SystemNavigator.pop();
           } else {
             //Do nothing
           }

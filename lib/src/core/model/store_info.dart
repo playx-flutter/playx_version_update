@@ -55,15 +55,15 @@ class StoreInfo {
   factory StoreInfo.fromAppStore(dynamic body) {
     try {
       final jsonObj = json.decode(body);
-    final List results = jsonObj['results'] as List? ??[];
-    if (results.isEmpty) {
-      throw Exception('Not found');
-    }
-    final storeVersion = jsonObj['results'][0]['version'];
-    final appStoreLink = jsonObj['results'][0]['trackViewUrl'];
-    final releaseNotes = jsonObj['results'][0]['releaseNotes'];
+      final List results = jsonObj['results'] as List? ?? [];
+      if (results.isEmpty) {
+        throw Exception('Not found');
+      }
+      final storeVersion = jsonObj['results'][0]['version'];
+      final appStoreLink = jsonObj['results'][0]['trackViewUrl'];
+      final releaseNotes = jsonObj['results'][0]['releaseNotes'];
 
-    String? minVersion;
+      String? minVersion;
 
       final description = jsonObj['results'][0]['description'];
 
@@ -86,7 +86,6 @@ class StoreInfo {
     } catch (_) {
       throw Exception('Not found');
     }
-
   }
 
   @override

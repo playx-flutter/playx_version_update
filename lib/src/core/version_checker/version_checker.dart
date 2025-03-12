@@ -132,7 +132,6 @@ class VersionChecker {
           version: localVersion, currentVersion: currentVersion);
 
       return canUpdateResult.mapAsync(success: (shouldUpdate) async {
-
         final minVersion = await getMinVersionVersion(
             minVersion: info.minVersion, storeVersion: info.version);
         bool shouldAppForcedToUpdate = await shouldForceUpdate(

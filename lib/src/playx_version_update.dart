@@ -244,7 +244,6 @@ abstract class PlayxVersionUpdate {
       );
 
       return result.map(success: (info) {
-
         if (!info.canUpdate) {
           return PlayxVersionUpdateResult.error(PlayxVersionCantUpdateError(
               currentVersion: info.localVersion, newVersion: info.newVersion));
