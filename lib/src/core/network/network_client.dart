@@ -7,7 +7,7 @@ class NetworkClient {
         dio: dio,
         settings: PlayxNetworkClientSettings(
           logSettings: PlayxNetworkLoggerSettings(
-            responseBody: false,
+            printResponseData: false,
           ),
           useIsolateForMappingJson: false,
           useWorkMangerForMappingJsonInIsolate: false,
