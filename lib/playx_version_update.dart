@@ -7,3 +7,6 @@ export 'package:playx_version_update/src/core/model/result/playx_version_update_
 export 'package:playx_version_update/src/playx_version_update.dart';
 export 'package:playx_version_update/src/widgets/playx_update_dialog.dart';
 export 'package:playx_version_update/src/widgets/playx_update_page.dart';
+export 'package:playx_version_update/src/core/model/options/playx_update_options.dart';
+export 'package:playx_version_update/src/core/model/options/playx_update_display_type.dart';
+export 'package:playx_version_update/src/core/model/options/playx_update_ui_options.dart';

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/playx_version_update.dart';
+import 'package:playx_version_update/src/core/model/options/playx_update_display_type.dart';
 import 'package:playx_version_update/src/core/model/options/playx_update_ui_options.dart';
 import 'package:playx_version_update/src/platform/playx_version_update_platform_interface.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -59,7 +60,7 @@ abstract class PlayxVersionUpdate {
     PlayxUpdateOptions options = const PlayxUpdateOptions(),
   }) async {
     return _versionChecker.checkVersion(
-      options:options,
+      options: options,
     );
   }
 
@@ -262,21 +263,22 @@ abstract class PlayxVersionUpdate {
     );
   }
 
-
   /// Presents the update UI based on the update info and UI options.
   static void _presentUpdateUI(
-      BuildContext context,
-      PlayxVersionUpdateInfo info,
-      PlayxUpdateUIOptions uiOptions,
-      ) {
+    BuildContext context,
+    PlayxVersionUpdateInfo info,
+    PlayxUpdateUIOptions uiOptions,
+  ) {
     final shouldForceUpdate = info.forceUpdate;
     final isUiDismissible = uiOptions.isDismissible ?? !shouldForceUpdate;
+    final displayType = uiOptions.displayType;
 
-    if (shouldForceUpdate && uiOptions.showPageOnForceUpdate) {
+    if (shouldForceUpdate &&
+            displayType == PlayxUpdateDisplayType.pageOnForceUpdate ||
+        displayType == PlayxUpdateDisplayType.page) {
       final page = PlayxUpdatePage(
         versionUpdateInfo: info,
-          uiOptions:uiOptions,
-        isDismissible: isUiDismissible,
+        uiOptions: uiOptions,
       );
       // Pushing a non-dismissible page should remove all previous routes.
       if (isUiDismissible) {
@@ -285,7 +287,7 @@ abstract class PlayxVersionUpdate {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute<void>(builder: (_) => page),
-              (route) => false,
+          (route) => false,
         );
       }
     } else {
@@ -294,13 +296,11 @@ abstract class PlayxVersionUpdate {
         barrierDismissible: isUiDismissible,
         builder: (_) => PlayxUpdateDialog(
           versionUpdateInfo: info,
-          isDismissible: isUiDismissible,
-          uiOptions:uiOptions,
+          uiOptions: uiOptions,
         ),
       );
     }
   }
-
 
   ///Check for update availability:
   ///checks if there is an update available for your app or not.
