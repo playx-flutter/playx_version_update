@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
-import 'package:playx_version_update/src/core/utils/callbacks.dart';
+import 'package:playx_version_update/src/core/model/options/playx_update_ui_options.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 ///Dialog widget that shows material update dialog for android and Cupertino Dialog for IOS.
@@ -21,31 +21,13 @@ import 'package:url_launcher/url_launcher.dart';
 /// It also provides callback functions for when user click on update or dismiss.
 class PlayxUpdateDialog extends StatefulWidget {
   final PlayxVersionUpdateInfo versionUpdateInfo;
-  final UpdateNameInfoCallback? title;
-  final UpdateNameInfoCallback? description;
-  final UpdateNameInfoCallback? releaseNotesTitle;
-  final bool showReleaseNotes;
-  final bool showDismissButtonOnForceUpdate;
-  final String? updateActionTitle;
-  final String? dismissActionTitle;
-  final UpdatePressedCallback? onUpdate;
-  final UpdateCancelPressedCallback? onCancel;
-  final LaunchMode launchMode;
+  final PlayxUpdateUIOptions uiOptions;
   final bool? isDismissible;
 
   const PlayxUpdateDialog(
       {super.key,
       required this.versionUpdateInfo,
-      this.title,
-      this.description,
-      this.releaseNotesTitle,
-      this.showReleaseNotes = false,
-      this.updateActionTitle,
-      this.dismissActionTitle,
-      this.showDismissButtonOnForceUpdate = true,
-      this.launchMode = LaunchMode.externalApplication,
-      this.onUpdate,
-      this.onCancel,
+      required this.uiOptions,
       this.isDismissible});
 
   @override
@@ -92,7 +74,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
             SizedBox(
               width: double.infinity,
               child: Text(
-                widget.releaseNotesTitle?.call(widget.versionUpdateInfo) ??
+                widget.uiOptions.releaseNotesTitle?.call(widget.versionUpdateInfo) ??
                     'Release Notes:',
                 textAlign: TextAlign.start,
                 style: const TextStyle(fontWeight: FontWeight.bold),
@@ -111,9 +93,9 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
             onPressed: () {
               Navigator.pop(context, 'Later');
               if (isDismissible) {
-                widget.onCancel?.call(widget.versionUpdateInfo);
+                widget.uiOptions.onCancel?.call(widget.versionUpdateInfo);
               } else {
-                widget.onCancel?.call(widget.versionUpdateInfo) ??
+                widget.uiOptions.onCancel?.call(widget.versionUpdateInfo) ??
                     SystemNavigator.pop();
               }
             },
@@ -121,19 +103,19 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
           ),
         TextButton(
           onPressed: () {
-            if (widget.onUpdate != null) {
-              widget.onUpdate
-                  ?.call(widget.versionUpdateInfo, widget.launchMode);
+            if (widget.uiOptions.onUpdate != null) {
+              widget.uiOptions.onUpdate
+                  ?.call(widget.versionUpdateInfo, widget.uiOptions.launchMode);
             } else {
               PlayxVersionUpdate.openStore(
                   storeUrl: widget.versionUpdateInfo.storeUrl,
-                  launchMode: widget.launchMode);
+                  launchMode: widget.uiOptions.launchMode);
             }
             if (isDismissible) {
               Navigator.pop(context, 'Update');
             }
           },
-          child: Text(widget.updateActionTitle ?? 'Update'),
+          child: Text(widget.uiOptions.updateActionTitle ?? 'Update'),
         ),
       ],
     );
@@ -154,7 +136,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
             SizedBox(
               width: double.infinity,
               child: Text(
-                widget.releaseNotesTitle?.call(widget.versionUpdateInfo) ??
+                widget.uiOptions.releaseNotesTitle?.call(widget.versionUpdateInfo) ??
                     'Release Notes:',
                 textAlign: TextAlign.start,
                 style: const TextStyle(fontWeight: FontWeight.bold),
@@ -173,9 +155,9 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
             onPressed: () {
               Navigator.pop(context, 'Later');
               if (isDismissible) {
-                widget.onCancel?.call(widget.versionUpdateInfo);
+                widget.uiOptions.onCancel?.call(widget.versionUpdateInfo);
               } else {
-                widget.onCancel?.call(widget.versionUpdateInfo) ??
+                widget.uiOptions.onCancel?.call(widget.versionUpdateInfo) ??
                     SystemNavigator.pop();
               }
             },
@@ -187,32 +169,32 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
             if (isDismissible) {
               Navigator.pop(context, 'Update');
             }
-            if (widget.onUpdate != null) {
-              widget.onUpdate
-                  ?.call(widget.versionUpdateInfo, widget.launchMode);
+            if (widget.uiOptions.onUpdate != null) {
+              widget.uiOptions.onUpdate
+                  ?.call(widget.versionUpdateInfo, widget.uiOptions.launchMode);
             } else {
               PlayxVersionUpdate.openStore(
                   storeUrl: widget.versionUpdateInfo.storeUrl,
-                  launchMode: widget.launchMode);
+                  launchMode: widget.uiOptions.launchMode);
             }
             if (isDismissible) {
               Navigator.pop(context, 'Update');
             }
           },
-          child: Text(widget.updateActionTitle ?? 'Update'),
+          child: Text(widget.uiOptions.updateActionTitle ?? 'Update'),
         ),
       ],
     );
   }
 
   String _getTitleText() {
-    String title = widget.title?.call(widget.versionUpdateInfo) ??
+    String title = widget.uiOptions.title?.call(widget.versionUpdateInfo) ??
         'New version available.';
     return title;
   }
 
   String _getDescriptionText() {
-    String description = widget.description?.call(widget.versionUpdateInfo) ??
+    String description = widget.uiOptions.description?.call(widget.versionUpdateInfo) ??
         'A new version of the app is now available. \n \nWould you like to update now to version ${widget.versionUpdateInfo.newVersion} ?';
     return description;
   }
@@ -220,19 +202,19 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
   String _getDismissActionTitle() {
     final forceUpdate = widget.versionUpdateInfo.forceUpdate;
     final defaultTitle = forceUpdate ? 'Close App' : 'Later';
-    String title = widget.dismissActionTitle ?? defaultTitle;
+    String title = widget.uiOptions.dismissActionTitle ?? defaultTitle;
     return title;
   }
 
   bool get shouldShowReleaseNotes =>
-      widget.showReleaseNotes &&
+      widget.uiOptions.showReleaseNotes &&
       widget.versionUpdateInfo.releaseNotes != null &&
       widget.versionUpdateInfo.releaseNotes!.isNotEmpty;
 
   bool get shouldShowDismissButton =>
       !widget.versionUpdateInfo.forceUpdate ||
       (widget.versionUpdateInfo.forceUpdate &&
-          widget.showDismissButtonOnForceUpdate);
+          widget.uiOptions.showDismissButtonOnForceUpdate);
 
   bool get isDismissible =>
       widget.isDismissible == true && !widget.versionUpdateInfo.forceUpdate;

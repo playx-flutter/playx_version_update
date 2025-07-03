@@ -1,38 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
-import 'package:playx_version_update/src/core/utils/callbacks.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:playx_version_update/src/core/model/options/playx_update_ui_options.dart';
 
 class PlayxUpdatePage extends StatefulWidget {
   final PlayxVersionUpdateInfo versionUpdateInfo;
-  final UpdateNameInfoCallback? title;
-  final UpdateNameInfoCallback? description;
-  final UpdateNameInfoCallback? releaseNotesTitle;
-  final bool showReleaseNotes;
-  final bool showDismissButtonOnForceUpdate;
-  final String? updateActionTitle;
-  final String? dismissActionTitle;
-  final UpdatePressedCallback? onUpdate;
-  final UpdateCancelPressedCallback? onCancel;
-  final LaunchMode launchMode;
-  final Widget? leading;
-  final bool? shouldPopOnBackPressed;
+
+  final PlayxUpdateUIOptions uiOptions;
+
+  final bool isDismissible;
 
   const PlayxUpdatePage(
       {super.key,
       required this.versionUpdateInfo,
-      this.title,
-      this.description,
-      this.releaseNotesTitle,
-      this.showReleaseNotes = false,
-      this.showDismissButtonOnForceUpdate = false,
-      this.updateActionTitle,
-      this.dismissActionTitle,
-      this.onUpdate,
-      this.onCancel,
-      this.launchMode = LaunchMode.externalApplication,
-      this.leading,
-      this.shouldPopOnBackPressed});
+      this.uiOptions = const PlayxUpdateUIOptions(),
+      this.isDismissible =true});
 
   @override
   State<PlayxUpdatePage> createState() => _PlayxUpdatePageState();
@@ -46,10 +27,10 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
         child: Center(
           child: Column(
             children: [
-              if (widget.leading != null)
+              if (widget.uiOptions.leading != null)
                 SizedBox(
                   height: MediaQuery.of(context).size.height * (.5),
-                  child: widget.leading,
+                  child: widget.uiOptions.leading,
                 ),
               Expanded(
                 child: Column(
@@ -85,7 +66,7 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                     SizedBox(
                                       width: double.infinity,
                                       child: Text(
-                                        widget.releaseNotesTitle?.call(
+                                        widget.uiOptions.releaseNotesTitle?.call(
                                                 widget.versionUpdateInfo) ??
                                             'Release Notes:',
                                         textAlign: TextAlign.center,
@@ -122,19 +103,19 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(25))),
                               onPressed: () {
-                                if (widget.onUpdate != null) {
-                                  widget.onUpdate?.call(
+                                if (widget.uiOptions.onUpdate != null) {
+                                  widget.uiOptions.onUpdate?.call(
                                       widget.versionUpdateInfo,
-                                      widget.launchMode);
+                                      widget.uiOptions.launchMode);
                                 } else {
                                   PlayxVersionUpdate.openStore(
                                       storeUrl:
                                           widget.versionUpdateInfo.storeUrl,
-                                      launchMode: widget.launchMode);
+                                      launchMode: widget.uiOptions.launchMode);
                                 }
                               },
                               child: Text(
-                                widget.updateActionTitle ?? 'Update Now',
+                                widget.uiOptions.updateActionTitle ?? 'Update Now',
                                 style: const TextStyle(fontSize: 20),
                               ),
                             ),
@@ -150,7 +131,7 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                       borderRadius: BorderRadius.circular(25),
                                     )),
                                 onPressed: () {
-                                  widget.onCancel
+                                  widget.uiOptions.onCancel
                                       ?.call(widget.versionUpdateInfo);
                                 },
                                 child: Text(
@@ -174,13 +155,13 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
   }
 
   String _getTitleText() {
-    String title = widget.title?.call(widget.versionUpdateInfo) ??
+    String title = widget.uiOptions.title?.call(widget.versionUpdateInfo) ??
         'New Version available.';
     return title;
   }
 
   String _getDescriptionText() {
-    String description = widget.description?.call(widget.versionUpdateInfo) ??
+    String description = widget.uiOptions.description?.call(widget.versionUpdateInfo) ??
         'A new version of the app is now available. \nWould you like to update now to version ${widget.versionUpdateInfo.newVersion} ?';
 
     return description;
@@ -189,17 +170,17 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
   String _getDismissActionTitle() {
     final forceUpdate = widget.versionUpdateInfo.forceUpdate;
     final defaultTitle = forceUpdate ? 'Close App' : 'Not Now';
-    String title = widget.dismissActionTitle ?? defaultTitle;
+    String title = widget.uiOptions.dismissActionTitle ?? defaultTitle;
     return title;
   }
 
   bool get shouldShowReleaseNotes =>
-      widget.showReleaseNotes &&
+      widget.uiOptions.showReleaseNotes &&
       widget.versionUpdateInfo.releaseNotes != null &&
       widget.versionUpdateInfo.releaseNotes!.isNotEmpty;
 
   bool get shouldShowDismissButton =>
       !widget.versionUpdateInfo.forceUpdate ||
       (widget.versionUpdateInfo.forceUpdate &&
-          widget.showDismissButtonOnForceUpdate);
+          widget.uiOptions.showDismissButtonOnForceUpdate);
 }
