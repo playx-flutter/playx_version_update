@@ -6,7 +6,7 @@ import 'package:playx_version_update/src/core/datasource/remote_store_data_sourc
 import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
-import 'package:version/version.dart';
+import 'package:playx_version_update/src/core/version_checker/version.dart';
 
 import '../model/options/playx_update_options.dart';
 
