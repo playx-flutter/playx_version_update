@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
-import 'package:playx_version_update/src/core/model/options/playx_update_ui_options.dart';
 
 /// A platform-adaptive Flutter widget that displays an update dialog.
 ///

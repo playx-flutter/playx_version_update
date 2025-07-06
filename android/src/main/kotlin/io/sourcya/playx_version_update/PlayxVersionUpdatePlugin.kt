@@ -31,7 +31,7 @@ class PlayxVersionUpdatePlugin : FlutterPlugin, ActivityAware, LifecycleEventObs
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activityBinding= binding
         playxMethodCallHandler?.startListeningToActivity(binding)
-        playxMethodCallHandler?.let { binding.addActivityResultListener(it) }
+//        playxMethodCallHandler?.let { binding.addActivityResultListener(it) }
         lifecycle = (binding.lifecycle as HiddenLifecycleReference).lifecycle
         lifecycle?.addObserver(this)
 
@@ -41,7 +41,7 @@ class PlayxVersionUpdatePlugin : FlutterPlugin, ActivityAware, LifecycleEventObs
     override fun onDetachedFromActivity() {
         activityBinding= null
         playxMethodCallHandler?.stopListeningToActivity()
-        playxMethodCallHandler?.let { activityBinding?.removeActivityResultListener(it) }
+//        playxMethodCallHandler?.let { activityBinding?.removeActivityResultListener(it) }
         lifecycle?.removeObserver(this)
 
     }

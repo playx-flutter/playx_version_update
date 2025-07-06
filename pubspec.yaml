@@ -38,6 +38,7 @@ dependencies:
   playx_network: ^0.5.0
 
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

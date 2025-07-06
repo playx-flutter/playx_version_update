@@ -26,9 +26,7 @@ class DownloadStatusEventHandler (private val updateManger: UpdateManger) : Even
                 events?.success(it.toJson())
             }
         }
-
     }
-
 
 
     override fun onCancel(arguments: Any?) {
