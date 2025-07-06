@@ -14,6 +14,16 @@ sealed class PlayxVersionUpdateResult<T> {
   /// Check if the result is an error.
   bool get isError => this is PlayxVersionUpdateErrorResult<T>;
 
+  T? get updateData => switch (this) {
+        PlayxVersionUpdateSuccessResult<T> result => result.data,
+        PlayxVersionUpdateErrorResult<T> _ => null,
+      };
+
+  PlayxVersionUpdateError? get updateError => switch (this) {
+        PlayxVersionUpdateSuccessResult<T> _ => null,
+        PlayxVersionUpdateErrorResult<T> result => result.error,
+      };
+
   /// Executes the appropriate callback based on the result type.
   R when<R>({
     required R Function(T data) success,

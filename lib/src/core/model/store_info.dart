@@ -15,11 +15,30 @@ class StoreInfo {
       this.storeUrl});
 
   factory StoreInfo.fromGooglePlay(dynamic body) {
-    final regexp =
-        RegExp(r'\[\[\[\"(\d+\.\d+(\.[a-z]+)?(\.([^"]|\\")*)?)\"\]\]');
-    final storeVersion = regexp.firstMatch(body)?.group(1);
+    String? storeVersion;
 
-    //Release notes
+    // Attempt 1: Look for "Current Version" label followed by the version number.
+    final currentVersionRegexp = RegExp(
+        r'Current Version<\/div><span[^>]*><div[^>]*><span[^>]*>([0-9.]+(?:[a-zA-Z0-9.\-]+)?(?:(?:\s|&nbsp;)*[0-9A-Za-z.\-]+)?(?:[+\-][0-9A-Za-z.\-]+)?(?:[.\-][0-9A-Za-z.\-]+)*)<\/span>',
+        caseSensitive: false);
+    storeVersion = currentVersionRegexp.firstMatch(body)?.group(1)?.trim();
+
+    // Attempt 2: Fallback to itemprop="softwareVersion" if the above fails.
+    if (storeVersion == null || storeVersion.isEmpty) {
+      final itempropRegexp =
+          RegExp(r'<span[^>]*itemprop="softwareVersion"[^>]*>([^<]+)<');
+      storeVersion = itempropRegexp.firstMatch(body)?.group(1)?.trim();
+    }
+
+    // Attempt 3: Fallback to the general JSON-like array structure if both above fail.
+    // This is the least reliable but might catch edge cases.
+    if (storeVersion == null || storeVersion.isEmpty) {
+      final oldRegexp =
+          RegExp(r'\[\[\[\"(\d+(?:\.\d+)*(?:[.-][0-9A-Za-z\-.]*)?)\"\]\]');
+      storeVersion = oldRegexp.firstMatch(body)?.group(1);
+    }
+
+    // Release notes - This regex is kept as is, assuming it correctly extracts release notes.
     final regexpRelease =
         RegExp(r'\[(null,)\[(null,)\"((\.[a-z]+)?(([^"]|\\")*)?)\"\]\]');
 
@@ -29,6 +48,7 @@ class StoreInfo {
     String? minVersion;
 
     try {
+      // Minimum version from description - This regex is kept as is.
       final regexpDescription =
           RegExp(r'\[\[(null,)\"((\.[a-z]+)?(([^"]|\\")*)?)\"\]\]');
       final description =
@@ -44,7 +64,9 @@ class StoreInfo {
               .trim();
         }
       }
-    } catch (_) {}
+    } catch (_) {
+      // Error handling for minVersion extraction is already present.
+    }
 
     return StoreInfo(
         version: storeVersion ?? '',

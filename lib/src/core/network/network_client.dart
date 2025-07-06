@@ -1,5 +1,7 @@
 import 'package:playx_network/playx_network.dart';
 
+import 'exceptions/network_exceptions_messages.dart';
+
 class NetworkClient {
   static PlayxNetworkClient createClient() {
     final dio = PlayxNetworkClient.createDefaultDioClient(baseUrl: '');
@@ -7,10 +9,11 @@ class NetworkClient {
         dio: dio,
         settings: PlayxNetworkClientSettings(
           logSettings: PlayxNetworkLoggerSettings(
-            responseBody: false,
+            printResponseData: false,
           ),
           useIsolateForMappingJson: false,
           useWorkMangerForMappingJsonInIsolate: false,
+          exceptionMessages: NetworkExceptionsMessages(),
         ));
   }
 }

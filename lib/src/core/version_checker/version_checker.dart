@@ -1,13 +1,14 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
 import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
-import 'package:version/version.dart';
+import 'package:playx_version_update/src/core/version_checker/version.dart';
+
+import '../model/options/playx_update_options.dart';
 
 class VersionChecker {
   static final VersionChecker _instance = VersionChecker._internal();
@@ -21,47 +22,38 @@ class VersionChecker {
   final _dataSource = RemoteStoreDataSource();
 
   Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>> checkVersion({
-    String? localVersion,
-    String? newVersion,
-    String? minVersion,
-    bool? forceUpdate,
-    String? googlePlayId,
-    String? appStoreId,
-    required String country,
-    required String language,
+    PlayxUpdateOptions options = const PlayxUpdateOptions(),
   }) async {
-    WidgetsFlutterBinding.ensureInitialized();
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      return const PlayxVersionUpdateResult.error(NotSupportedException());
+    }
 
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
     String version = packageInfo.version;
 
-    if (kIsWeb) {
-      return const PlayxVersionUpdateResult.error(NotSupportedException());
-    }
-
     if (Platform.isAndroid) {
-      final packageId = googlePlayId ?? packageInfo.packageName;
+      final packageId = options.androidPackageName ?? packageInfo.packageName;
 
       return _checkAndroidVersion(
           localVersion: version,
           packageId: packageId,
-          country: country,
-          language: language,
-          newVersion: newVersion,
-          forceUpdate: forceUpdate);
+          country: options.country,
+          language: options.language,
+          newVersion: options.newVersion,
+          forceUpdate: options.forceUpdate);
     } else if (Platform.isIOS) {
-      final packageId = appStoreId ?? packageInfo.packageName;
+      final packageId = options.iosBundleId ?? packageInfo.packageName;
       return _checkIosVersion(
           localVersion: version,
           packageId: packageId,
-          country: country,
-          language: language,
-          newVersion: newVersion,
-          forceUpdate: forceUpdate);
-    } else {
-      return const PlayxVersionUpdateResult.error(NotSupportedException());
+          country: options.country,
+          language: options.language,
+          newVersion: options.newVersion,
+          forceUpdate: options.forceUpdate);
     }
+
+    return const PlayxVersionUpdateResult.error(NotSupportedException());
   }
 
   Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>>
@@ -109,7 +101,7 @@ class VersionChecker {
       });
     }, error: (error) async {
       return PlayxVersionUpdateResult.error(
-          PlayxVersionUpdateError.fromNetworkException(error.error));
+          PlayxVersionNetworkError(error.error));
     });
   }
 
@@ -156,7 +148,7 @@ class VersionChecker {
       });
     }, error: (error) async {
       return PlayxVersionUpdateResult.error(
-          PlayxVersionUpdateError.fromNetworkException(error.error));
+          PlayxVersionNetworkError(error.error));
     });
   }
 

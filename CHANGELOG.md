@@ -1,5 +1,59 @@
 # Changelog
 
+## 1.0.0 - [2025-07-06]
+> Note: This release is a major release and may break some of the existing implementations. Please read the documentation carefully.
+
+This major release introduces significant refactoring, enhanced error handling, improved customization options, and updated build infrastructure.
+
+#### ✨ Major Features & API Enhancements
+
+* **Unified Update Options:**
+  * Introduced `PlayxUpdateOptions` to consolidate parameters for version checking (e.g., store IDs, local/new versions, country, language).
+  * Introduced `PlayxUpdateUIOptions` to consolidate parameters for the visual presentation of update dialogs/pages (e.g., titles, descriptions, button labels, callbacks, show/hide elements).
+  * This refactoring simplifies method signatures for `checkVersion`, `showUpdateDialog`, and `showInAppUpdateDialog`, improving organization and extensibility.
+* **Comprehensive Error Handling Rework:**
+  * **Enhanced Android In-App Update Errors:** Replaced generic `PlayxInAppUpdateFailed` with a detailed `PlayxInstallError` sealed class, directly mapping to Android's `InstallErrorCode` for specific error types (e.g., `ApiNotAvailable`, `AppNotOwned`, `DownloadNotPresent`).
+  * **Improved Network Error Clarity:** Introduced `PlayxVersionNetworkError` to wrap `playx_network`'s `NetworkException`, differentiating network issues from other update errors, while providing specific, user-friendly messages for network-related exceptions during app version checks
+  * **Error Consolidation:** Merged `PlayxInAppUpdateInfoRequestCanceledError` into `PlayxInAppUpdateCanceledError` for simplified error handling.
+  * Updated Dart error classes to mirror native changes and refined messages for clarity.
+* **Flexible Version Parsing:**
+  * Introduced a new internal `Version` class for robust and flexible parsing/comparison of version strings (supporting SemVer, multi-part numeric versions, and ignoring non-numeric tags) like 2.25.18.80.
+  * Improved Google Play Store version parsing reliability using the new `Version` class.
+  * Removed the external `version` package dependency.
+* **Advanced UI Customization for Flutter:**
+  * Added `PlayxUpdateDisplayType` enum to control Flutter-based update prompt presentation (Dialog, Page, or Page on Force Update).
+  * Introduced extensive styling options for Flutter-based update dialogs and pages, including text styles (`titleTextStyle`, `descriptionTextStyle`, `releaseNotesTitleTextStyle`, `releaseNotesTextStyle`, button text styles) and button styles.
+  * `PlayxUpdateUIOptions.displayType` now defaults to `pageOnForceUpdate`.
+  * `UpdateNameInfoCallback` renamed to `UpdateTextInfoCallback`.
+
+#### ✨ Enhancements & Refinements
+
+* **Improved In-App Update Flow:**
+  * If a flexible update is already downloaded, `showInAppUpdateDialog` now prompts to complete it.
+  * Enhanced documentation for in-app update methods in `PlayxVersionUpdate`, providing clearer descriptions of immediate and flexible flows, detailed error types, and best practice recommendations.
+* **Result Access:** Added `updateData` and `updateError` getters to `PlayxVersionUpdateResult` for easier access to success data or error information.
+* **Code Quality:** Minor code formatting, logging cleanup, and general documentation improvements across the package.
+
+#### ⚙️ Build System & Example App Updates
+
+* **Android Gradle Plugin & Kotlin Upgrades:**
+  * Upgraded Android Gradle Plugin to `8.7.3` and Kotlin to `2.1.0`.
+  * Updated compile SDK to `36`.
+  * Set Java and Kotlin JVM target to `17`.
+  * Updated Gradle wrapper to `8.12`.
+* **Android Example Migration:** Migrated the Android example project to use Gradle Kotlin DSL (`.gradle.kts`).
+* **Significantly Improved Example App:**
+  * Enhanced UI with updated button labels and more visual elements to demonstrate customization.
+  * Showcases extensive UI customization using `PlayxUpdateUIOptions` (custom leading widget, text styles, button styles, action callbacks).
+  * Clarified behavior for both Android (native) and iOS (custom UI) for flexible and immediate updates, including detailed `iosUiOptions` examples.
+  * Demonstrates using `PlayxUpdateOptions` for `checkVersion` and conditional display of `PlayxUpdatePage` (forced) and `PlayxUpdateDialog` (optional) with custom UI.
+  * Added a button/option in the example app to start flexible updates specifically on Android.
+
+#### ⬆️ Dependency Updates
+
+* Updated SDK constraints to `>=3.6.0 <4.0.0` and Flutter to `>=3.27.0`.
+* Upgraded `playx_network` to `^0.5.1`.
+
 ## 0.2.0
 > Note : This release is a major release and may break some of the existing implementations. Please read the documentation carefully.
 

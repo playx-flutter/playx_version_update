@@ -12,8 +12,6 @@ import io.flutter.plugin.common.PluginRegistry
 import io.sourcya.playx_version_update.core.manger.UpdateManger
 import io.sourcya.playx_version_update.core.model.ActivityNotFoundException
 import io.sourcya.playx_version_update.core.model.PlayxAppUpdateType
-import io.sourcya.playx_version_update.core.model.PlayxInAppUpdateFailed
-import io.sourcya.playx_version_update.core.model.PlayxUpdateCanceledException
 import io.sourcya.playx_version_update.core.model.PlayxUpdateException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
-    PluginRegistry.ActivityResultListener {
+class PlayxMethodCallHandler : MethodChannel.MethodCallHandler{
 
 
     /// The MethodChannel that will the communication between Flutter and native Android
@@ -152,7 +149,8 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
                     return@launch
                 }
                 startedImmediateUpdateResult = result
-                updateManger.startImmediateUpdate(activity!!)
+                val res= updateManger.startImmediateUpdate(activity!!)
+                result.success(res)
             } catch (e: Exception) {
                 handleMethodException(e, result)
             }
@@ -174,7 +172,8 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
                     return@launch
                 }
                 startedFlexibleUpdateResult = result
-                updateManger.startFlexibleUpdate(activity!!)
+                val  res=   updateManger.startFlexibleUpdate(activity!!)
+                result.success(res);
             } catch (e: Exception) {
                 handleMethodException(e, result)
             }
@@ -291,7 +290,6 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
     }
 
     private fun handleMethodException(e: Exception, result: MethodChannel.Result) {
-
         if (e is PlayxUpdateException) {
             result.error(e.errorCode(), e.message, e)
         } else {
@@ -299,36 +297,6 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler,
         }
     }
 
-    // result of start update method whether flexible or immediate update.
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        when (requestCode) {
-            UpdateManger.FLEXIBLE_UPDATE_REQUEST_CODE -> {
-                startedFlexibleUpdateResult?.let {
-                    when (resultCode) {
-                        Activity.RESULT_OK -> it.success(true)
-                            Activity.RESULT_CANCELED -> handleMethodException(PlayxUpdateCanceledException(), it)
-                            RESULT_IN_APP_UPDATE_FAILED ->handleMethodException(PlayxInAppUpdateFailed(), it)
-                        else-> handleMethodException(PlayxInAppUpdateFailed(), it)
-                    }
-                }
-                startedFlexibleUpdateResult = null
-            }
-
-            UpdateManger.IMMEDIATE_UPDATE_REQUEST_CODE -> {
-                startedImmediateUpdateResult?.let {
-                    when (resultCode) {
-                        Activity.RESULT_OK -> it.success(true)
-                        Activity.RESULT_CANCELED -> handleMethodException(PlayxUpdateCanceledException(), it)
-                        RESULT_IN_APP_UPDATE_FAILED ->handleMethodException(PlayxInAppUpdateFailed(), it)
-                        else-> handleMethodException(PlayxInAppUpdateFailed(), it)
-                    }
-                }
-                startedImmediateUpdateResult = null
-
-            }
-        }
-        return true
-    }
 
 
     companion object {
