@@ -127,7 +127,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showUpdateDialog(
       context: context,
       options: PlayxUpdateOptions(
-        androidPackageName: 'com.whatsapp', // Example package name
+        androidPackageName: 'io.sourcya.playx.verion.update.example', // Example package name
         iosBundleId: 'com.apple.shortcuts', // Example bundle ID
         forceUpdate: false, // Set to true to test non-dismissible behavior
       ),
@@ -350,8 +350,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Future<void> checkVersion(BuildContext context) async {
     final result = await PlayxVersionUpdate.checkVersion(
       options: PlayxUpdateOptions(
-        forceUpdate: true, // Set to true to test the PlayxUpdatePage flow
-        androidPackageName: 'com.whatsapp', // Example package name
+        forceUpdate: false, // Set to true to test the PlayxUpdatePage flow
+        androidPackageName: 'io.sourcya.playx.verion.update.example', // Example package name
         iosBundleId: 'com.apple.shortcuts', // Example bundle ID
       ),
     );
@@ -438,10 +438,19 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         }
       },
       error: (error) {
+        // network related errors
+        if(error is NetworkException){
+          if(error is NoInternetConnectionException){
+            _showMessage('No internet connection. Please check your network settings.', isError: true);
+          } else {
+            _showMessage('Network error: ${error.message}', isError: true);
+          }
+        }else {
+          _showMessage('Version check failed: ${error.message}', isError: true);
+        }
         setState(() {
           message = 'Check version error: ${error.message}';
         });
-        _showMessage('Version check failed: ${error.message}', isError: true);
       },
     );
   }

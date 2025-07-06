@@ -103,7 +103,7 @@ class VersionChecker {
       });
     }, error: (error) async {
       return PlayxVersionUpdateResult.error(
-          PlayxVersionUpdateError.fromNetworkException(error.error));
+          PlayxVersionNetworkError(error.error));
     });
   }
 
@@ -150,7 +150,7 @@ class VersionChecker {
       });
     }, error: (error) async {
       return PlayxVersionUpdateResult.error(
-          PlayxVersionUpdateError.fromNetworkException(error.error));
+          PlayxVersionNetworkError(error.error));
     });
   }
 
