@@ -48,9 +48,9 @@ sealed class PlayxVersionUpdateError {
     return switch (errorCode) {
       _activityNotFoundErrorCode => ActivityNotFoundError(),
       _appUpdateMangerNotFoundErrorCode => AppUpdateMangerNotFoundError(),
+      _playxInAppUpdateCanceledErrorCode ||
       _playxInAppUpdateInfoRequestCanceledErrorCode =>
-        PlayxInAppUpdateInfoRequestCanceledError(),
-      _playxInAppUpdateCanceledErrorCode => PlayxInAppUpdateCanceledError(),
+        PlayxInAppUpdateCanceledError(),
       _playxInAppUpdateFailedErrorCode => PlayxInAppUpdateFailedError(),
       _platformNotSupportedErrorCode => PlatformNotSupportedError(),
       defaultFailureErrorCode => DefaultFailureError(errorMsg: errorMessage),
@@ -58,7 +58,6 @@ sealed class PlayxVersionUpdateError {
     };
   }
 }
-
 
 /// Represents a network-related error encountered during Playx Version Update operations.
 ///
@@ -248,17 +247,6 @@ class AppUpdateMangerNotFoundError extends PlayxVersionUpdateError {
 
   @override
   String get errorCode => _appUpdateMangerNotFoundErrorCode;
-}
-
-/// Error indicating the request to check for update availability was cancelled.
-/// This might happen if the user navigated away quickly or the app closed.
-class PlayxInAppUpdateInfoRequestCanceledError extends PlayxVersionUpdateError {
-  @override
-  String get message =>
-      "The check for update availability was cancelled. Please try again.";
-
-  @override
-  String get errorCode => _playxInAppUpdateInfoRequestCanceledErrorCode;
 }
 
 /// Error indicating the in-app update process was explicitly cancelled by the user.
