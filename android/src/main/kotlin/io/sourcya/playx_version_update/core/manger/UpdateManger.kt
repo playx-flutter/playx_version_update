@@ -12,7 +12,7 @@ import io.sourcya.playx_version_update.core.model.PlayxUpdateNotAvailable
 
 import android.app.Activity
 import android.content.Context
-import android.util.Log
+import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
@@ -38,7 +38,6 @@ import kotlin.coroutines.resumeWithException
 
 class UpdateManger( context: Context) {
 
-
     private val appUpdateManager = AppUpdateManagerFactory.create(context)
     private val job = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
@@ -59,7 +58,6 @@ class UpdateManger( context: Context) {
                     continuation.resumeWithException(error);
                     return@addOnFailureListener
                 }else{
-                    Log.d("UpdateManger", "startFlexibleUpdate: ${it.message} -> $it")
                     continuation.resumeWithException(it)
                 }
             }.addOnCanceledListener {
@@ -88,7 +86,6 @@ class UpdateManger( context: Context) {
                 continuation.resumeWithException(error);
                 return@addOnFailureListener
             }else{
-                Log.d("UpdateManger", "startFlexibleUpdate: ${it.message} -> $it")
                 continuation.resumeWithException(it)
             }
         }.addOnCanceledListener {
@@ -120,7 +117,6 @@ class UpdateManger( context: Context) {
                 continuation.resumeWithException(error);
                 return@addOnFailureListener
             }else{
-                Log.d("UpdateManger", "startFlexibleUpdate: ${it.message} -> $it")
                 continuation.resumeWithException(it)
             }
         }.addOnCanceledListener {
@@ -143,17 +139,13 @@ class UpdateManger( context: Context) {
                                 appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
                             continuation.resume(isAllowed)
                         }
-
                         PlayxAppUpdateType.IMMEDIATE -> {
                             val isAllowed =
                                 appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
                             continuation.resume(isAllowed)
-
                         }
-
                         else ->
                             continuation.resumeWithException(PlayxUnknownUpdateType())
-
                     }
                 } else {
                     continuation.resume(false)
@@ -164,7 +156,6 @@ class UpdateManger( context: Context) {
                     continuation.resumeWithException(error);
                     return@addOnFailureListener
                 }else{
-                    Log.d("UpdateManger", "startFlexibleUpdate: ${it.message} -> $it")
                     continuation.resumeWithException(it)
                 }
             }.addOnCanceledListener {
@@ -175,8 +166,6 @@ class UpdateManger( context: Context) {
     suspend fun startImmediateUpdate(activity: Activity): Boolean =
         suspendCancellableCoroutine { continuation ->
             val appUpdateInfoTask = appUpdateManager.appUpdateInfo
-
-
             appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
 
                 when (appUpdateInfo.updateAvailability()) {
@@ -191,27 +180,16 @@ class UpdateManger( context: Context) {
                                     AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE)
                                         .build(),
                                 )
+
                                 currentUpdateType = PlayxAppUpdateType.IMMEDIATE
                                 task.addOnSuccessListener {
-                                    Log.d(
-                                        "UpdateManger",
-                                        "startFlexibleUpdate: Update started successfully $it"
-                                    )
-                                    continuation.resume(true)
+                                    continuation.resume(it !=0)
                                 }.addOnFailureListener {
                                     if (it is InstallException) {
                                         val error = PlayxInstallError.fromStatusCode(it.errorCode);
                                         continuation.resumeWithException(error);
-                                        Log.d(
-                                            "UpdateManger",
-                                            "startFlexibleUpdate install task: ${it.message} -> $it"
-                                        )
                                         return@addOnFailureListener
                                     } else {
-                                        Log.d(
-                                            "UpdateManger",
-                                            "startFlexibleUpdate: task ${it.message} -> $it"
-                                        )
                                         continuation.resumeWithException(it)
                                     }
                                 }.addOnCanceledListener {
@@ -219,7 +197,7 @@ class UpdateManger( context: Context) {
                                 }
 
                             } catch (e: Exception) {
-                                Log.d("UpdateManger2", "startFlexibleUpdate: ${e.message} -> $e")
+
                                 continuation.resumeWithException(e)
                             }
                         }
@@ -228,10 +206,8 @@ class UpdateManger( context: Context) {
                     UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS -> {
                         continuation.resumeWithException(PlayxUpdateInProgress())
                     }
-
                     UpdateAvailability.UPDATE_NOT_AVAILABLE, UpdateAvailability.UNKNOWN -> {
                         continuation.resumeWithException(PlayxUpdateNotAvailable())
-
                     }
                 }
             }.addOnFailureListener {
@@ -240,12 +216,9 @@ class UpdateManger( context: Context) {
                     continuation.resumeWithException(error);
                     return@addOnFailureListener
                 }else{
-                    Log.d("UpdateManger", "startFlexibleUpdate: ${it.message} -> $it")
                     continuation.resumeWithException(it)
                 }
-
             }.addOnCanceledListener {
-                Log.d("UpdateManger", "startFlexibleUpdate: Update canceled")
                 continuation.resumeWithException(PlayxUpdateCanceledException())
             }
         }
@@ -253,22 +226,16 @@ class UpdateManger( context: Context) {
 
     suspend fun startFlexibleUpdate(activity: Activity): Boolean =
         suspendCancellableCoroutine { continuation ->
-            Log.d("UpdateManger", "startFlexibleUpdate: called")
             val appUpdateInfoTask = appUpdateManager.appUpdateInfo
             appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
-//                if (appUpdateInfo.updateAvailability() != UpdateAvailability.UPDATE_AVAILABLE) {
-//                    Log.d("UpdateManger", "startFlexibleUpdate: Update not available")
-//                    continuation.resumeWithException(PlayxUpdateNotAvailable())
-//                    return@addOnSuccessListener
-//                }
-                Log.d("UpdateManger", "startFlexibleUpdate: Update available ${appUpdateInfo.updateAvailability()}")
+                when (appUpdateInfo.updateAvailability()) {
+                    UpdateAvailability.UPDATE_AVAILABLE -> {
 
-                    val isAllowed = appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
-                    if (!isAllowed) {
-                        Log.d("UpdateManger", "startFlexibleUpdate: Update not allowed")
-                        continuation.resumeWithException(PlayxUpdateNotAllowed())
-                        return@addOnSuccessListener
-                    }
+                        val isAllowed = appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+                        if (!isAllowed) {
+                            continuation.resumeWithException(PlayxUpdateNotAllowed())
+                            return@addOnSuccessListener
+                        }
 
                         try {
                             val task = appUpdateManager.startUpdateFlow(
@@ -279,18 +246,14 @@ class UpdateManger( context: Context) {
                             )
                             currentUpdateType = PlayxAppUpdateType.FLEXIBLE
 
-
                             task.addOnSuccessListener {
-                                Log.d("UpdateManger", "startFlexibleUpdate: Update started successfully $it")
-                                continuation.resume(true)
+                                continuation.resume(it != 0)
                             }.addOnFailureListener {
-                                if(it is InstallException){
+                                if (it is InstallException) {
                                     val error = PlayxInstallError.fromStatusCode(it.errorCode);
                                     continuation.resumeWithException(error);
-                                    Log.d("UpdateManger", "startFlexibleUpdate install task: ${it.message} -> $it")
                                     return@addOnFailureListener
-                                }else{
-                                    Log.d("UpdateManger", "startFlexibleUpdate: task ${it.message} -> $it")
+                                } else {
                                     continuation.resumeWithException(it)
                                 }
                             }.addOnCanceledListener {
@@ -298,23 +261,26 @@ class UpdateManger( context: Context) {
                             }
 
                         } catch (e: Exception) {
-                            Log.d("UpdateManger2", "startFlexibleUpdate: ${e.message} -> $e")
                             continuation.resumeWithException(e)
                         }
-
+                    }
+                    UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS -> {
+                        continuation.resumeWithException(PlayxUpdateInProgress())
+                    }
+                    UpdateAvailability.UPDATE_NOT_AVAILABLE, UpdateAvailability.UNKNOWN -> {
+                        continuation.resumeWithException(PlayxUpdateNotAvailable())
+                    }
+                }
             }.addOnFailureListener {
                 if(it is InstallException){
                     val error = PlayxInstallError.fromStatusCode(it.errorCode);
                     continuation.resumeWithException(error);
-                    Log.d("UpdateManger", "startFlexibleUpdate install task: ${it.message} -> $it status :${it.status}")
                     return@addOnFailureListener
                 }else{
-                    Log.d("UpdateManger", "startFlexibleUpdate: ${it.message} -> $it")
                     continuation.resumeWithException(it)
                 }
 
             }.addOnCanceledListener {
-                Log.d("UpdateManger", "startFlexibleUpdate: Update canceled")
                 continuation.resumeWithException(PlayxUpdateCanceledException())
             }
         }
@@ -345,7 +311,6 @@ class UpdateManger( context: Context) {
 
 
     suspend fun completeFlexibleUpdate(): Boolean = suspendCancellableCoroutine { continuation ->
-
         val result = appUpdateManager.completeUpdate()
         result.addOnSuccessListener {
             continuation.resume(true)
@@ -357,17 +322,17 @@ class UpdateManger( context: Context) {
     }
 
 
+  private fun checkIfFlexibleUpdateNeedToBeInstalled( info: AppUpdateInfo): Boolean{
+        return  (info.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS && info.installStatus() == InstallStatus.DOWNLOADED);
+    }
+
     suspend fun isFlexibleUpdateNeedToBeInstalled(): Boolean =
         suspendCancellableCoroutine { continuation ->
             val appUpdateInfoTask = appUpdateManager.appUpdateInfo
 
             appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
-                if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
-                    val isDownloaded = appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED
-                    continuation.resume(isDownloaded)
-                } else {
-                    continuation.resume(false)
-                }
+                val isDownloaded= checkIfFlexibleUpdateNeedToBeInstalled(appUpdateInfo)
+                continuation.resume(isDownloaded)
             }.addOnFailureListener {
                 continuation.resumeWithException(it)
             }.addOnCanceledListener {
