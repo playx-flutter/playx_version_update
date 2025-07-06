@@ -177,7 +177,7 @@ Future<void> showSimpleUpdateDialog(BuildContext context) async {
 
 For complete control over the update presentation, use `checkVersion` to get detailed update information and then display your own custom Flutter UI, such as the provided `PlayxUpdatePage`.
 <p float="left" align="middle">    
- <img src="https://github.com/playx-flutter/playx_version_update/blob/main/screenshots/screenshot5.jpg?raw=true" height=200 > </p>
+ <img src="https://github.com/playx-flutter/playx_version_update/blob/main/screenshots/screenshot5.jpg?raw=true" width="25%"  > </p>
 
 ```Dart
 Future<void> checkForUpdateAndShowCustomUI(BuildContext context) async {
