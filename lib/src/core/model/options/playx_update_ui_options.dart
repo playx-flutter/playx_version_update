@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../utils/callbacks.dart';
-import 'playx_update_display_type.dart';
 
 
 /// Options for customizing the user interface of Flutter-based update prompts.

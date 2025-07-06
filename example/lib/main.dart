@@ -216,6 +216,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               debugPrint('✅ playx_open_store success: $success');
             },
             error: (error) {
+              if(error is PlayxVersionCantUpdateError){
+                // Handle specific error when the app can't be updated
+                debugPrint('❌  error: ${error.currentVersion} -> ${error.newVersion} ->> ${error.message} ');
+                _showMessage('Cannot update app: ${error.message}', isError: true);
+                return;
+              }
               debugPrint('❌ playx_open_store error: $error');
               _showMessage('Failed to open store: ${error.message}', isError: true);
             },
@@ -252,7 +258,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
       context: context,
       type: PlayxAppUpdateType.flexible,
-      options: PlayxUpdateOptions(
+      iosOptions: PlayxUpdateOptions(
         iosBundleId: 'com.apple.shortcuts', // Example bundle ID for iOS
       ),
       iosUiOptions: PlayxUpdateUIOptions(
@@ -317,7 +323,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
       context: context,
       type: PlayxAppUpdateType.immediate,
-      options: PlayxUpdateOptions(
+      iosOptions: PlayxUpdateOptions(
         iosBundleId: 'com.apple.shortcuts', // Example bundle ID for iOS
       ),
       iosUiOptions: PlayxUpdateUIOptions(
