@@ -177,7 +177,7 @@ Future<void> showSimpleUpdateDialog(BuildContext context) async {
 
 For complete control over the update presentation, use `checkVersion` to get detailed update information and then display your own custom Flutter UI, such as the provided `PlayxUpdatePage`.
 <p float="left" align="middle">    
- <img src="https://github.com/playx-flutter/playx_version_update/blob/main/screenshots/screenshot5.jpg?raw=true" height=500 > </p>
+ <img src="https://github.com/playx-flutter/playx_version_update/blob/main/screenshots/screenshot5.jpg?raw=true" height=200 > </p>
 
 ```Dart
 Future<void> checkForUpdateAndShowCustomUI(BuildContext context) async {
@@ -278,7 +278,7 @@ Want to dive deeper into the Android SDK behind this? Check out the official Goo
 **Immediate updates** are full-screen experiences that **require** your user to update and restart the app to continue. Think of these as **mandatory updates** for critical fixes or security patches. Once the user agrees, Google Play handles the download and installation in the background, typically restarting your app when it's done.
 
 <p float="left" align="middle">    
-      <img src="https://developer.android.com/static/images/app-bundle/immediate_flow.png" width="80%" >     
+      <img src="https://developer.android.com/static/images/app-bundle/immediate_flow.png" width="70%" >     
      </p>
 
 #### Initiating an Immediate Update
@@ -343,7 +343,7 @@ If the user declines or cancels the update, Google Play's screen will close, and
 **Flexible updates** download in the background, letting users continue to use your app without interruption. Once the download is done, you decide when to prompt the user to install it. This is perfect for **non-critical updates** like new features or minor bug fixes.
 
 <p float="left" align="middle">    
- <img src="https://developer.android.com/static/images/app-bundle/flexible_flow.png" width="90%" >     
+ <img src="https://developer.android.com/static/images/app-bundle/flexible_flow.png" width="70%" >     
  </p>
 
 #### Initiating a Flexible Update
