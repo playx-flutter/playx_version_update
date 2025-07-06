@@ -1,6 +1,6 @@
 name: playx_version_update_example
 description: Demonstrates how to use the playx_version_update plugin.
-version: '0.0.1+1'
+version: '0.0.4+4'
 publish_to: 'none'
 environment:
   sdk: '>=3.0.3 <4.0.0'

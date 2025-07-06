@@ -122,70 +122,95 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  /// Demonstrates showing a highly customizable update dialog using PlayxUpdateUIOptions.
   Future<void> showUpdateDialog(BuildContext context) async {
     final result = await PlayxVersionUpdate.showUpdateDialog(
       context: context,
-      options: PlayxUpdateOptions(
-        androidPackageName: 'io.sourcya.playx.verion.update.example', // Example package name
-        iosBundleId: 'com.apple.shortcuts', // Example bundle ID
-        forceUpdate: false, // Set to true to test non-dismissible behavior
+      options: const PlayxUpdateOptions(
+        androidPackageName: 'com.google.android.apps.bard',
+        iosBundleId: 'com.apple.shortcuts',
+        forceUpdate: false,
       ),
       uiOptions: PlayxUpdateUIOptions(
-        // General UI Options
-        leading: Image.network(
-          'https://img.freepik.com/premium-vector/concept-system-update-software-installation-premium-vector_199064-146.jpg',
-          height: 100,
-          width: 100,
-        ),
-        displayType: PlayxUpdateDisplayType.dialog, // Explicitly request a dialog
-        isDismissible: true, // Allow dismissal for this non-forced update
+        // Display Options
+        displayType: PlayxUpdateDisplayType.dialog,
+        isDismissible: true,
         showReleaseNotes: true,
 
-        // Text & Text Style Customization
-        title: (info) => 'A New Update Awaits!',
-        titleTextStyle: const TextStyle(
-            color: Colors.blue, fontSize: 22, fontWeight: FontWeight.bold),
-        description: (info) =>
-        'Version ${info.newVersion} is now available. Update now to experience new features and improvements!',
-        descriptionTextStyle: const TextStyle(fontSize: 16, color: Colors.grey),
-        releaseNotesTitle: (info) => 'What\'s New in ${info.newVersion}:',
-        releaseNotesTitleTextStyle: const TextStyle(
-            fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo),
-        releaseNotesTextStyle: const TextStyle(fontSize: 14, color: Colors.black87),
+        // Leading Image
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.network(
+            'https://img.freepik.com/premium-vector/concept-system-update-software-installation-premium-vector_199064-146.jpg',
+            height: 100,
+            width: 100,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const Icon(Icons.system_update_alt, size: 64),
+          ),
+        ),
 
-        // Button Text & Style Customization
-        updateButtonText: 'Update Now!',
-        updateButtonTextStyle:
-        const TextStyle(fontSize: 18, color: Colors.white),
+        // Text & Style
+        title: (info) => '🚀 A New Update is Available!',
+        titleTextStyle: const TextStyle(
+          color: Colors.blueAccent,
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+        ),
+        description: (info) => 'Version ${info.newVersion} is ready with exciting new features and enhancements. Update now to enjoy the latest improvements!',
+        descriptionTextStyle: const TextStyle(
+          fontSize: 16,
+          color: Colors.black87,
+        ),
+        releaseNotesTitle: (info) => '✨ What\'s New in ${info.newVersion}:',
+        releaseNotesTitleTextStyle: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.indigo,
+        ),
+        releaseNotesTextStyle: const TextStyle(
+          fontSize: 14,
+          color: Colors.black54,
+          height: 1.4,
+        ),
+
+        // Buttons
+        updateButtonText: 'Update Now',
+        updateButtonTextStyle: const TextStyle(
+          fontSize: 16,
+          color: Colors.white,
+        ),
         updateButtonStyle: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
-        dismissButtonText: 'Later, Maybe',
-        dismissButtonTextStyle:
-        const TextStyle(fontSize: 16, color: Colors.red),
+        dismissButtonText: 'Remind Me Later',
+        dismissButtonTextStyle: const TextStyle(
+          fontSize: 14,
+          color: Colors.redAccent,
+        ),
         dismissButtonStyle: TextButton.styleFrom(
-          // TextButton doesn't have a background like ElevatedButton
-          foregroundColor: Colors.redAccent, // For iOS text button color
+          foregroundColor: Colors.redAccent,
         ),
 
-        // Action Callbacks
+        // Actions
         onUpdate: (info, launchMode) async {
           setState(() {
             message = 'Update button pressed. Opening store...';
           });
+
           final res = await PlayxVersionUpdate.openStore(
             storeUrl: info.storeUrl,
             launchMode: launchMode,
           );
+
           res.when(
             success: (success) {
-              if (kDebugMode) print('playx_open_store: success :$success');
+              debugPrint('✅ playx_open_store success: $success');
             },
             error: (error) {
-              if (kDebugMode) print('playx_open_store: error :$error');
+              debugPrint('❌ playx_open_store error: $error');
               _showMessage('Failed to open store: ${error.message}', isError: true);
             },
           );
@@ -194,22 +219,22 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           setState(() {
             message = 'Dismiss button pressed.';
           });
-          // If it was a force update and onCancel is called, you might want to exit.
-          // Example: if (info.forceUpdate) SystemNavigator.pop();
+          // Optionally handle force update here: SystemNavigator.pop();
         },
       ),
     );
 
     result.when(
-      success: (isShowed) {
+      success: (isShown) {
         setState(() {
-          message = 'showUpdateDialog success: $isShowed';
+          message = 'Update dialog displayed: $isShown';
         });
       },
       error: (error) {
         setState(() {
-          message = 'showUpdateDialog error: ${error.message}';
+          message = 'Error showing update dialog: ${error.message}';
         });
+        _showMessage('Something went wrong: ${error.message}', isError: true);
       },
     );
   }
