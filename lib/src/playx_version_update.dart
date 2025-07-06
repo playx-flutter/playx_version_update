@@ -195,7 +195,7 @@ abstract class PlayxVersionUpdate {
   /// ### Parameters:
   /// - `context`: The `BuildContext` required for displaying UI elements (especially on iOS).
   /// - `type`: Specifies the desired Android update flow (`PlayxAppUpdateType.flexible` or `PlayxAppUpdateType.immediate`).
-  /// - `options`: (Optional) Configuration for the version check itself, including store IDs or manual version checking, and the `onIosUpdate` callback. Defaults to `const PlayxUpdateOptions()`.
+  /// - `iosOptions`: (Optional) iOS-specific Configuration for the version check itself, including store IDs or manual version checking, and the `onIosUpdate` callback. Defaults to `const PlayxUpdateOptions()`.
   /// - `iosUiOptions`: (Optional) iOS-specific UI customization options, such as whether to show a page on force update and divisibility. Defaults to `const PlayxUpdateUIOptions()`.
   ///
   /// ### Returns:
@@ -209,17 +209,17 @@ abstract class PlayxVersionUpdate {
   /// await PlayxVersionUpdate.showInAppUpdateDialog(
   ///   context: context,
   ///   type: PlayxAppUpdateType.flexible, // Or PlayxAppUpdateType.immediate
-  ///   options: PlayxUpdateOptions(
+  ///   iosOptions: PlayxUpdateOptions(
   ///     googlePlayId: 'com.example.app', // Required for Android version checking
   ///     appStoreId: '123456789', // Required for iOS version checking
-  ///     onIosUpdate: (url) {
-  ///       // Optional: Override default iOS App Store opening
-  ///       // For example, open a custom in-app browser
-  ///     },
   ///   ),
   ///   iosUiOptions: PlayxUpdateUIOptions(
   ///     showPageOnForceUpdate: true, // Show a full-screen page for forced iOS updates
   ///     isDismissible: false, // Make the iOS update UI non-dismissible
+  ///     onIosUpdate: (url) {
+  ///       // Optional: Override default iOS App Store opening
+  ///       // For example, open a custom in-app browser
+  ///     },
   ///   ),
   /// );
   /// ```
@@ -232,7 +232,7 @@ abstract class PlayxVersionUpdate {
   static Future<PlayxVersionUpdateResult<bool>> showInAppUpdateDialog({
     required BuildContext context,
     required PlayxAppUpdateType type,
-    PlayxUpdateOptions options = const PlayxUpdateOptions(),
+    PlayxUpdateOptions iosOptions = const PlayxUpdateOptions(),
     PlayxUpdateUIOptions iosUiOptions = const PlayxUpdateUIOptions(),
   }) async {
     // For Android, delegate to the native in-app update platform channel.
@@ -251,7 +251,7 @@ abstract class PlayxVersionUpdate {
     }
 
     // For iOS and other platforms, use the standard dialog flow.
-    final result = await checkVersion(options: options);
+    final result = await checkVersion(options: iosOptions);
 
     return result.map(
       success: (info) {
