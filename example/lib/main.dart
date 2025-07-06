@@ -106,6 +106,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               },
               child: const Text('Start Flexible Update (Android/iOS)'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                startFlexibleUpdateOnly(context);
+              },
+              child: const Text('Start Flexible Update Only (Android)'),
+            ),
           ],
         ),
       ),
@@ -478,6 +484,39 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         });
       },
     );
+  }
+
+  /// Starts a flexible update only on android .
+  /// If no update is downloaded, it will start the flexible update flow.
+  /// If an update is already downloaded, it will complete the update immediately.
+  Future<void> startFlexibleUpdateOnly(BuildContext context) async {
+    if(!kIsWeb && Platform.isAndroid) {
+      final isUpdateNeedToBeInstalled = await PlayxVersionUpdate.isFlexibleUpdateNeedToBeInstalled();
+      if (isUpdateNeedToBeInstalled.updateData??false) {
+        // If an update is already downloaded, complete it immediately
+        _showMessage('An update is already downloaded. Completing it now.');
+        completeFlexibleUpdate();
+        return;
+      }
+      // Start the flexible update immediately if on Android
+     final res=await  PlayxVersionUpdate.startFlexibleUpdate();
+      res.when(
+        success: (isStarted) {
+          setState(() {
+            message = 'Flexible update ${isStarted? 'started' : 'Cancelled'}';
+          });
+        },
+        error: (error) {
+          setState(() {
+            message = 'Flexible update start error: ${error.message}';
+          });
+          _showMessage('Failed to start flexible update: ${error.message}', isError: true);
+        },
+      );
+    } else {
+      // For iOS or web, show a message that flexible updates are not supported
+      _showMessage('Flexible updates are not supported on this platform.', isError: true);
+    }
   }
 
   /// Checks the availability of in-app updates.
