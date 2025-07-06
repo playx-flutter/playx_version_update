@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
-import 'package:playx_version_update/src/core/model/options/playx_update_ui_options.dart';
-
 
 /// A full-screen Flutter widget designed to prompt users for an app update.
 ///
@@ -80,12 +78,11 @@ class PlayxUpdatePage extends StatefulWidget {
   /// This includes text content, styles, button actions, and dismissibility.
   final PlayxUpdateUIOptions uiOptions;
 
-
-  const PlayxUpdatePage(
-      {super.key,
-        required this.versionUpdateInfo,
-        this.uiOptions = const PlayxUpdateUIOptions(),
-      });
+  const PlayxUpdatePage({
+    super.key,
+    required this.versionUpdateInfo,
+    this.uiOptions = const PlayxUpdateUIOptions(),
+  });
 
   @override
   State<PlayxUpdatePage> createState() => _PlayxUpdatePageState();
@@ -113,8 +110,9 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                           vertical: 16, horizontal: 8.0),
                       child: Text(
                         _getTitleText(),
-                        style:widget.uiOptions.titleTextStyle?? const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 25),
+                        style: widget.uiOptions.titleTextStyle ??
+                            const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 25),
                       ),
                     ),
                     Expanded(
@@ -127,9 +125,12 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                 children: [
                                   Text(
                                     _getDescriptionText(),
-                                    style: widget.uiOptions.descriptionTextStyle??TextStyle(
-                                        fontSize:
-                                            shouldShowReleaseNotes ? 16 : 18),
+                                    style:
+                                        widget.uiOptions.descriptionTextStyle ??
+                                            TextStyle(
+                                                fontSize: shouldShowReleaseNotes
+                                                    ? 16
+                                                    : 18),
                                   ),
                                   if (shouldShowReleaseNotes) ...[
                                     const SizedBox(
@@ -138,13 +139,16 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                     SizedBox(
                                       width: double.infinity,
                                       child: Text(
-                                        widget.uiOptions.releaseNotesTitle?.call(
-                                                widget.versionUpdateInfo) ??
+                                        widget.uiOptions.releaseNotesTitle
+                                                ?.call(
+                                                    widget.versionUpdateInfo) ??
                                             'Release Notes:',
                                         textAlign: TextAlign.center,
-                                        style:widget.uiOptions.releaseNotesTitleTextStyle?? const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18),
+                                        style: widget.uiOptions
+                                                .releaseNotesTitleTextStyle ??
+                                            const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18),
                                       ),
                                     ),
                                     const SizedBox(
@@ -153,7 +157,9 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                     Text(
                                       widget.versionUpdateInfo.releaseNotes ??
                                           '',
-                                      style: widget.uiOptions.releaseNotesTextStyle??const TextStyle(fontSize: 15),
+                                      style: widget.uiOptions
+                                              .releaseNotesTextStyle ??
+                                          const TextStyle(fontSize: 15),
                                     ),
                                   ]
                                 ]),
@@ -169,11 +175,13 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                           Padding(
                             padding: const EdgeInsets.all(4.0),
                             child: ElevatedButton(
-                              style:widget.uiOptions.updateButtonStyle?? ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 30, vertical: 15),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(25))),
+                              style: widget.uiOptions.updateButtonStyle ??
+                                  ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 30, vertical: 15),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(25))),
                               onPressed: () {
                                 if (widget.uiOptions.onUpdate != null) {
                                   widget.uiOptions.onUpdate?.call(
@@ -188,7 +196,8 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                               },
                               child: Text(
                                 widget.uiOptions.updateButtonText,
-                                style: widget.uiOptions.updateButtonTextStyle??const TextStyle(fontSize: 20),
+                                style: widget.uiOptions.updateButtonTextStyle ??
+                                    const TextStyle(fontSize: 20),
                               ),
                             ),
                           ),
@@ -196,20 +205,25 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                             Padding(
                               padding: const EdgeInsets.all(4.0),
                               child: TextButton(
-                                style:widget.uiOptions.dismissButtonStyle?? TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 30, vertical: 8),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(25),
-                                    )),
+                                style: widget.uiOptions.dismissButtonStyle ??
+                                    TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 30, vertical: 8),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(25),
+                                        )),
                                 onPressed: () {
                                   widget.uiOptions.onCancel
                                       ?.call(widget.versionUpdateInfo);
                                 },
                                 child: Text(
                                   _getDismissActionTitle(),
-                                  style: widget.uiOptions.dismissButtonTextStyle??const TextStyle(
-                                      fontSize: 18, color: Color(0xFFCCCBD2)),
+                                  style:
+                                      widget.uiOptions.dismissButtonTextStyle ??
+                                          const TextStyle(
+                                              fontSize: 18,
+                                              color: Color(0xFFCCCBD2)),
                                 ),
                               ),
                             ),
@@ -233,7 +247,8 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
   }
 
   String _getDescriptionText() {
-    String description = widget.uiOptions.description?.call(widget.versionUpdateInfo) ??
+    String description = widget.uiOptions.description
+            ?.call(widget.versionUpdateInfo) ??
         'A new version of the app is now available. \nWould you like to update now to version ${widget.versionUpdateInfo.newVersion} ?';
 
     return description;
@@ -251,7 +266,8 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
       widget.versionUpdateInfo.releaseNotes != null &&
       widget.versionUpdateInfo.releaseNotes!.isNotEmpty;
 
-  bool get shouldShowDismissButton => isDismissible ||
+  bool get shouldShowDismissButton =>
+      isDismissible ||
       (widget.uiOptions.showDismissButtonOnForceUpdate &&
           widget.versionUpdateInfo.forceUpdate);
 

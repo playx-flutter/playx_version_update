@@ -83,12 +83,12 @@ class PlayxVersionUpdateInfo {
   @override
   int get hashCode {
     return localVersion.hashCode ^
-    newVersion.hashCode ^
-    forceUpdate.hashCode ^
-    storeUrl.hashCode ^
-    country.hashCode ^
-    canUpdate.hashCode ^
-    releaseNotes.hashCode ^
-    minVersion.hashCode;
+        newVersion.hashCode ^
+        forceUpdate.hashCode ^
+        storeUrl.hashCode ^
+        country.hashCode ^
+        canUpdate.hashCode ^
+        releaseNotes.hashCode ^
+        minVersion.hashCode;
   }
 }

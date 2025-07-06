@@ -1,4 +1,3 @@
-
 /// Configuration for version checking.
 class PlayxUpdateOptions {
   /// The current version of the app. If not provided, it's fetched from `package_info_plus`.
@@ -31,11 +30,12 @@ class PlayxUpdateOptions {
   /// The app's bundle ID on the Apple App Store (e.g., 'com.example.app').
   /// If not provided, it's fetched from `package_info_plus`.
   final String? iosBundleId;
+
   /// The two-letter country code for the store country. Defaults to 'us'.
   final String country;
+
   /// The two-letter language code for store details. Defaults to 'en'.
   final String language;
-
 
   const PlayxUpdateOptions({
     this.localVersion,

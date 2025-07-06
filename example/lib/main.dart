@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:io' show Platform;
 
@@ -8,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
 final GlobalKey<ScaffoldMessengerState> globalKey =
-GlobalKey<ScaffoldMessengerState>();
+    GlobalKey<ScaffoldMessengerState>();
 
 void main() {
   runApp(MaterialApp(
@@ -150,7 +149,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             height: 100,
             width: 100,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const Icon(Icons.system_update_alt, size: 64),
+            errorBuilder: (_, __, ___) =>
+                const Icon(Icons.system_update_alt, size: 64),
           ),
         ),
 
@@ -161,7 +161,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           fontSize: 24,
           fontWeight: FontWeight.w600,
         ),
-        description: (info) => 'Version ${info.newVersion} is ready with exciting new features and enhancements. Update now to enjoy the latest improvements!',
+        description: (info) =>
+            'Version ${info.newVersion} is ready with exciting new features and enhancements. Update now to enjoy the latest improvements!',
         descriptionTextStyle: const TextStyle(
           fontSize: 16,
           color: Colors.black87,
@@ -216,14 +217,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               debugPrint('✅ playx_open_store success: $success');
             },
             error: (error) {
-              if(error is PlayxVersionCantUpdateError){
+              if (error is PlayxVersionCantUpdateError) {
                 // Handle specific error when the app can't be updated
-                debugPrint('❌  error: ${error.currentVersion} -> ${error.newVersion} ->> ${error.message} ');
-                _showMessage('Cannot update app: ${error.message}', isError: true);
+                debugPrint(
+                    '❌  error: ${error.currentVersion} -> ${error.newVersion} ->> ${error.message} ');
+                _showMessage('Cannot update app: ${error.message}',
+                    isError: true);
                 return;
               }
               debugPrint('❌ playx_open_store error: $error');
-              _showMessage('Failed to open store: ${error.message}', isError: true);
+              _showMessage('Failed to open store: ${error.message}',
+                  isError: true);
             },
           );
         },
@@ -269,7 +273,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         releaseNotesTitle: (info) => 'Recent Updates of ${info.newVersion}',
         title: (info) => 'Flexible Update Available!',
         description: (info) =>
-        'A new version is ready for download. You can continue using the app while it downloads.',
+            'A new version is ready for download. You can continue using the app while it downloads.',
         updateButtonText: 'Download & Install',
         dismissButtonText: 'Not Now',
         isDismissible: true, // Flexible update should be dismissible
@@ -309,8 +313,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       },
       error: (error) {
         setState(() {
-          message =
-          'showInAppUpdateDialog (Flexible) error: ${error.message}';
+          message = 'showInAppUpdateDialog (Flexible) error: ${error.message}';
         });
       },
     );
@@ -333,7 +336,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         releaseNotesTitle: (info) => 'Critical Updates',
         title: (info) => 'Immediate Update Required!',
         description: (info) =>
-        'This update is mandatory to continue using the app. Please update now.',
+            'This update is mandatory to continue using the app. Please update now.',
         updateButtonText: 'Update & Restart',
         // Immediate updates are typically not dismissible.
         isDismissible: false,
@@ -355,8 +358,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       },
       error: (error) {
         setState(() {
-          message =
-          'showInAppUpdateDialog (Immediate) error: ${error.message}';
+          message = 'showInAppUpdateDialog (Immediate) error: ${error.message}';
         });
       },
     );
@@ -366,21 +368,21 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void listenToFlexibleDownloadUpdates() {
     downloadInfoStreamSubscription =
         PlayxVersionUpdate.listenToFlexibleDownloadUpdate().listen((info) {
-          if (info == null) return;
-          if (info.status == PlayxDownloadStatus.downloaded) {
-            setState(() {
-              message = 'Downloaded, trying to complete update';
-            });
-            completeFlexibleUpdate();
-          } else if (info.status == PlayxDownloadStatus.downloading) {
-            setState(() {
-              message =
-              'Current download in progress: ${info.bytesDownloaded} / ${info.totalBytesToDownload} bytes';
-            });
-          } else if (info.status == PlayxDownloadStatus.failed) {
-            _showMessage('Flexible update download failed!', isError: true);
-          }
+      if (info == null) return;
+      if (info.status == PlayxDownloadStatus.downloaded) {
+        setState(() {
+          message = 'Downloaded, trying to complete update';
         });
+        completeFlexibleUpdate();
+      } else if (info.status == PlayxDownloadStatus.downloading) {
+        setState(() {
+          message =
+              'Current download in progress: ${info.bytesDownloaded} / ${info.totalBytesToDownload} bytes';
+        });
+      } else if (info.status == PlayxDownloadStatus.failed) {
+        _showMessage('Flexible update download failed!', isError: true);
+      }
+    });
   }
 
   /// Checks for app version and demonstrates showing custom UI based on force update status.
@@ -388,7 +390,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.checkVersion(
       options: PlayxUpdateOptions(
         forceUpdate: false, // Set to true to test the PlayxUpdatePage flow
-        androidPackageName: 'io.sourcya.playx.verion.update.example', // Example package name
+        androidPackageName:
+            'io.sourcya.playx.verion.update.example', // Example package name
         iosBundleId: 'com.apple.shortcuts', // Example bundle ID
       ),
     );
@@ -397,7 +400,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       success: (info) {
         setState(() {
           message =
-          'Check version successful: ${info.newVersion} | Can update: ${info.canUpdate} | Force update: ${info.forceUpdate}';
+              'Check version successful: ${info.newVersion} | Can update: ${info.canUpdate} | Force update: ${info.forceUpdate}';
         });
 
         if (info.forceUpdate) {
@@ -409,7 +412,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 versionUpdateInfo: info,
                 uiOptions: PlayxUpdateUIOptions(
                   // Configure PlayxUpdatePage specifically
-                  displayType: PlayxUpdateDisplayType.pageOnForceUpdate, // It's a full page for force update
+                  displayType: PlayxUpdateDisplayType
+                      .pageOnForceUpdate, // It's a full page for force update
                   isDismissible: false, // Force update page is not dismissible
                   showReleaseNotes: false, // No release notes on this one
                   leading: Image.network(
@@ -423,39 +427,47 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                       fontSize: 25,
                       fontWeight: FontWeight.bold),
                   description: (info) =>
-                  'A new version of the app is now available.\n'
+                      'A new version of the app is now available.\n'
                       'The app needs to be updated to the latest version (V${info.newVersion}) in order to work properly.\n'
                       'Update now to enjoy the latest features and bug fixes.',
-                  descriptionTextStyle: const TextStyle(fontSize: 16, color: Colors.black54),
+                  descriptionTextStyle:
+                      const TextStyle(fontSize: 16, color: Colors.black54),
                   updateButtonText: 'Update App Now',
-                  updateButtonTextStyle: const TextStyle(fontSize: 18, color: Colors.white),
+                  updateButtonTextStyle:
+                      const TextStyle(fontSize: 18, color: Colors.white),
                   updateButtonStyle: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 15),
                   ),
                   // For a force update page, the dismiss button should typically be hidden
                   // or lead to app exit. Since isDismissible is false, the button won't show.
                   onCancel: (info) {
                     // This callback would only be invoked if isDismissible was true
                     // and the user managed to dismiss it or pressed a custom dismiss button.
-                    SystemNavigator.pop(); // Exit app on cancel for force update
+                    SystemNavigator
+                        .pop(); // Exit app on cancel for force update
                   },
                 ),
               ),
             ),
-                (route) => false, // Remove all routes below this page
+            (route) => false, // Remove all routes below this page
           );
         } else if (info.canUpdate) {
           // If update is available but not forced, show PlayxUpdateDialog
           showDialog(
             context: context,
-            barrierDismissible: info.forceUpdate ? false : true, // Dialog dismissible based on force update
+            barrierDismissible: info.forceUpdate
+                ? false
+                : true, // Dialog dismissible based on force update
             builder: (context) => PlayxUpdateDialog(
               versionUpdateInfo: info,
               uiOptions: PlayxUpdateUIOptions(
                 // Configure PlayxUpdateDialog
-                displayType: PlayxUpdateDisplayType.dialog, // Explicitly a dialog
+                displayType:
+                    PlayxUpdateDisplayType.dialog, // Explicitly a dialog
                 showReleaseNotes: true,
                 title: (info) => 'New Update Available!',
                 titleTextStyle: const TextStyle(
@@ -463,10 +475,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     fontSize: 20,
                     fontWeight: FontWeight.bold),
                 description: (info) =>
-                'Update to V${info.newVersion} to get the latest features.',
+                    'Update to V${info.newVersion} to get the latest features.',
                 updateButtonText: 'Update',
                 dismissButtonText: 'Later',
-                isDismissible: !info.forceUpdate, // Allow dismissal if not forced
+                isDismissible:
+                    !info.forceUpdate, // Allow dismissal if not forced
               ),
             ),
           );
@@ -476,13 +489,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       },
       error: (error) {
         // network related errors
-        if(error is NetworkException){
-          if(error is NoInternetConnectionException){
-            _showMessage('No internet connection. Please check your network settings.', isError: true);
+        if (error is NetworkException) {
+          if (error is NoInternetConnectionException) {
+            _showMessage(
+                'No internet connection. Please check your network settings.',
+                isError: true);
           } else {
             _showMessage('Network error: ${error.message}', isError: true);
           }
-        }else {
+        } else {
           _showMessage('Version check failed: ${error.message}', isError: true);
         }
         setState(() {
@@ -496,32 +511,35 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   /// If no update is downloaded, it will start the flexible update flow.
   /// If an update is already downloaded, it will complete the update immediately.
   Future<void> startFlexibleUpdateOnly(BuildContext context) async {
-    if(!kIsWeb && Platform.isAndroid) {
-      final isUpdateNeedToBeInstalled = await PlayxVersionUpdate.isFlexibleUpdateNeedToBeInstalled();
-      if (isUpdateNeedToBeInstalled.updateData??false) {
+    if (!kIsWeb && Platform.isAndroid) {
+      final isUpdateNeedToBeInstalled =
+          await PlayxVersionUpdate.isFlexibleUpdateNeedToBeInstalled();
+      if (isUpdateNeedToBeInstalled.updateData ?? false) {
         // If an update is already downloaded, complete it immediately
         _showMessage('An update is already downloaded. Completing it now.');
         completeFlexibleUpdate();
         return;
       }
       // Start the flexible update immediately if on Android
-     final res=await  PlayxVersionUpdate.startFlexibleUpdate();
+      final res = await PlayxVersionUpdate.startFlexibleUpdate();
       res.when(
         success: (isStarted) {
           setState(() {
-            message = 'Flexible update ${isStarted? 'started' : 'Cancelled'}';
+            message = 'Flexible update ${isStarted ? 'started' : 'Cancelled'}';
           });
         },
         error: (error) {
           setState(() {
             message = 'Flexible update start error: ${error.message}';
           });
-          _showMessage('Failed to start flexible update: ${error.message}', isError: true);
+          _showMessage('Failed to start flexible update: ${error.message}',
+              isError: true);
         },
       );
     } else {
       // For iOS or web, show a message that flexible updates are not supported
-      _showMessage('Flexible updates are not supported on this platform.', isError: true);
+      _showMessage('Flexible updates are not supported on this platform.',
+          isError: true);
     }
   }
 
@@ -538,7 +556,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         setState(() {
           message = 'Check Play Availability error: ${error.message}';
         });
-        _showMessage('Availability check failed: ${error.message}', isError: true);
+        _showMessage('Availability check failed: ${error.message}',
+            isError: true);
       },
     );
   }
@@ -562,7 +581,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 error: (error) {
                   setState(() {
                     message =
-                    'Flexible update completion error: ${error.message}';
+                        'Flexible update completion error: ${error.message}';
                   });
                   _showMessage('Update completion failed: ${error.message}',
                       isError: true);
@@ -589,7 +608,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       error: (error) {
         setState(() {
           message =
-          'Check Flexible update installation need error: ${error.message}';
+              'Check Flexible update installation need error: ${error.message}';
         });
         _showMessage('Flexible update check failed: ${error.message}',
             isError: true);

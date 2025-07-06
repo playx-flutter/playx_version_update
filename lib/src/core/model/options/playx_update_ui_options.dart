@@ -4,7 +4,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../utils/callbacks.dart';
 
-
 /// Options for customizing the user interface of Flutter-based update prompts.
 ///
 /// These options apply to the UI shown by [PlayxVersionUpdate.showUpdateDialog] on both Android
@@ -117,14 +116,13 @@ class PlayxUpdateUIOptions {
   /// Applies to Flutter-based UIs on both Android and iOS.
   final ButtonStyle? dismissButtonStyle;
 
-
   const PlayxUpdateUIOptions({
     this.title,
     this.description,
     this.releaseNotesTitle,
     this.showReleaseNotes = false,
     this.isDismissible,
-    this.showDismissButtonOnForceUpdate =true,
+    this.showDismissButtonOnForceUpdate = true,
     this.updateButtonText = 'Update',
     this.dismissButtonText,
     this.onUpdate,

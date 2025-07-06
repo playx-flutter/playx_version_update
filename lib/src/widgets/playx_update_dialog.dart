@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -281,11 +280,11 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
       widget.versionUpdateInfo.releaseNotes != null &&
       widget.versionUpdateInfo.releaseNotes!.isNotEmpty;
 
-  bool get shouldShowDismissButton => isDismissible ||
+  bool get shouldShowDismissButton =>
+      isDismissible ||
       (widget.uiOptions.showDismissButtonOnForceUpdate &&
           widget.versionUpdateInfo.forceUpdate);
 
   bool get isDismissible =>
       widget.uiOptions.isDismissible ?? !widget.versionUpdateInfo.forceUpdate;
-
 }

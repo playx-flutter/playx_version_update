@@ -23,7 +23,7 @@ class Version implements Comparable<Version> {
   // the pre-release (starting with -) and build (starting with +) sections.
   // Any other non-numeric parts in the core will be handled by splitting and filtering.
   static final RegExp _fullVersionRegex =
-  RegExp(r"^(.*?)(?:-([0-9A-Za-z\-.]+))?(?:\+([0-9A-Za-z\-.]+))?$");
+      RegExp(r"^(.*?)(?:-([0-9A-Za-z\-.]+))?(?:\+([0-9A-Za-z\-.]+))?$");
 
   // Regex for validating individual pre-release segments (e.g., "alpha", "1")
   static final RegExp _preReleaseSegmentRegex = RegExp(r"^[0-9A-Za-z\-]+$");
@@ -66,15 +66,16 @@ class Version implements Comparable<Version> {
   /// Throws a [FormatException] if string content violates character constraints.
   /// Throws an [ArgumentError] if numeric components are negative.
   Version(
-      this.major,
-      this.minor,
-      this.patch, {
-        this.additionalComponents = const <int>[],
-        this.preRelease = "",
-        this.build = "",
-      }) {
+    this.major,
+    this.minor,
+    this.patch, {
+    this.additionalComponents = const <int>[],
+    this.preRelease = "",
+    this.build = "",
+  }) {
     if (major < 0 || minor < 0 || patch < 0) {
-      throw ArgumentError("Major, minor, and patch numbers must be non-negative.");
+      throw ArgumentError(
+          "Major, minor, and patch numbers must be non-negative.");
     }
     if (additionalComponents.any((c) => c < 0)) {
       throw ArgumentError("Additional components must be non-negative.");
@@ -125,22 +126,22 @@ class Version implements Comparable<Version> {
   ///
   /// Also resets the [minor], [patch], and [additionalComponents] numbers to 0,
   /// and clears the [preRelease] and [build] information.
-  Version incrementMajor() =>
-      Version(major + 1, 0, 0, additionalComponents: [], preRelease: "", build: "");
+  Version incrementMajor() => Version(major + 1, 0, 0,
+      additionalComponents: [], preRelease: "", build: "");
 
   /// Creates a new [Version] with the [minor] version number incremented.
   ///
   /// Also resets the [patch] and [additionalComponents] numbers to 0,
   /// and clears the [preRelease] and [build] information.
-  Version incrementMinor() =>
-      Version(major, minor + 1, 0, additionalComponents: [], preRelease: "", build: "");
+  Version incrementMinor() => Version(major, minor + 1, 0,
+      additionalComponents: [], preRelease: "", build: "");
 
   /// Creates a new [Version] with the [patch] version number incremented.
   ///
   /// Also resets the [additionalComponents] to empty,
   /// and clears the [preRelease] and [build] information.
-  Version incrementPatch() =>
-      Version(major, minor, patch + 1, additionalComponents: [], preRelease: "", build: "");
+  Version incrementPatch() => Version(major, minor, patch + 1,
+      additionalComponents: [], preRelease: "", build: "");
 
   /// Creates a new [Version] with the right-most numeric [preRelease] segment incremented.
   /// If no numeric segment is found, one will be added with the value "1".
@@ -150,7 +151,7 @@ class Version implements Comparable<Version> {
     if (!isPreRelease) {
       throw ArgumentError(
           "Cannot increment pre-release on a non-pre-release Version. "
-              "Consider adding an initial pre-release tag (e.g., 'alpha.1') first.");
+          "Consider adding an initial pre-release tag (e.g., 'alpha.1') first.");
     }
     final List<String> preReleaseSegments = preRelease.split('.');
     bool foundNumeric = false;
@@ -217,7 +218,8 @@ class Version implements Comparable<Version> {
 
     final Match? fullMatch = _fullVersionRegex.firstMatch(versionString);
     if (fullMatch == null) {
-      throw FormatException("Not a properly formatted version string: '$versionString'");
+      throw FormatException(
+          "Not a properly formatted version string: '$versionString'");
     }
 
     String coreString = fullMatch.group(1)!;
@@ -278,13 +280,16 @@ class Version implements Comparable<Version> {
     if (a.patch != b.patch) return a.patch.compareTo(b.patch);
 
     // Compare additional components
-    final int maxAdditionalLen = a.additionalComponents.length > b.additionalComponents.length
-        ? a.additionalComponents.length
-        : b.additionalComponents.length;
+    final int maxAdditionalLen =
+        a.additionalComponents.length > b.additionalComponents.length
+            ? a.additionalComponents.length
+            : b.additionalComponents.length;
 
     for (int i = 0; i < maxAdditionalLen; i++) {
-      final int aComp = i < a.additionalComponents.length ? a.additionalComponents[i] : 0;
-      final int bComp = i < b.additionalComponents.length ? b.additionalComponents[i] : 0;
+      final int aComp =
+          i < a.additionalComponents.length ? a.additionalComponents[i] : 0;
+      final int bComp =
+          i < b.additionalComponents.length ? b.additionalComponents[i] : 0;
       if (aComp != bComp) return aComp.compareTo(bComp);
     }
 
@@ -299,14 +304,17 @@ class Version implements Comparable<Version> {
       final List<String> aPreReleaseSegments = a.preRelease.split('.');
       final List<String> bPreReleaseSegments = b.preRelease.split('.');
 
-      final int maxPreReleaseLen = aPreReleaseSegments.length > bPreReleaseSegments.length
-          ? aPreReleaseSegments.length
-          : bPreReleaseSegments.length;
+      final int maxPreReleaseLen =
+          aPreReleaseSegments.length > bPreReleaseSegments.length
+              ? aPreReleaseSegments.length
+              : bPreReleaseSegments.length;
 
       for (int i = 0; i < maxPreReleaseLen; i++) {
         // If one has fewer pre-release identifiers, it has lower precedence
-        if (bPreReleaseSegments.length <= i) return 1; // B ran out of segments, A is longer, so A > B
-        if (aPreReleaseSegments.length <= i) return -1; // A ran out of segments, B is longer, so A < B
+        if (bPreReleaseSegments.length <= i)
+          return 1; // B ran out of segments, A is longer, so A > B
+        if (aPreReleaseSegments.length <= i)
+          return -1; // A ran out of segments, B is longer, so A < B
 
         final String aSegment = aPreReleaseSegments[i];
         final String bSegment = bPreReleaseSegments[i];

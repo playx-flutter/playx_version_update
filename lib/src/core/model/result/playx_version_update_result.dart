@@ -14,16 +14,12 @@ sealed class PlayxVersionUpdateResult<T> {
   /// Check if the result is an error.
   bool get isError => this is PlayxVersionUpdateErrorResult<T>;
 
-
-  T? get updateData =>
-      switch (this) {
+  T? get updateData => switch (this) {
         PlayxVersionUpdateSuccessResult<T> result => result.data,
         PlayxVersionUpdateErrorResult<T> _ => null,
       };
 
-
-  PlayxVersionUpdateError? get updateError =>
-      switch (this) {
+  PlayxVersionUpdateError? get updateError => switch (this) {
         PlayxVersionUpdateSuccessResult<T> _ => null,
         PlayxVersionUpdateErrorResult<T> result => result.error,
       };

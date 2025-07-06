@@ -24,7 +24,6 @@ class VersionChecker {
   Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>> checkVersion({
     PlayxUpdateOptions options = const PlayxUpdateOptions(),
   }) async {
-
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
       return const PlayxVersionUpdateResult.error(NotSupportedException());
     }
@@ -32,7 +31,6 @@ class VersionChecker {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
     String version = packageInfo.version;
-
 
     if (Platform.isAndroid) {
       final packageId = options.androidPackageName ?? packageInfo.packageName;

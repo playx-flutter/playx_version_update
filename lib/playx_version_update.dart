@@ -13,20 +13,19 @@ export 'package:playx_version_update/src/core/model/options/playx_update_display
 export 'package:playx_version_update/src/core/model/options/playx_update_ui_options.dart';
 export 'package:playx_network/playx_network.dart'
     show
-    NetworkException,
-    ApiException,
-    UnauthorizedRequestException,
-    NotFoundException,
-    ConflictException,
-    RequestTimeoutException,
-    UnableToProcessException,
-    InternalServerErrorException,
-    ServiceUnavailableException,
-    EmptyResponseException,
-    DefaultApiException,
-    SendTimeoutException,
-    RequestCanceledException,
-    NoInternetConnectionException,
-    InvalidFormatException,
-    UnexpectedErrorException;
-
+        NetworkException,
+        ApiException,
+        UnauthorizedRequestException,
+        NotFoundException,
+        ConflictException,
+        RequestTimeoutException,
+        UnableToProcessException,
+        InternalServerErrorException,
+        ServiceUnavailableException,
+        EmptyResponseException,
+        DefaultApiException,
+        SendTimeoutException,
+        RequestCanceledException,
+        NoInternetConnectionException,
+        InvalidFormatException,
+        UnexpectedErrorException;

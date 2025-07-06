@@ -1,4 +1,5 @@
 import 'package:playx_version_update/playx_version_update.dart';
+
 /// Defines the preferred UI presentation for Flutter-based update prompts.
 ///
 /// This enum is used to configure the appearance of update dialogs or pages

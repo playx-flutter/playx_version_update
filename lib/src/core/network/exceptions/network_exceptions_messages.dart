@@ -1,4 +1,3 @@
-
 import 'package:playx_network/src/models/exceptions/message/exception_message.dart';
 
 /// Default error messages related to network requests when
@@ -17,8 +16,7 @@ class NetworkExceptionsMessages extends ExceptionMessage {
       "Version check could not be completed due to a conflict on the server.";
 
   @override
-  String get defaultError =>
-      "Something went wrong while checking for updates.";
+  String get defaultError => "Something went wrong while checking for updates.";
 
   @override
   String get emptyResponse =>
