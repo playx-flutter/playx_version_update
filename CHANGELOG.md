@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+- Update package_info_plus, playx_network, url_launcher packages
+- Add option to enable network logging
+
+
 ## 1.0.0 - [2025-07-06]
 > Note: This release is a major release and may break some of the existing implementations. Please read the documentation carefully.
 
