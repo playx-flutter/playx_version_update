@@ -37,6 +37,9 @@ class PlayxUpdateOptions {
   /// The two-letter language code for store details. Defaults to 'en'.
   final String language;
 
+  /// Whether to enable network logging.
+  final bool enableNetworkLogging;
+
   const PlayxUpdateOptions({
     this.localVersion,
     this.newVersion,
@@ -46,5 +49,6 @@ class PlayxUpdateOptions {
     this.iosBundleId,
     this.country = 'us',
     this.language = 'en',
+    this.enableNetworkLogging = false,
   });
 }

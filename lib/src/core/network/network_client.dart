@@ -10,6 +10,7 @@ class NetworkClient {
         settings: PlayxNetworkClientSettings(
           logSettings: PlayxNetworkLoggerSettings(
             printResponseData: false,
+            enabled: false,
           ),
           useIsolateForMappingJson: false,
           useWorkMangerForMappingJsonInIsolate: false,

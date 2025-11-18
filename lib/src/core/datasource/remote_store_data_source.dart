@@ -14,22 +14,38 @@ class RemoteStoreDataSource {
 
   final PlayxNetworkClient _client = NetworkClient.createClient();
 
-  Future<NetworkResult<StoreInfo>> getPlayStoreInfo(
-      {required String packageId,
-      required String country,
-      required String language}) {
+  Future<NetworkResult<StoreInfo>> getPlayStoreInfo({
+    required String packageId,
+    required String country,
+    required String language,
+    bool enableLog = false,
+  }) {
     final url = getGooglePlayUrl(
         packageId: packageId, country: country, language: language);
-    return _client.get(url, fromJson: StoreInfo.fromGooglePlay);
+    return _client.get(url,
+        fromJson: StoreInfo.fromGooglePlay,
+        settings: _client.settings.copyWith(
+            logSettings: PlayxNetworkLoggerSettings(
+          printResponseData: false,
+          enabled: enableLog,
+        )));
   }
 
-  Future<NetworkResult<StoreInfo>> getAppStoreInfo(
-      {required String packageId,
-      required String country,
-      required String language}) {
+  Future<NetworkResult<StoreInfo>> getAppStoreInfo({
+    required String packageId,
+    required String country,
+    required String language,
+    bool enableLog = false,
+  }) {
     final url = getAppStoreInfoUrl(
         packageId: packageId, country: country, language: language);
-    return _client.get(url, fromJson: StoreInfo.fromAppStore);
+    return _client.get(url,
+        fromJson: StoreInfo.fromAppStore,
+        settings: _client.settings.copyWith(
+            logSettings: PlayxNetworkLoggerSettings(
+          printResponseData: false,
+          enabled: enableLog,
+        )));
   }
 }
 

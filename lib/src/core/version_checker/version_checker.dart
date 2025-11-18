@@ -36,21 +36,25 @@ class VersionChecker {
       final packageId = options.androidPackageName ?? packageInfo.packageName;
 
       return _checkAndroidVersion(
-          localVersion: version,
-          packageId: packageId,
-          country: options.country,
-          language: options.language,
-          newVersion: options.newVersion,
-          forceUpdate: options.forceUpdate);
+        localVersion: version,
+        packageId: packageId,
+        country: options.country,
+        language: options.language,
+        newVersion: options.newVersion,
+        forceUpdate: options.forceUpdate,
+        enableLog: options.enableNetworkLogging,
+      );
     } else if (Platform.isIOS) {
       final packageId = options.iosBundleId ?? packageInfo.packageName;
       return _checkIosVersion(
-          localVersion: version,
-          packageId: packageId,
-          country: options.country,
-          language: options.language,
-          newVersion: options.newVersion,
-          forceUpdate: options.forceUpdate);
+        localVersion: version,
+        packageId: packageId,
+        country: options.country,
+        language: options.language,
+        newVersion: options.newVersion,
+        forceUpdate: options.forceUpdate,
+        enableLog: options.enableNetworkLogging,
+      );
     }
 
     return const PlayxVersionUpdateResult.error(NotSupportedException());
@@ -64,9 +68,13 @@ class VersionChecker {
     required String language,
     required String? newVersion,
     required bool? forceUpdate,
+    bool enableLog = false,
   }) async {
     final storeInfo = await _dataSource.getPlayStoreInfo(
-        packageId: packageId, country: country, language: language);
+        packageId: packageId,
+        country: country,
+        language: language,
+        enableLog: enableLog);
 
     return storeInfo.mapAsync(success: (infoResult) async {
       final info = infoResult.data;
@@ -112,9 +120,13 @@ class VersionChecker {
     required String language,
     required String? newVersion,
     required bool? forceUpdate,
+    bool enableLog = false,
   }) async {
     final storeInfo = await _dataSource.getAppStoreInfo(
-        packageId: packageId, country: country, language: language);
+        packageId: packageId,
+        country: country,
+        language: language,
+        enableLog: enableLog);
 
     return storeInfo.mapAsync(success: (infoResult) async {
       final info = infoResult.data;
