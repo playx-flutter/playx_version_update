@@ -38,7 +38,7 @@ YAML
 
 ```
 dependencies:
-  playx_version_update: ^1.0.0 # Use the latest stable version
+  playx_version_update: ^1.0.1 # Use the latest stable version
 
 ```
 
