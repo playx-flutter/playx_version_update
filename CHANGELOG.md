@@ -1,4 +1,6 @@
 # Changelog
+## 1.1.0
+- Update packages
 
 ## 1.0.1
 - Update package_info_plus, playx_network, url_launcher packages

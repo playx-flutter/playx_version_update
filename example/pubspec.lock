@@ -69,10 +69,10 @@ packages:
     dependency: transitive
     description:
       name: dio
-      sha256: d90ee57923d1828ac14e492ca49440f65477f4bb1263575900be731a3dac66a9
+      sha256: aff32c08f92787a557dd5c0145ac91536481831a01b4648136373cddb0e64f8c
       url: "https://pub.dev"
     source: hosted
-    version: "5.9.0"
+    version: "5.9.2"
   dio_smart_retry:
     dependency: transitive
     description:
@@ -85,18 +85,18 @@ packages:
     dependency: transitive
     description:
       name: dio_web_adapter
-      sha256: "7586e476d70caecaf1686d21eee7247ea43ef5c345eab9e0cc3583ff13378d78"
+      sha256: "2f9e64323a7c3c7ef69567d5c800424a11f8337b8b228bad02524c9fb3c1f340"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.1"
+    version: "2.1.2"
   equatable:
     dependency: transitive
     description:
       name: equatable
-      sha256: "567c64b3cb4cf82397aac55f4f0cbd3ca20d77c6c03bedbc4ceaddc08904aef7"
+      sha256: "3e0141505477fd8ad55d6eb4e7776d3fe8430be8e497ccb1521370c3f21a3e2b"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.7"
+    version: "2.0.8"
   fake_async:
     dependency: transitive
     description:
@@ -159,50 +159,50 @@ packages:
     dependency: transitive
     description:
       name: flutter_secure_storage
-      sha256: "9cad52d75ebc511adfae3d447d5d13da15a55a92c9410e50f67335b6d21d16ea"
+      sha256: da922f2aab2d733db7e011a6bcc4a825b844892d4edd6df83ff156b09a9b2e40
       url: "https://pub.dev"
     source: hosted
-    version: "9.2.4"
+    version: "10.0.0"
+  flutter_secure_storage_darwin:
+    dependency: transitive
+    description:
+      name: flutter_secure_storage_darwin
+      sha256: "8878c25136a79def1668c75985e8e193d9d7d095453ec28730da0315dc69aee3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   flutter_secure_storage_linux:
     dependency: transitive
     description:
       name: flutter_secure_storage_linux
-      sha256: bf7404619d7ab5c0a1151d7c4e802edad8f33535abfbeff2f9e1fe1274e2d705
+      sha256: "2b5c76dce569ab752d55a1cee6a2242bcc11fdba927078fb88c503f150767cda"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.2"
-  flutter_secure_storage_macos:
-    dependency: transitive
-    description:
-      name: flutter_secure_storage_macos
-      sha256: "6c0a2795a2d1de26ae202a0d78527d163f4acbb11cde4c75c670f3a0fc064247"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.3"
+    version: "3.0.0"
   flutter_secure_storage_platform_interface:
     dependency: transitive
     description:
       name: flutter_secure_storage_platform_interface
-      sha256: cf91ad32ce5adef6fba4d736a542baca9daf3beac4db2d04be350b87f69ac4a8
+      sha256: "8ceea1223bee3c6ac1a22dabd8feefc550e4729b3675de4b5900f55afcb435d6"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.2"
+    version: "2.0.1"
   flutter_secure_storage_web:
     dependency: transitive
     description:
       name: flutter_secure_storage_web
-      sha256: f4ebff989b4f07b2656fb16b47852c0aab9fed9b4ec1c70103368337bc1886a9
+      sha256: "6a1137df62b84b54261dca582c1c09ea72f4f9a4b2fcee21b025964132d5d0c3"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.1"
+    version: "2.1.0"
   flutter_secure_storage_windows:
     dependency: transitive
     description:
       name: flutter_secure_storage_windows
-      sha256: b20b07cb5ed4ed74fc567b78a72936203f587eba460af1df11281c9326cd3709
+      sha256: "3b7c8e068875dfd46719ff57c90d8c459c87f2302ed6b00ff006b3c9fcad1613"
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.2"
+    version: "4.1.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -222,10 +222,10 @@ packages:
     dependency: transitive
     description:
       name: get_it
-      sha256: "84792561b731b6463d053e9761a5236da967c369da10b134b8585a5e18429956"
+      sha256: "568d62f0e68666fb5d95519743b3c24a34c7f19d834b0658c46e26d778461f66"
       url: "https://pub.dev"
     source: hosted
-    version: "9.0.5"
+    version: "9.2.1"
   http:
     dependency: transitive
     description:
@@ -247,14 +247,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  js:
-    dependency: transitive
-    description:
-      name: js
-      sha256: f2c445dce49627136094980615a031419f7f3eb393237e4ecd97ac15dea343f3
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.6.7"
   leak_tracker:
     dependency: transitive
     description:
@@ -307,10 +299,10 @@ packages:
     dependency: transitive
     description:
       name: meta
-      sha256: e3641ec5d63ebf0d9b41bd43201a66e3fc79a65db5f61fc181f04cd27aab950c
+      sha256: "23f08335362185a5ea2ad3a4e597f1375e78bce8a040df5c600c8d3552ef2394"
       url: "https://pub.dev"
     source: hosted
-    version: "1.16.0"
+    version: "1.17.0"
   mime:
     dependency: transitive
     description:
@@ -403,25 +395,25 @@ packages:
     dependency: transitive
     description:
       name: playx_core
-      sha256: b49e07caeda91353f04f68d52c751fdec0513faf46646c74ef785ca258fd1683
+      sha256: "1d92e7d33d1132b2fabd779149b9a95b2dbf4b8b0f8f6ea28cad76950ef12f94"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.4"
+    version: "1.0.0"
   playx_network:
     dependency: transitive
     description:
       name: playx_network
-      sha256: "5914f1fc3a74ae349a592b2224296eac72a9c7800672de965be86c2fa02f3a1c"
+      sha256: "9559e642a212d105f7eb273dd519a5d1fbbef3cd6279474e13c9abb088daafb3"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.0"
+    version: "1.0.0"
   playx_version_update:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "1.0.1"
+    version: "1.1.0"
   plugin_platform_interface:
     dependency: transitive
     description:
@@ -442,26 +434,26 @@ packages:
     dependency: transitive
     description:
       name: sentry
-      sha256: "10a0bc25f5f21468e3beeae44e561825aaa02cdc6829438e73b9b64658ff88d9"
+      sha256: "288aee3d35f252ac0dc3a4b0accbbe7212fa2867604027f2cc5bc65334afd743"
       url: "https://pub.dev"
     source: hosted
-    version: "9.8.0"
+    version: "9.16.0"
   sentry_dio:
     dependency: transitive
     description:
       name: sentry_dio
-      sha256: bee438fd790c534da77f0a6c9cd04c54c818184b8a54bbe7d916489c8aad56a0
+      sha256: "750afa9a14297908038b91b6322efb3f42d24aa79a21eb09053425e283d6c7ef"
       url: "https://pub.dev"
     source: hosted
-    version: "9.8.0"
+    version: "9.16.0"
   shared_preferences:
     dependency: transitive
     description:
       name: shared_preferences
-      sha256: "6e8bf70b7fef813df4e9a36f658ac46d107db4b4cfe1048b477d4e453a8159f5"
+      sha256: c3025c5534b01739267eb7d76959bbc25a6d10f6988e1c2a3036940133dd10bf
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.3"
+    version: "2.5.5"
   shared_preferences_android:
     dependency: transitive
     description:
@@ -567,26 +559,26 @@ packages:
     dependency: transitive
     description:
       name: talker
-      sha256: "82de443cadfb6c41d457e7774c7890a91c73af3c2f17f3f7c01670bb58d5f5a1"
+      sha256: c364edc0fbd6c648e1a78e6edd89cccd64df2150ca96d899ecd486b76c185042
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.2"
+    version: "5.1.16"
   talker_dio_logger:
     dependency: transitive
     description:
       name: talker_dio_logger
-      sha256: "5bbecc237f3d2c4af9348da5a0086321ed6dd6bf9857d723b1f54f61c810cff2"
+      sha256: "0c2b6e30c4e32b0d746cf2053874bf496043c62e67b9a0271e8c0b3eca65cdaa"
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.2"
+    version: "5.1.16"
   talker_logger:
     dependency: transitive
     description:
       name: talker_logger
-      sha256: "8218836d871ea5ab1ec616cffe3cdae84e8fb44022d5cc04c95d7b220572b8fb"
+      sha256: cea1b8283a28c2118a0b197057fc5beb5b0672c75e40a48725e5e452c0278ff3
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.2"
+    version: "5.1.16"
   term_glyph:
     dependency: transitive
     description:
@@ -599,10 +591,10 @@ packages:
     dependency: transitive
     description:
       name: test_api
-      sha256: "522f00f556e73044315fa4585ec3270f1808a4b186c936e612cab0b565ff1e00"
+      sha256: ab2726c1a94d3176a45960b6234466ec367179b87dd74f1611adb1f3b5fb9d55
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.6"
+    version: "0.7.7"
   typed_data:
     dependency: transitive
     description:
@@ -740,5 +732,5 @@ packages:
     source: hosted
     version: "1.1.0"
 sdks:
-  dart: ">=3.8.0 <4.0.0"
-  flutter: ">=3.27.0"
+  dart: ">=3.9.0 <4.0.0"
+  flutter: ">=3.35.0"
