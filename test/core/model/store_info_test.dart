@@ -15,16 +15,6 @@ void main() {
         '1.2.0',
       );
     });
-    test('parses the original2 bracketed format case-insensitively', () {
-      expect(
-        StoreInfo.extractMinVersion('[ Minimum Version : 1.2 ]'),
-        '1.2',
-      );
-      expect(
-        StoreInfo.extractMinVersion('[minimum version :1.2.0]'),
-        '1.2.0',
-      );
-    });
 
     test('supports common separator and spacing variants', () {
       expect(

@@ -10,12 +10,25 @@ String? getFormattedHtmlText(
       )
       .replaceAll(
         "<p>",
+        "",
+      )
+      .replaceAll(
+        "</p>",
         "\n\n",
       )
       .replaceAll(
         "<br>",
         "\n",
       )
+      .replaceAll(
+        "<br/>",
+        "\n",
+      )
+      .replaceAll(
+        "<br />",
+        "\n",
+      )
+      .replaceAll(RegExp(r'<[^>]*>'), ' ')
       .replaceAll(
         "&quot;",
         "\"",
@@ -26,20 +39,16 @@ String? getFormattedHtmlText(
       )
       .replaceAll(
         "&lt;",
+        "<",
+      )
+      .replaceAll(
+        "&gt;",
         ">",
-      )
-      .replaceAll(
-        "&gt;",
-        "<",
-      )
-      .replaceAll(
-        "&gt;",
-        "<",
       )
       .replaceAll(
         "&#39;",
         "'",
       )
-      .replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), ' ')
+      .replaceAll(RegExp(r'&[^;]+;'), ' ')
       .trim();
 }
