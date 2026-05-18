@@ -254,7 +254,16 @@ Future<void> checkForUpdateAndShowCustomUI(BuildContext context) async {
 
 You can automatically determine if an update should be forced by embedding a minimum version string in your app's Google Play Store or Apple App Store description.
 
-Simply add `[Minimum Version :X.Y.Z]` to the end of your app's store description (e.g., `[Minimum Version :1.5.0]`). The package will parse this information and automatically update the `forceUpdate` value of `PlayxVersionUpdateInfo` returned by `checkVersion` accordingly.
+Supported formats are case-insensitive, require square brackets, and allow a few separator styles, for example:
+
+- `[Minimum Version :1.5.0]`
+- `[Minimum Version: 1.5.0]`
+- `[Minimum Version = 1.5.0]`
+- `[minimum_version:1.5.0]`
+
+The version value itself follows the same styles supported by the package version parser, including multi-part versions like `519.0.0.44.92` and tagged versions like `3.122.764106578.release` or `1.2.3-alpha.1+build.456`.
+
+The package will parse this information and automatically update the `forceUpdate` value of `PlayxVersionUpdateInfo` returned by `checkVersion` accordingly.
 
 
 -----
@@ -743,4 +752,3 @@ For a complete list of all possible errors, refer to the [PlayxVersionUpdateErro
 
 -   [playx_network](https://pub.dev/packages/playx_network) - The network package used internally for version checks.
     
-

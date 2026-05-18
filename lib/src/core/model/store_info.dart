@@ -1,8 +1,15 @@
 import 'dart:convert';
 
 import 'package:playx_version_update/src/core/utils/utils.dart';
+import 'package:playx_version_update/src/core/version_checker/version.dart';
 
 class StoreInfo {
+  static final RegExp _versionStartsWithNumberRegexp = RegExp(r'^\d');
+  static final RegExp _minimumVersionRegexp = RegExp(
+    r'\[\s*minimum[\s_-]*version\s*[:=]\s*([^\]\r\n]+?)\s*\]',
+    caseSensitive: false,
+  );
+
   final String version;
   final String? minVersion;
   final String? releaseNotes;
@@ -51,19 +58,8 @@ class StoreInfo {
       // Minimum version from description - This regex is kept as is.
       final regexpDescription =
           RegExp(r'\[\[(null,)\"((\.[a-z]+)?(([^"]|\\")*)?)\"\]\]');
-      final description =
-          regexpDescription.firstMatch(body)?.group(2)?.toLowerCase();
-
-      if (description != null && description.isNotEmpty) {
-        final minimumVersionPrefix = '[Minimum Version :'.toLowerCase();
-        if (description.contains(minimumVersionPrefix)) {
-          minVersion = description
-              .substring(description.indexOf(minimumVersionPrefix))
-              .split(minimumVersionPrefix)[1]
-              .split(']')[0]
-              .trim();
-        }
-      }
+      final description = regexpDescription.firstMatch(body)?.group(2);
+      minVersion = extractMinVersion(description);
     } catch (_) {
       // Error handling for minVersion extraction is already present.
     }
@@ -88,17 +84,7 @@ class StoreInfo {
       String? minVersion;
 
       final description = jsonObj['results'][0]['description'];
-
-      if (description != null && description.isNotEmpty) {
-        final minimumVersionPrefix = '[Minimum Version :'.toLowerCase();
-        if (description.contains(minimumVersionPrefix)) {
-          minVersion = description
-              .substring(description.indexOf(minimumVersionPrefix))
-              .split(minimumVersionPrefix)[1]
-              .split(']')[0]
-              .trim();
-        }
-      }
+      minVersion = extractMinVersion(description);
       return StoreInfo(
         version: storeVersion ?? '',
         minVersion: minVersion,
@@ -107,6 +93,22 @@ class StoreInfo {
       );
     } catch (_) {
       throw Exception('Not found');
+    }
+  }
+
+  static String? extractMinVersion(dynamic description) {
+    if (description is! String || description.trim().isEmpty) return null;
+
+    final candidate =
+        _minimumVersionRegexp.firstMatch(description)?.group(1)?.trim();
+    if (candidate == null || candidate.isEmpty) return null;
+    if (!_versionStartsWithNumberRegexp.hasMatch(candidate)) return null;
+
+    try {
+      Version.parse(candidate);
+      return candidate;
+    } catch (_) {
+      return null;
     }
   }
 
