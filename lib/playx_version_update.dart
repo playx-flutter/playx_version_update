@@ -1,6 +1,7 @@
 export 'package:playx_version_update/src/core/model/in_app_updates/playx_app_update_availability.dart';
 export 'package:playx_version_update/src/core/model/in_app_updates/playx_app_update_type.dart';
 export 'package:playx_version_update/src/core/model/in_app_updates/playx_download_info.dart';
+export 'package:playx_version_update/src/core/model/playx_platform_version.dart';
 export 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
 export 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
 export 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';

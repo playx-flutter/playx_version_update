@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:playx_version_update/src/core/model/playx_platform_version.dart';
+import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
 
@@ -85,6 +87,45 @@ void main() {
 
       expect(mapped.isError, isTrue);
       expect(mapped.updateError, isA<DefaultFailureError>());
+    });
+  });
+
+  group('PlayxVersionUpdateInfo with platform versions', () {
+    test(
+        'preserves raw platform versions while keeping effective generic fields',
+        () {
+      const newPlatformVersion = PlayxPlatformVersion(
+        android: '2.0.0',
+        ios: '3.0.0',
+      );
+      const minPlatformVersion = PlayxPlatformVersion(
+        android: '1.5.0',
+        ios: '2.5.0',
+      );
+
+      const info = PlayxVersionUpdateInfo(
+        localVersion: '1.0.0',
+        newVersion: '2.0.0',
+        canUpdate: true,
+        forceUpdate: true,
+        storeUrl: 'https://example.com',
+        minVersion: '1.5.0',
+        newPlatformVersion: newPlatformVersion,
+        minPlatformVersion: minPlatformVersion,
+      );
+
+      expect(info.newVersion, '2.0.0');
+      expect(info.minVersion, '1.5.0');
+      expect(info.newPlatformVersion, newPlatformVersion);
+      expect(info.minPlatformVersion, minPlatformVersion);
+      expect(
+        info.toString(),
+        contains('newPlatformVersion: $newPlatformVersion'),
+      );
+      expect(
+        info.toString(),
+        contains('minPlatformVersion: $minPlatformVersion'),
+      );
     });
   });
 }

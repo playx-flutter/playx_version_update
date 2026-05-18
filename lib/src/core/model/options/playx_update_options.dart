@@ -1,3 +1,5 @@
+import 'package:playx_version_update/src/core/model/playx_platform_version.dart';
+
 /// Configuration for version checking.
 class PlayxUpdateOptions {
   /// The current version of the app. If not provided, it's fetched from `package_info_plus`.
@@ -15,6 +17,16 @@ class PlayxUpdateOptions {
   /// If the app's `localVersion` is less than `minVersion`, the result will
   /// indicate a forced update is required, **unless `forceUpdate` is explicitly set to `false`**.
   final String? minVersion;
+
+  /// Platform-specific new app versions, typically provided by a custom backend.
+  ///
+  /// On the current platform, this value overrides [newVersion] when provided.
+  final PlayxPlatformVersion? newPlatformVersion;
+
+  /// Platform-specific minimum required app versions, typically provided by a custom backend.
+  ///
+  /// On the current platform, this value overrides [minVersion] when provided.
+  final PlayxPlatformVersion? minPlatformVersion;
 
   /// Manually set the force update status.
   ///
@@ -44,6 +56,8 @@ class PlayxUpdateOptions {
     this.localVersion,
     this.newVersion,
     this.minVersion,
+    this.newPlatformVersion,
+    this.minPlatformVersion,
     this.forceUpdate,
     this.androidPackageName,
     this.iosBundleId,

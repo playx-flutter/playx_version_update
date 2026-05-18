@@ -3,12 +3,23 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
+import 'package:playx_version_update/src/core/model/playx_platform_version.dart';
 import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
 import 'package:playx_version_update/src/core/version_checker/version.dart';
 
 import '../model/options/playx_update_options.dart';
+
+String? resolvePlatformVersionForCurrentPlatform({
+  required bool isAndroid,
+  required String? genericVersion,
+  required PlayxPlatformVersion? platformVersion,
+}) {
+  final version = platformVersion?.forCurrentPlatform(isAndroid: isAndroid);
+  if (version == null || version.isEmpty) return genericVersion;
+  return version;
+}
 
 class VersionChecker {
   static final VersionChecker _instance = VersionChecker._internal();
@@ -41,6 +52,9 @@ class VersionChecker {
         country: options.country,
         language: options.language,
         newVersion: options.newVersion,
+        newPlatformVersion: options.newPlatformVersion,
+        minVersion: options.minVersion,
+        minPlatformVersion: options.minPlatformVersion,
         forceUpdate: options.forceUpdate,
         enableLog: options.enableNetworkLogging,
       );
@@ -52,6 +66,9 @@ class VersionChecker {
         country: options.country,
         language: options.language,
         newVersion: options.newVersion,
+        newPlatformVersion: options.newPlatformVersion,
+        minVersion: options.minVersion,
+        minPlatformVersion: options.minPlatformVersion,
         forceUpdate: options.forceUpdate,
         enableLog: options.enableNetworkLogging,
       );
@@ -67,6 +84,9 @@ class VersionChecker {
     required String country,
     required String language,
     required String? newVersion,
+    required PlayxPlatformVersion? newPlatformVersion,
+    required String? minVersion,
+    required PlayxPlatformVersion? minPlatformVersion,
     required bool? forceUpdate,
     bool enableLog = false,
   }) async {
@@ -79,16 +99,26 @@ class VersionChecker {
     return storeInfo.mapAsync(success: (infoResult) async {
       final info = infoResult.data;
 
-      final currentVersion = newVersion ?? info.version;
+      final currentVersion = resolvePlatformVersionForCurrentPlatform(
+            isAndroid: true,
+            genericVersion: newVersion ?? info.version,
+            platformVersion: newPlatformVersion,
+          ) ??
+          '';
       final canUpdateResult = await shouldUpdate(
           version: localVersion, currentVersion: currentVersion);
 
       return canUpdateResult.mapAsync(success: (shouldUpdate) async {
-        final minVersion = await getMinVersionVersion(
-            minVersion: info.minVersion, storeVersion: info.version);
+        final effectiveMinVersion = resolvePlatformVersionForCurrentPlatform(
+          isAndroid: true,
+          genericVersion: minVersion ?? info.minVersion,
+          platformVersion: minPlatformVersion,
+        );
+        final normalizedMinVersion = await getMinVersionVersion(
+            minVersion: effectiveMinVersion, storeVersion: currentVersion);
         bool shouldAppForcedToUpdate = await shouldForceUpdate(
             version: localVersion,
-            minVersion: minVersion,
+            minVersion: normalizedMinVersion,
             playxForceUpdate: forceUpdate);
 
         final updateInfo = PlayxVersionUpdateInfo(
@@ -100,7 +130,9 @@ class VersionChecker {
           canUpdate: shouldUpdate,
           forceUpdate: shouldAppForcedToUpdate,
           releaseNotes: info.releaseNotes,
-          minVersion: minVersion,
+          minVersion: normalizedMinVersion,
+          newPlatformVersion: newPlatformVersion,
+          minPlatformVersion: minPlatformVersion,
         );
 
         return PlayxVersionUpdateResult.success(updateInfo);
@@ -119,6 +151,9 @@ class VersionChecker {
     required String country,
     required String language,
     required String? newVersion,
+    required PlayxPlatformVersion? newPlatformVersion,
+    required String? minVersion,
+    required PlayxPlatformVersion? minPlatformVersion,
     required bool? forceUpdate,
     bool enableLog = false,
   }) async {
@@ -131,16 +166,26 @@ class VersionChecker {
     return storeInfo.mapAsync(success: (infoResult) async {
       final info = infoResult.data;
 
-      final currentVersion = newVersion ?? info.version;
+      final currentVersion = resolvePlatformVersionForCurrentPlatform(
+            isAndroid: false,
+            genericVersion: newVersion ?? info.version,
+            platformVersion: newPlatformVersion,
+          ) ??
+          '';
       final canUpdateResult = await shouldUpdate(
           version: localVersion, currentVersion: currentVersion);
 
       return canUpdateResult.mapAsync(success: (shouldUpdate) async {
-        final minVersion = await getMinVersionVersion(
-            minVersion: info.minVersion, storeVersion: info.version);
+        final effectiveMinVersion = resolvePlatformVersionForCurrentPlatform(
+          isAndroid: false,
+          genericVersion: minVersion ?? info.minVersion,
+          platformVersion: minPlatformVersion,
+        );
+        final normalizedMinVersion = await getMinVersionVersion(
+            minVersion: effectiveMinVersion, storeVersion: currentVersion);
         bool shouldAppForcedToUpdate = await shouldForceUpdate(
             version: localVersion,
-            minVersion: minVersion,
+            minVersion: normalizedMinVersion,
             playxForceUpdate: forceUpdate);
 
         final updateInfo = PlayxVersionUpdateInfo(
@@ -151,7 +196,9 @@ class VersionChecker {
           canUpdate: shouldUpdate,
           forceUpdate: shouldAppForcedToUpdate,
           releaseNotes: info.releaseNotes,
-          minVersion: minVersion,
+          minVersion: normalizedMinVersion,
+          newPlatformVersion: newPlatformVersion,
+          minPlatformVersion: minPlatformVersion,
         );
 
         return PlayxVersionUpdateResult.success(updateInfo);

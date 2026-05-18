@@ -1,3 +1,5 @@
+import 'package:playx_version_update/src/core/model/playx_platform_version.dart';
+
 /// Represents comprehensive information about the app's version update status.
 ///
 /// This class is typically returned by methods like [PlayxVersionUpdate.checkVersion]
@@ -40,6 +42,12 @@ class PlayxVersionUpdateInfo {
   /// If the [localVersion] is below this [minVersion], then [forceUpdate] will be true.
   final String? minVersion;
 
+  /// Optional: Raw platform-specific new versions provided by the caller.
+  final PlayxPlatformVersion? newPlatformVersion;
+
+  /// Optional: Raw platform-specific minimum versions provided by the caller.
+  final PlayxPlatformVersion? minPlatformVersion;
+
   /// Creates a new instance of [PlayxVersionUpdateInfo].
   const PlayxVersionUpdateInfo({
     required this.localVersion,
@@ -50,13 +58,15 @@ class PlayxVersionUpdateInfo {
     this.country = 'en',
     this.releaseNotes,
     this.minVersion,
+    this.newPlatformVersion,
+    this.minPlatformVersion,
   });
 
   /// Returns a string representation of the [PlayxVersionUpdateInfo] instance,
   /// useful for debugging.
   @override
   String toString() {
-    return 'PlayxVersionUpdateInfo{localVersion: $localVersion, newVersion: $newVersion, forceUpdate: $forceUpdate, storeUrl: $storeUrl, country: $country, canUpdate: $canUpdate, releaseNotes: $releaseNotes, minVersion: $minVersion}';
+    return 'PlayxVersionUpdateInfo{localVersion: $localVersion, newVersion: $newVersion, forceUpdate: $forceUpdate, storeUrl: $storeUrl, country: $country, canUpdate: $canUpdate, releaseNotes: $releaseNotes, minVersion: $minVersion, newPlatformVersion: $newPlatformVersion, minPlatformVersion: $minPlatformVersion}';
   }
 
   /// Compares this [PlayxVersionUpdateInfo] instance with [other] for equality.
@@ -74,7 +84,9 @@ class PlayxVersionUpdateInfo {
         other.country == country &&
         other.canUpdate == canUpdate &&
         other.releaseNotes == releaseNotes &&
-        other.minVersion == minVersion;
+        other.minVersion == minVersion &&
+        other.newPlatformVersion == newPlatformVersion &&
+        other.minPlatformVersion == minPlatformVersion;
   }
 
   /// Returns a hash code for this [PlayxVersionUpdateInfo] instance.
@@ -89,6 +101,8 @@ class PlayxVersionUpdateInfo {
         country.hashCode ^
         canUpdate.hashCode ^
         releaseNotes.hashCode ^
-        minVersion.hashCode;
+        minVersion.hashCode ^
+        newPlatformVersion.hashCode ^
+        minPlatformVersion.hashCode;
   }
 }

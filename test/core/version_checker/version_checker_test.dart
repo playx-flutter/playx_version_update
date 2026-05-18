@@ -1,9 +1,69 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:playx_version_update/src/core/model/playx_platform_version.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
 import 'package:playx_version_update/src/core/version_checker/version_checker.dart';
 
 void main() {
   final checker = VersionChecker();
+
+  group('resolvePlatformVersionForCurrentPlatform', () {
+    test('prefers current platform-specific value over the generic version',
+        () {
+      const platformVersion = PlayxPlatformVersion(
+        android: '2.0.0',
+        ios: '3.0.0',
+      );
+
+      expect(
+        resolvePlatformVersionForCurrentPlatform(
+          isAndroid: true,
+          genericVersion: '1.0.0',
+          platformVersion: platformVersion,
+        ),
+        '2.0.0',
+      );
+      expect(
+        resolvePlatformVersionForCurrentPlatform(
+          isAndroid: false,
+          genericVersion: '1.0.0',
+          platformVersion: platformVersion,
+        ),
+        '3.0.0',
+      );
+    });
+
+    test(
+        'falls back to the generic version when current platform value is missing',
+        () {
+      expect(
+        resolvePlatformVersionForCurrentPlatform(
+          isAndroid: true,
+          genericVersion: '1.0.0',
+          platformVersion: const PlayxPlatformVersion(ios: '3.0.0'),
+        ),
+        '1.0.0',
+      );
+      expect(
+        resolvePlatformVersionForCurrentPlatform(
+          isAndroid: false,
+          genericVersion: '1.0.0',
+          platformVersion: const PlayxPlatformVersion(android: '2.0.0'),
+        ),
+        '1.0.0',
+      );
+    });
+
+    test('returns the generic version when no platform object is provided', () {
+      expect(
+        resolvePlatformVersionForCurrentPlatform(
+          isAndroid: true,
+          genericVersion: '1.0.0',
+          platformVersion: null,
+        ),
+        '1.0.0',
+      );
+    });
+  });
 
   group('VersionChecker.getMinVersionVersion', () {
     test('returns null for missing minimum version', () async {
@@ -72,6 +132,13 @@ void main() {
           storeVersion: '1.2.3.4',
         ),
         '1.2.3.4',
+      );
+      expect(
+        await checker.getMinVersionVersion(
+          minVersion: '9.0.0',
+          storeVersion: '2.0.0',
+        ),
+        '2.0.0',
       );
     });
 
