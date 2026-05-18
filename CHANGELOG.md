@@ -1,4 +1,10 @@
 # Changelog
+## 1.3.0
+- Add `PlayxPlatformVersion` with `newPlatformVersion` and `minPlatformVersion` overrides for Android- and iOS-specific app version checks.
+- Keep `newVersion` and `minVersion` as the effective resolved values in `PlayxVersionUpdateInfo` for backward compatibility.
+- Enhance minimum-version parsing for store descriptions with bracketed, case-insensitive matching and broader version-style support.
+- Improve HTML text formatting utilities and expand automated test coverage across version handling, parsing, results, errors, and datasource utilities.
+
 ## 1.1.0
 - Update packages
 

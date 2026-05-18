@@ -139,6 +139,14 @@ Future<void> showSimpleUpdateDialog(BuildContext context) async {
       androidPackageName: 'com.your_company.your_app_id', // Your Android package name
       iosBundleId: 'com.your_company.your_app_id',      // Your iOS bundle ID
       minVersion: '1.0.0', // Optional: Sets a minimum required version for a forced update
+      newPlatformVersion: PlayxPlatformVersion(
+        android: '1.2.0',
+        ios: '1.3.0',
+      ),
+      minPlatformVersion: PlayxPlatformVersion(
+        android: '1.1.0',
+        ios: '1.2.0',
+      ),
     ),
     // PlayxUpdateUIOptions: Customize the Flutter UI of the dialog
     uiOptions: PlayxUpdateUIOptions(
@@ -188,6 +196,11 @@ Future<void> checkForUpdateAndShowCustomUI(BuildContext context) async {
       localVersion: '1.0.0',
       // Optional: Provide new app version (bypasses store lookup if provided)
       newVersion: '1.1.0',
+      // Optional: Override versions per platform from a custom backend
+      newPlatformVersion: PlayxPlatformVersion(
+        android: '1.1.0',
+        ios: '1.1.5',
+      ),
       // Optional: Manually override force update status (e.g., forceUpdate: true)
       // If null, it's calculated based on localVersion vs. minVersion
       forceUpdate: true,
@@ -254,7 +267,22 @@ Future<void> checkForUpdateAndShowCustomUI(BuildContext context) async {
 
 You can automatically determine if an update should be forced by embedding a minimum version string in your app's Google Play Store or Apple App Store description.
 
-Simply add `[Minimum Version :X.Y.Z]` to the end of your app's store description (e.g., `[Minimum Version :1.5.0]`). The package will parse this information and automatically update the `forceUpdate` value of `PlayxVersionUpdateInfo` returned by `checkVersion` accordingly.
+Supported formats are case-insensitive, require square brackets, and allow a few separator styles, for example:
+
+- `[Minimum Version :1.5.0]`
+- `[Minimum Version: 1.5.0]`
+- `[Minimum Version = 1.5.0]`
+- `[minimum_version:1.5.0]`
+
+The version value itself follows the same styles supported by the package version parser, including multi-part versions like `519.0.0.44.92` and tagged versions like `3.122.764106578.release` or `1.2.3-alpha.1+build.456`.
+
+The package will parse this information and automatically update the `forceUpdate` value of `PlayxVersionUpdateInfo` returned by `checkVersion` accordingly.
+
+### Platform-Specific Version Overrides
+
+If your backend serves different app versions for Android and iOS, use `newPlatformVersion` and `minPlatformVersion`.
+
+These values override `newVersion` and `minVersion` on the current platform only, while `PlayxVersionUpdateInfo.newVersion` and `PlayxVersionUpdateInfo.minVersion` continue to expose the effective resolved values used by the package.
 
 
 -----
@@ -743,4 +771,3 @@ For a complete list of all possible errors, refer to the [PlayxVersionUpdateErro
 
 -   [playx_network](https://pub.dev/packages/playx_network) - The network package used internally for version checks.
     
-

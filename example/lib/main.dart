@@ -393,6 +393,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         androidPackageName:
             'io.sourcya.playx.verion.update.example', // Example package name
         iosBundleId: 'com.apple.shortcuts', // Example bundle ID
+        newPlatformVersion: const PlayxPlatformVersion(
+          android: '1.0.1',
+          ios: '1.0.2',
+        ),
+        minPlatformVersion: const PlayxPlatformVersion(
+          android: '1.0.0',
+          ios: '1.0.1',
+        ),
       ),
     );
 
