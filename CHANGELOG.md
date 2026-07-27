@@ -1,4 +1,8 @@
 # Changelog
+## 1.3.1
+- Update packages.
+- Bump example `cupertino_icons` to `^1.0.9`.
+
 ## 1.3.0
 - Add `PlayxPlatformVersion` with `newPlatformVersion` and `minPlatformVersion` overrides for Android- and iOS-specific app version checks.
 - Keep `newVersion` and `minVersion` as the effective resolved values in `PlayxVersionUpdateInfo` for backward compatibility.

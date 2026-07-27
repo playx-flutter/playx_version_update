@@ -12,7 +12,7 @@ dependencies:
   playx_version_update:
     path: ../
 
-  cupertino_icons: ^1.0.8
+  cupertino_icons: ^1.0.9
 
 
 dev_dependencies:
