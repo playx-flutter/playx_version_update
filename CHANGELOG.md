@@ -1,6 +1,7 @@
 # Changelog
 ## 1.3.1
 - Update packages.
+- Tighten `package_info_plus` constraint to `^10.2.1`.
 - Bump example `cupertino_icons` to `^1.0.9`.
 
 ## 1.3.0
