@@ -23,7 +23,10 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import io.sourcya.playx_version_update.core.model.PlayxInstallError
 import io.sourcya.playx_version_update.core.model.PlayxUpdateCanceledException
+import io.sourcya.playx_version_update.core.model.PlayxUpdateException
+import io.sourcya.playx_version_update.core.model.UpdateFlowResult
 
+import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,7 +43,8 @@ class UpdateManger( context: Context) {
 
     private val appUpdateManager = AppUpdateManagerFactory.create(context)
     private val job = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
+    // Main: results are handed to Flutter from the platform thread.
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + job)
     private var currentUpdateType : PlayxAppUpdateType? = null
 
     suspend fun getUpdateAvailability(): AppUpdateAvailability =
@@ -78,7 +82,8 @@ class UpdateManger( context: Context) {
                 val days = appUpdateInfo.clientVersionStalenessDays() ?: -1
                 continuation.resume(days)
             } else {
-                continuation.resumeWithException(PlayxUpdateNotAvailable())
+                // No update: there is no staleness to report.
+                continuation.resume(-1)
             }
         }.addOnFailureListener {
             if(it is InstallException){
@@ -109,7 +114,8 @@ class UpdateManger( context: Context) {
                 val priority = appUpdateInfo.updatePriority()
                 continuation.resume(priority)
             } else {
-                continuation.resumeWithException(PlayxUpdateNotAvailable())
+                // No update: there is no priority to report.
+                continuation.resume(-1)
             }
         }.addOnFailureListener {
             if(it is InstallException){
@@ -163,6 +169,18 @@ class UpdateManger( context: Context) {
             }
         }
 
+    /**
+     * Resumes [continuation] with the outcome of the update flow: accepted, or an error for a
+     * denied / failed flow (see [UpdateFlowResult]).
+     */
+    private fun resumeWithFlowResult(continuation: CancellableContinuation<Boolean>, resultCode: Int) {
+        try {
+            continuation.resume(UpdateFlowResult.toStarted(resultCode))
+        } catch (e: PlayxUpdateException) {
+            continuation.resumeWithException(e)
+        }
+    }
+
     suspend fun startImmediateUpdate(activity: Activity): Boolean =
         suspendCancellableCoroutine { continuation ->
             val appUpdateInfoTask = appUpdateManager.appUpdateInfo
@@ -183,7 +201,7 @@ class UpdateManger( context: Context) {
 
                                 currentUpdateType = PlayxAppUpdateType.IMMEDIATE
                                 task.addOnSuccessListener {
-                                    continuation.resume(it !=0)
+                                    resumeWithFlowResult(continuation, it)
                                 }.addOnFailureListener {
                                     if (it is InstallException) {
                                         val error = PlayxInstallError.fromStatusCode(it.errorCode);
@@ -200,6 +218,8 @@ class UpdateManger( context: Context) {
 
                                 continuation.resumeWithException(e)
                             }
+                        } else {
+                            continuation.resumeWithException(PlayxUpdateNotAllowed())
                         }
                     }
 
@@ -247,7 +267,7 @@ class UpdateManger( context: Context) {
                             currentUpdateType = PlayxAppUpdateType.FLEXIBLE
 
                             task.addOnSuccessListener {
-                                continuation.resume(it != 0)
+                                resumeWithFlowResult(continuation, it)
                             }.addOnFailureListener {
                                 if (it is InstallException) {
                                     val error = PlayxInstallError.fromStatusCode(it.errorCode);
@@ -354,12 +374,16 @@ class UpdateManger( context: Context) {
                 .addOnSuccessListener { appUpdateInfo ->
                     if (appUpdateInfo.updateAvailability()
                         == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
-                        coroutineScope.launch {
-                            try{
-                                startImmediateUpdate(activity)
-                            }catch (_:Exception) {
-
-                            }
+                        // An immediate update was interrupted (for example the user left the app):
+                        // starting the flow again brings the Play update screen back.
+                        try {
+                            appUpdateManager.startUpdateFlow(
+                                appUpdateInfo,
+                                activity,
+                                AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build(),
+                            )
+                        } catch (_: Exception) {
+                            // Nothing to resume.
                         }
                     }
                 }

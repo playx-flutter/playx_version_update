@@ -10,6 +10,9 @@ const String _playxInAppUpdateCanceledErrorCode = 'PLAYX_UPDATE_CANCELLED';
 const String _playxInAppUpdateFailedErrorCode = 'PLAYX_IN_APP_UPDATE_FAILED';
 const String defaultFailureErrorCode = 'DEFAULT_FAILURE_ERROR';
 const String _platformNotSupportedErrorCode = 'PLATFORM_NOT_SUPPORTED_ERROR';
+const String _updateNotAvailableErrorCode = 'PLAYX_UPDATE_NOT_AVAILABLE';
+const String _updateInProgressErrorCode = 'PLAYX_UPDATE_IN_PROGRESS';
+const String _updateNotAllowedErrorCode = 'PLAYX_UPDATE_NOT_ALLOWED';
 
 // Constants for specific PlayxInstallError codes (matching Kotlin)
 const String _installApiNotAvailableErrorCode = 'INSTALL_API_NOT_AVAILABLE';
@@ -54,6 +57,9 @@ sealed class PlayxVersionUpdateError {
         PlayxInAppUpdateCanceledError(),
       _playxInAppUpdateFailedErrorCode => PlayxInAppUpdateFailedError(),
       _platformNotSupportedErrorCode => PlatformNotSupportedError(),
+      _updateNotAvailableErrorCode => PlayxUpdateNotAvailableError(),
+      _updateInProgressErrorCode => PlayxUpdateInProgressError(),
+      _updateNotAllowedErrorCode => PlayxUpdateNotAllowedError(),
       defaultFailureErrorCode => DefaultFailureError(errorMsg: errorMessage),
       _ => DefaultFailureError(errorMsg: errorMessage)
     };
@@ -273,6 +279,36 @@ class PlayxInAppUpdateFailedError extends PlayxVersionUpdateError {
 
   @override
   String get errorCode => _playxInAppUpdateFailedErrorCode;
+}
+
+/// Error indicating Google Play has no update to offer for this app right now.
+class PlayxUpdateNotAvailableError extends PlayxVersionUpdateError {
+  @override
+  String get message => "No update is available for this app right now.";
+
+  @override
+  String get errorCode => _updateNotAvailableErrorCode;
+}
+
+/// Error indicating an update is already in progress, so another one cannot
+/// be started.
+class PlayxUpdateInProgressError extends PlayxVersionUpdateError {
+  @override
+  String get message => "An update is already in progress.";
+
+  @override
+  String get errorCode => _updateInProgressErrorCode;
+}
+
+/// Error indicating Google Play does not allow this type of update (flexible
+/// or immediate) for this user or device right now.
+class PlayxUpdateNotAllowedError extends PlayxVersionUpdateError {
+  @override
+  String get message =>
+      "This type of update is not allowed right now. Try the other update type or check again later.";
+
+  @override
+  String get errorCode => _updateNotAllowedErrorCode;
 }
 
 /// A generic fallback error when a more specific error message is not available.

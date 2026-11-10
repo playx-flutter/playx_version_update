@@ -7,7 +7,8 @@ enum class AppUpdateAvailability {
 
 
     companion object{
-        fun fromUpdateAvailability(value: Int) = AppUpdateAvailability.values()[value]
+        fun fromUpdateAvailability(value: Int): AppUpdateAvailability =
+            values().getOrNull(value) ?: UNKNOWN
 
     }
 }

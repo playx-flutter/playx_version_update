@@ -151,6 +151,9 @@ void main() {
         AppUpdateMangerNotFoundError(),
         PlayxInAppUpdateCanceledError(),
         PlayxInAppUpdateFailedError(),
+        PlayxUpdateNotAvailableError(),
+        PlayxUpdateInProgressError(),
+        PlayxUpdateNotAllowedError(),
         const DefaultFailureError(),
         const NotSupportedException(),
         const VersionFormatException(),
@@ -220,6 +223,9 @@ void main() {
           isA<PlayxInAppUpdateCanceledError>());
       expect(map('PLAYX_IN_APP_UPDATE_FAILED'), isA<PlayxInAppUpdateFailedError>());
       expect(map('PLATFORM_NOT_SUPPORTED_ERROR'), isA<PlatformNotSupportedError>());
+      expect(map('PLAYX_UPDATE_NOT_AVAILABLE'), isA<PlayxUpdateNotAvailableError>());
+      expect(map('PLAYX_UPDATE_IN_PROGRESS'), isA<PlayxUpdateInProgressError>());
+      expect(map('PLAYX_UPDATE_NOT_ALLOWED'), isA<PlayxUpdateNotAllowedError>());
       expect(map('DEFAULT_FAILURE_ERROR').message, 'm');
       expect(map('SOMETHING_ELSE').message, 'm');
     });

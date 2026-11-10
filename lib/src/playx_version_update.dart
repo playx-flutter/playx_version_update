@@ -426,6 +426,9 @@ abstract class PlayxVersionUpdate {
   /// - [AppUpdateMangerNotFoundError]: If the Android App Update Manager service is unavailable or outdated on the device (e.g., missing Google Play Services).
   /// - [PlayxInAppUpdateCanceledError]: The user explicitly denied or canceled the update prompt.
   /// - [PlayxInAppUpdateFailedError]: A general failure occurred during the update process (e.g., user confirmation, download, or initial installation preparation).
+  /// - [PlayxUpdateNotAvailableError]: Google Play has no update to offer.
+  /// - [PlayxUpdateInProgressError]: Another update is already in progress.
+  /// - [PlayxUpdateNotAllowedError]: This type of update is not allowed right now.
   /// - [PlatformNotSupportedError]: If the method is called on a platform that does not support in-app updates (e.g., iOS, web).
   /// - [DefaultFailureError]: A generic fallback for other unspecified errors.
   ///
@@ -465,6 +468,9 @@ abstract class PlayxVersionUpdate {
   /// - [AppUpdateMangerNotFoundError]: If the Android App Update Manager service is unavailable or outdated on the device (e.g., missing Google Play Services).
   /// - [PlayxInAppUpdateCanceledError]: The user explicitly denied or canceled the update prompt.
   /// - [PlayxInAppUpdateFailedError]: A general failure occurred during the update process (e.g., user confirmation, download, or initial installation preparation).
+  /// - [PlayxUpdateNotAvailableError]: Google Play has no update to offer.
+  /// - [PlayxUpdateInProgressError]: Another update is already in progress.
+  /// - [PlayxUpdateNotAllowedError]: This type of update is not allowed right now.
   /// - [PlatformNotSupportedError]: If the method is called on a platform that does not support in-app updates (e.g., iOS, web).
   /// - [DefaultFailureError]: A generic fallback for other unspecified errors.
   ///

@@ -57,6 +57,8 @@ android {
 
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'org.mockito:mockito-core:5.8.0'
+        // The real org.json: the one in android.jar is a stub that throws in JVM tests.
+        testImplementation 'org.json:json:20240303'
 
     }
 
