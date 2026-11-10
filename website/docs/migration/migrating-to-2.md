@@ -6,6 +6,10 @@ sidebar_position: 1
 
 # Migrating from 1.x to 2.0
 
+:::caution Beta
+2.0 is published as `2.0.0-beta.1` first. Depend on `^2.0.0-beta.1` to try it, and tell us what breaks.
+:::
+
 2.0 raises the minimum SDK, replaces the `playx_network` dependency, fixes several behaviors and
 adds a lot (version sources, Later/Skip, events, macOS and more). Most apps need a few small changes.
 This page lists them all.
@@ -30,7 +34,7 @@ This page lists them all.
 
 ```yaml
 dependencies:
-  playx_version_update: ^2.0.0
+  playx_version_update: ^2.0.0-beta.1 # ^2.0.0 once it is released
 ```
 
 If your app also depends on `package_info_plus` 8 or 9, upgrade it to 10 (a version solving error

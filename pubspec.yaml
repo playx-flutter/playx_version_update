@@ -1,6 +1,6 @@
 name: playx_version_update
 description: Check for app updates and prompt users with a customizable dialog or page. Google Play in-app updates, App Store and Mac App Store lookups, minimum versions.
-version: 2.0.0
+version: 2.0.0-beta.1
 homepage: https://playx-flutter.github.io/playx_version_update/
 repository: https://github.com/playx-flutter/playx_version_update
 issue_tracker: https://github.com/playx-flutter/playx_version_update/issues

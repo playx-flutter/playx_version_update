@@ -16,8 +16,22 @@ or in `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  playx_version_update: ^2.0.0
+  playx_version_update: ^2.0.0-beta.1
 ```
+
+:::caution 2.0 is in beta
+A normal `^1.3.0` constraint keeps resolving to 1.3.0 until 2.0.0 is released: a pre-release is only used
+when you ask for it, as above. Please try it and [report problems](https://github.com/playx-flutter/playx_version_update/issues).
+To test unreleased changes before a beta, depend on the repository:
+
+```yaml
+dependencies:
+  playx_version_update:
+    git:
+      url: https://github.com/playx-flutter/playx_version_update.git
+      ref: qa
+```
+:::
 
 Then import it:
 

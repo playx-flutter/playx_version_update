@@ -42,8 +42,12 @@ shows an update dialog or page you can style, and runs **native in-app updates o
 
 ```yaml
 dependencies:
-  playx_version_update: ^2.0.0
+  playx_version_update: ^2.0.0-beta.1
 ```
+
+> **2.0 is in beta.** A normal `^1.3.0` constraint keeps resolving to 1.3.0 until 2.0.0 is released. Try the
+> beta with the line above and
+> [report problems](https://github.com/playx-flutter/playx_version_update/issues).
 
 Requires Dart 3.10+ and Flutter 3.38.1+. On sandboxed macOS apps add the
 `com.apple.security.network.client` entitlement

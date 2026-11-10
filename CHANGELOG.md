@@ -1,6 +1,11 @@
 # Changelog
 
-## 2.0.0
+## 2.0.0-beta.1
+
+> **Pre-release of 2.0.0.** It is not picked up by `^1.x` constraints. Try it with
+> `playx_version_update: ^2.0.0-beta.1` and report problems on the
+> [issue tracker](https://github.com/playx-flutter/playx_version_update/issues). The final 2.0.0 will have
+> the same changes unless a fix is needed.
 
 A big release: version sources, "Later" and "Skip", events, macOS, a rewritten network layer and many
 fixes. **See the [migration guide](https://playx-flutter.github.io/playx_version_update/docs/migration/migrating-to-2)**

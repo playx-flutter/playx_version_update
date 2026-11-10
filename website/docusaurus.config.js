@@ -55,6 +55,15 @@ const config = {
     ({
       image: 'img/screenshots/screenshot4.jpg',
       colorMode: { respectPrefersColorScheme: true },
+      announcementBar: {
+        id: 'beta-2-0',
+        content:
+          '🚧 <b>2.0 is in beta.</b> Try it with <code>playx_version_update: ^2.0.0-beta.1</code> and ' +
+          '<a href="/playx_version_update/docs/migration/migrating-to-2">read the migration guide</a>.',
+        backgroundColor: '#4338ca',
+        textColor: '#ffffff',
+        isCloseable: true,
+      },
       navbar: {
         title: 'Playx Version Update',
         logo: { alt: 'Playx Version Update', src: 'img/logo.svg' },

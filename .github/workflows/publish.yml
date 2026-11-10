@@ -8,6 +8,10 @@ name: Publish to pub.dev
 #   tag pattern: v{{version}}
 # No secret is stored in GitHub: the job authenticates with a short-lived
 # OIDC token. Consider tag protection rules so only maintainers can tag.
+#
+# Pre-releases: tag v2.0.0-beta.1 publishes 2.0.0-beta.1, which pub.dev does not
+# offer as the latest version and which only resolves when requested explicitly
+# (^2.0.0-beta.1). It also creates a GitHub pre-release.
 on:
   push:
     tags:
@@ -61,3 +65,22 @@ jobs:
 
       - name: Publish
         run: flutter pub publish --force
+
+  release:
+    name: GitHub release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      # A tag with a suffix (v2.0.0-beta.1, v2.0.0-rc.1) is marked as a pre-release.
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags="--generate-notes"
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            flags="$flags --prerelease"
+          fi
+          gh release create "$GITHUB_REF_NAME" $flags --title "$GITHUB_REF_NAME"
