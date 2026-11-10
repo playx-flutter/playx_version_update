@@ -334,6 +334,8 @@ PlayxUpdateUIOptions(
     onShown: (info) => analytics.log('update_shown', info.newVersion),
     onUpdateTapped: (info) => analytics.log('update_tapped'),
     onDismissed: (info, reason) => analytics.log('update_dismissed'),
+    onVersionSkipped: (info) => analytics.log('update_skipped'),
+    onSuppressed: (info, reason) => analytics.log('update_suppressed'),
     // Android in-app updates (showInAppUpdateDialog)
     onInAppUpdateStarted: (type) {},
     onInAppUpdateResult: (type, result) {},
@@ -342,6 +344,28 @@ PlayxUpdateUIOptions(
 ```
 
 For `showInAppUpdateDialog` you can also pass `events:` directly.
+
+### "Later" and "Skip this version"
+
+Use `reminderOptions` so a dismissed prompt does not reappear on every check:
+
+```dart
+await PlayxVersionUpdate.showUpdateDialog(
+  context: context,
+  reminderOptions: PlayxUpdateReminderOptions(
+    snoozeDuration: Duration(days: 3), // null: prompt again next time
+    allowSkipVersion: true, // adds a "Skip this version" button
+    storage: PrefsUpdateStorage(prefs), // keeps the choice across launches
+  ),
+);
+```
+
+- Dismissing hides the prompt for that version until the snooze ends. A newer version is prompted right away.
+- Skipping hides that version for good.
+- Forced updates are never hidden.
+- `showUpdateDialog` returns `success(false)` when the prompt was suppressed.
+- Storage is pluggable so the package adds no storage dependency. The default is in-memory (forgotten on restart); implement `PlayxUpdateStorage` (`read`/`write`/`remove`) with `shared_preferences` or similar to persist it.
+- `PlayxUpdateReminder` can be used directly (`shouldPrompt`, `snooze`, `skipVersion`, `reset`) for custom UIs.
 
 -----
 

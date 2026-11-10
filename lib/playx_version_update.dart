@@ -16,3 +16,6 @@ export 'package:playx_version_update/src/core/network/exceptions/network_excepti
 export 'package:playx_version_update/src/core/network/exceptions/network_error_code.dart';
 export 'package:playx_version_update/src/core/model/options/playx_network_options.dart';
 export 'package:playx_version_update/src/core/model/options/playx_update_events.dart';
+export 'package:playx_version_update/src/core/reminder/playx_update_reminder.dart';
+export 'package:playx_version_update/src/core/reminder/playx_update_reminder_options.dart';
+export 'package:playx_version_update/src/core/reminder/playx_update_storage.dart';

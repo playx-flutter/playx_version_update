@@ -1,19 +1,28 @@
 import 'package:playx_version_update/src/core/model/options/playx_update_events.dart';
 import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
+import 'package:playx_version_update/src/core/reminder/playx_update_reminder.dart';
 
 /// Shared by the update dialog and page: reports user actions to
-/// [PlayxUpdateEvents].
+/// [PlayxUpdateEvents] and records them in the [PlayxUpdateReminder].
 ///
-/// Only the first outcome (update or dismiss) of a shown UI is
+/// Only the first outcome (update, skip or dismiss) of a shown UI is
 /// reported, so closing the UI after tapping a button is not counted twice.
 class UpdateUiController {
   final PlayxVersionUpdateInfo info;
   final PlayxUpdateEvents events;
+  final PlayxUpdateReminder? reminder;
 
   bool _resolved = false;
   bool _shown = false;
 
-  UpdateUiController({required this.info, required this.events});
+  UpdateUiController({required this.info, required this.events, this.reminder});
+
+  /// Whether to offer a "Skip this version" button.
+  bool get canSkip =>
+      reminder?.options.allowSkipVersion == true && !info.forceUpdate;
+
+  String get skipButtonText =>
+      reminder?.options.skipButtonText ?? 'Skip this version';
 
   void shown() {
     if (_shown) return;
@@ -31,5 +40,13 @@ class UpdateUiController {
     if (_resolved) return;
     _resolved = true;
     events.onDismissed?.call(info, reason);
+    reminder?.snooze(info);
+  }
+
+  void skipped() {
+    if (_resolved) return;
+    _resolved = true;
+    events.onVersionSkipped?.call(info);
+    reminder?.skipVersion(info);
   }
 }

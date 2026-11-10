@@ -1,6 +1,7 @@
 import 'package:playx_version_update/src/core/model/in_app_updates/playx_app_update_type.dart';
 import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
+import 'package:playx_version_update/src/core/reminder/playx_update_reminder.dart';
 
 /// How the user closed the update UI without updating.
 enum PlayxUpdateDismissReason {
@@ -36,6 +37,17 @@ class PlayxUpdateEvents {
   )?
   onDismissed;
 
+  /// The user chose "Skip this version".
+  final void Function(PlayxVersionUpdateInfo info)? onVersionSkipped;
+
+  /// An update was available, but the prompt was not shown because the user
+  /// previously snoozed or skipped this version.
+  final void Function(
+    PlayxVersionUpdateInfo info,
+    PlayxPromptSuppressedReason reason,
+  )?
+  onSuppressed;
+
   /// A Google Play in-app update of the given type is about to start (Android).
   final void Function(PlayxAppUpdateType type)? onInAppUpdateStarted;
 
@@ -50,6 +62,8 @@ class PlayxUpdateEvents {
     this.onShown,
     this.onUpdateTapped,
     this.onDismissed,
+    this.onVersionSkipped,
+    this.onSuppressed,
     this.onInAppUpdateStarted,
     this.onInAppUpdateResult,
   });

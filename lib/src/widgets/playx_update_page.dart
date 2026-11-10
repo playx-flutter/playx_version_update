@@ -79,10 +79,15 @@ class PlayxUpdatePage extends StatefulWidget {
   /// This includes text content, styles, button actions, and dismissibility.
   final PlayxUpdateUIOptions uiOptions;
 
+  /// When provided, the page snoozes the version when dismissed and can
+  /// offer a "Skip this version" button, see [PlayxUpdateReminderOptions].
+  final PlayxUpdateReminder? reminder;
+
   const PlayxUpdatePage({
     super.key,
     required this.versionUpdateInfo,
     this.uiOptions = const PlayxUpdateUIOptions(),
+    this.reminder,
   });
 
   @override
@@ -93,6 +98,7 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
   late final UpdateUiController _controller = UpdateUiController(
     info: widget.versionUpdateInfo,
     events: widget.uiOptions.events,
+    reminder: widget.reminder,
   );
 
   @override
@@ -214,6 +220,24 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                               ),
                             ),
                           ),
+                          if (_controller.canSkip)
+                            Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: TextButton(
+                                style: widget.uiOptions.dismissButtonStyle,
+                                onPressed: () {
+                                  _controller.skipped();
+                                  Navigator.maybePop(context);
+                                },
+                                child: Text(
+                                  _controller.skipButtonText,
+                                  style: widget.uiOptions.dismissButtonTextStyle ??
+                                      const TextStyle(
+                                          fontSize: 18,
+                                          color: Color(0xFFCCCBD2)),
+                                ),
+                              ),
+                            ),
                           if (shouldShowDismissButton)
                             Padding(
                               padding: const EdgeInsets.all(4.0),

@@ -13,14 +13,20 @@ PlayxVersionUpdateInfo _info({bool force = false}) => PlayxVersionUpdateInfo(
 
 void main() {
   late List<String> log;
+  late PlayxInMemoryUpdateStorage storage;
 
   PlayxUpdateEvents events() => PlayxUpdateEvents(
     onShown: (_) => log.add('shown'),
     onUpdateTapped: (_) => log.add('update'),
     onDismissed: (_, reason) => log.add('dismissed:${reason.name}'),
+    onVersionSkipped: (_) => log.add('skipped'),
   );
 
-  Future<void> pump(WidgetTester tester, {bool force = false}) async {
+  Future<void> pump(
+    WidgetTester tester, {
+    bool force = false,
+    bool allowSkip = false,
+  }) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
@@ -34,6 +40,12 @@ void main() {
                     events: events(),
                     onUpdate: (_, _) => log.add('onUpdate'),
                   ),
+                  reminder: PlayxUpdateReminder(
+                    PlayxUpdateReminderOptions(
+                      storage: storage,
+                      allowSkipVersion: allowSkip,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -46,7 +58,10 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  setUp(() => log = []);
+  setUp(() {
+    log = [];
+    storage = PlayxInMemoryUpdateStorage();
+  });
 
   testWidgets('reports shown and update tapped', (tester) async {
     await pump(tester);
@@ -58,11 +73,49 @@ void main() {
     expect(log.where((e) => e == 'onUpdate'), hasLength(1));
   });
 
-  testWidgets('dismissing reports the event', (tester) async {
+  testWidgets('dismissing reports the event and snoozes the version', (
+    tester,
+  ) async {
     await pump(tester);
     await tester.tap(find.text('Not Now'));
     await tester.pump();
 
     expect(log, ['shown', 'dismissed:button']);
+    final reminder = PlayxUpdateReminder(
+      PlayxUpdateReminderOptions(storage: storage),
+    );
+    expect(
+      await reminder.suppressionReason(_info()),
+      PlayxPromptSuppressedReason.snoozed,
+    );
+  });
+
+  testWidgets('skip button is shown only when allowed', (tester) async {
+    await pump(tester);
+    expect(find.text('Skip this version'), findsNothing);
+  });
+
+  testWidgets('skipping reports the event and remembers the version', (
+    tester,
+  ) async {
+    await pump(tester, allowSkip: true);
+    await tester.tap(find.text('Skip this version'));
+    await tester.pumpAndSettle();
+
+    expect(log, ['shown', 'skipped']);
+    final reminder = PlayxUpdateReminder(
+      PlayxUpdateReminderOptions(storage: storage),
+    );
+    expect(
+      await reminder.suppressionReason(_info()),
+      PlayxPromptSuppressedReason.skippedVersion,
+    );
+    // The skip is not additionally reported as a dismissal.
+    expect(log.any((e) => e.startsWith('dismissed')), isFalse);
+  });
+
+  testWidgets('no skip button on a forced update', (tester) async {
+    await pump(tester, force: true, allowSkip: true);
+    expect(find.text('Skip this version'), findsNothing);
   });
 }

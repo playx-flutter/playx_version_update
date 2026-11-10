@@ -1,6 +1,7 @@
 # Changelog
 ## Unreleased
-- Add `PlayxUpdateEvents` (`PlayxUpdateUIOptions.events`) for analytics: shown, update tapped, dismissed, and Android in-app update started/result.
+- Add `PlayxUpdateEvents` (`PlayxUpdateUIOptions.events`) for analytics: shown, update tapped, dismissed, skipped, suppressed, and Android in-app update started/result.
+- Add "Later" snoozing and "Skip this version" through `reminderOptions` on `showUpdateDialog` / `iosReminderOptions` on `showInAppUpdateDialog`, with pluggable `PlayxUpdateStorage` (in-memory by default). `showUpdateDialog` returns `success(false)` when the prompt is suppressed.
 - Detect Google's EU consent page and report it as `ConsentRequiredException` (`STORE_CONSENT_REQUIRED`) instead of a version format error.
 - Add `PlayxUpdateOptions.networkOptions` (`PlayxNetworkOptions`): retries, timeouts, headers, a custom `Dio` and a `CancelToken`.
 - **Breaking:** raise the minimum Dart SDK to 3.10 and Flutter to 3.38.1; update `dio` to ^5.11.1 and `package_info_plus` to ^10.2.2.

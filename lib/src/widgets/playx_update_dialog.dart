@@ -75,10 +75,15 @@ class PlayxUpdateDialog extends StatefulWidget {
   final PlayxVersionUpdateInfo versionUpdateInfo;
   final PlayxUpdateUIOptions uiOptions;
 
+  /// When provided, the dialog snoozes the version when dismissed and can
+  /// offer a "Skip this version" button, see [PlayxUpdateReminderOptions].
+  final PlayxUpdateReminder? reminder;
+
   const PlayxUpdateDialog({
     super.key,
     required this.versionUpdateInfo,
     required this.uiOptions,
+    this.reminder,
   });
 
   @override
@@ -89,6 +94,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
   late final UpdateUiController _controller = UpdateUiController(
     info: widget.versionUpdateInfo,
     events: widget.uiOptions.events,
+    reminder: widget.reminder,
   );
 
   @override
@@ -164,6 +170,18 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
         ]),
       ),
       actions: <Widget>[
+        if (_controller.canSkip)
+          TextButton(
+            onPressed: () {
+              _controller.skipped();
+              Navigator.pop(context, 'Skip');
+            },
+            style: widget.uiOptions.dismissButtonStyle,
+            child: Text(
+              _controller.skipButtonText,
+              style: widget.uiOptions.dismissButtonTextStyle,
+            ),
+          ),
         if (shouldShowDismissButton)
           TextButton(
             onPressed: () {
@@ -237,6 +255,14 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
         ]),
       ),
       actions: <CupertinoDialogAction>[
+        if (_controller.canSkip)
+          CupertinoDialogAction(
+            onPressed: () {
+              _controller.skipped();
+              Navigator.pop(context, 'Skip');
+            },
+            child: Text(_controller.skipButtonText),
+          ),
         if (shouldShowDismissButton)
           CupertinoDialogAction(
             onPressed: () {
