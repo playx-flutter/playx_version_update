@@ -1,4 +1,15 @@
 # Changelog
+## Unreleased
+- Remove the `playx_network` dependency in favor of a small lightweight built-in `dio` based network client.
+- The `NetworkException` types are still exported from this package, so existing error handling keeps working.
+- Add stable `NetworkErrorCode` constants, an `errorCode` and original `cause` on every `NetworkException`, and `PlayxVersionNetworkError.statusCode`.
+- Add `BadRequestException`, `TooManyRequestsException` and `BadCertificateException`; 502/504 now map to `ServiceUnavailableException`.
+- Add `AppNotFoundException` (`STORE_APP_NOT_FOUND`): Google Play 404 and empty App Store lookups are now reported as "app not found" instead of a format error. App Store 403 is treated as throttling.
+- `enableNetworkLogging` now logs the full exchange (request method/URL/headers, response status/headers/timing/body preview, errors, retries) through a dedicated `NetworkLogInterceptor`; sensitive headers are masked.
+- Add `NetworkException.isRetryable`, and one automatic retry for retryable failures.
+- Send a browser user agent and `Accept-Language` to Google Play.
+- Fix the example app so network errors are detected through `PlayxVersionNetworkError`.
+
 ## 1.3.0
 - Add `PlayxPlatformVersion` with `newPlatformVersion` and `minPlatformVersion` overrides for Android- and iOS-specific app version checks.
 - Keep `newVersion` and `minVersion` as the effective resolved values in `PlayxVersionUpdateInfo` for backward compatibility.

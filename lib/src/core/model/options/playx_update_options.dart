@@ -49,7 +49,9 @@ class PlayxUpdateOptions {
   /// The two-letter language code for store details. Defaults to 'en'.
   final String language;
 
-  /// Whether to enable network logging.
+  /// Whether to log the version-check network traffic to the console:
+  /// request method, URL and headers, response status, headers, timing and a
+  /// short body preview, plus errors and retries. Sensitive headers are masked.
   final bool enableNetworkLogging;
 
   const PlayxUpdateOptions({

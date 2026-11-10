@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
+import 'package:playx_version_update/src/core/datasource/store_urls.dart';
 import 'package:playx_version_update/src/core/model/playx_platform_version.dart';
 import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
@@ -96,9 +97,7 @@ class VersionChecker {
         language: language,
         enableLog: enableLog);
 
-    return storeInfo.mapAsync(success: (infoResult) async {
-      final info = infoResult.data;
-
+    return storeInfo.mapAsync(success: (info) async {
       final currentVersion = resolvePlatformVersionForCurrentPlatform(
             isAndroid: true,
             genericVersion: newVersion ?? info.version,
@@ -140,8 +139,7 @@ class VersionChecker {
         return PlayxVersionUpdateResult<PlayxVersionUpdateInfo>.error(error);
       });
     }, error: (error) async {
-      return PlayxVersionUpdateResult.error(
-          PlayxVersionNetworkError(error.error));
+      return PlayxVersionUpdateResult<PlayxVersionUpdateInfo>.error(error);
     });
   }
 
@@ -163,9 +161,7 @@ class VersionChecker {
         language: language,
         enableLog: enableLog);
 
-    return storeInfo.mapAsync(success: (infoResult) async {
-      final info = infoResult.data;
-
+    return storeInfo.mapAsync(success: (info) async {
       final currentVersion = resolvePlatformVersionForCurrentPlatform(
             isAndroid: false,
             genericVersion: newVersion ?? info.version,
@@ -206,8 +202,7 @@ class VersionChecker {
         return PlayxVersionUpdateResult<PlayxVersionUpdateInfo>.error(error);
       });
     }, error: (error) async {
-      return PlayxVersionUpdateResult.error(
-          PlayxVersionNetworkError(error.error));
+      return PlayxVersionUpdateResult<PlayxVersionUpdateInfo>.error(error);
     });
   }
 

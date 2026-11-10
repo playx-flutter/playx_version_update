@@ -1,4 +1,5 @@
-import 'package:playx_network/playx_network.dart' as network;
+import 'package:playx_version_update/src/core/network/exceptions/network_exception.dart'
+    as network;
 
 // Constants for general PlayxVersionUpdate errors
 const String _activityNotFoundErrorCode = 'ACTIVITY_NOT_FOUND';
@@ -61,7 +62,7 @@ sealed class PlayxVersionUpdateError {
 
 /// Represents a network-related error encountered during Playx Version Update operations.
 ///
-/// This class wraps a [network.NetworkException] from the `playx_network` package,
+/// This class wraps a [network.NetworkException] from the internal network client,
 /// providing a unified error type within the `PlayxVersionUpdateError` hierarchy.
 class PlayxVersionNetworkError extends PlayxVersionUpdateError {
   final network.NetworkException error;
@@ -71,10 +72,15 @@ class PlayxVersionNetworkError extends PlayxVersionUpdateError {
   @override
   String get message => error.message;
 
+  /// The stable code of the wrapped exception, see [network.NetworkErrorCode].
   @override
-  String get errorCode => error is network.ApiException
-      ? (error as network.ApiException).statusCode.toString()
-      : error.errorMessage;
+  String get errorCode => error.errorCode;
+
+  /// The HTTP status code if the failure came from a store response.
+  int? get statusCode {
+    final e = error;
+    return e is network.ApiException ? e.statusCode : null;
+  }
 }
 
 /// Sealed class representing specific errors that can occur during the

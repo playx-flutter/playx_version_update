@@ -1,62 +1,83 @@
-import 'package:playx_network/playx_network.dart';
+import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
+import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
 import 'package:playx_version_update/src/core/model/store_info.dart';
+import 'package:playx_version_update/src/core/network/exceptions/network_exception.dart';
 import 'package:playx_version_update/src/core/network/network_client.dart';
+
+import 'store_error_mapper.dart';
+import 'store_type.dart';
+import 'store_urls.dart';
 
 class RemoteStoreDataSource {
   static final RemoteStoreDataSource _instance =
       RemoteStoreDataSource._internal();
 
-  factory RemoteStoreDataSource() {
-    return _instance;
-  }
+  factory RemoteStoreDataSource() => _instance;
 
-  RemoteStoreDataSource._internal();
+  RemoteStoreDataSource._internal() : _client = NetworkClient();
 
-  final PlayxNetworkClient _client = NetworkClient.createClient();
+  /// Creates a data source with a custom [client], mainly for testing.
+  RemoteStoreDataSource.withClient(NetworkClient client) : _client = client;
 
-  Future<NetworkResult<StoreInfo>> getPlayStoreInfo({
+  final NetworkClient _client;
+
+  Future<PlayxVersionUpdateResult<StoreInfo>> getPlayStoreInfo({
     required String packageId,
     required String country,
     required String language,
     bool enableLog = false,
   }) {
-    final url = getGooglePlayUrl(
-        packageId: packageId, country: country, language: language);
-    return _client.get(url,
-        fromJson: StoreInfo.fromGooglePlay,
-        settings: _client.settings.copyWith(
-            logSettings: PlayxNetworkLoggerSettings(
-          printResponseData: false,
-          enabled: enableLog,
-        )));
+    return _fetch(
+      store: StoreType.googlePlay,
+      url: getGooglePlayUrl(
+          packageId: packageId, country: country, language: language),
+      // Google Play serves a localized page and may reject unknown clients.
+      headers: {
+        'User-Agent': _browserUserAgent,
+        'Accept-Language': language,
+      },
+      parse: StoreInfo.fromGooglePlay,
+      enableLog: enableLog,
+    );
   }
 
-  Future<NetworkResult<StoreInfo>> getAppStoreInfo({
+  Future<PlayxVersionUpdateResult<StoreInfo>> getAppStoreInfo({
     required String packageId,
     required String country,
     required String language,
     bool enableLog = false,
   }) {
-    final url = getAppStoreInfoUrl(
-        packageId: packageId, country: country, language: language);
-    return _client.get(url,
-        fromJson: StoreInfo.fromAppStore,
-        settings: _client.settings.copyWith(
-            logSettings: PlayxNetworkLoggerSettings(
-          printResponseData: false,
-          enabled: enableLog,
-        )));
+    return _fetch(
+      store: StoreType.appStore,
+      url: getAppStoreInfoUrl(
+          packageId: packageId, country: country, language: language),
+      parse: StoreInfo.fromAppStore,
+      enableLog: enableLog,
+    );
   }
+
+  Future<PlayxVersionUpdateResult<StoreInfo>> _fetch({
+    required StoreType store,
+    required String url,
+    required StoreInfo Function(dynamic body) parse,
+    Map<String, String>? headers,
+    bool enableLog = false,
+  }) async {
+    try {
+      final body =
+          await _client.get(url, headers: headers, enableLog: enableLog);
+      return PlayxVersionUpdateResult.success(parse(body));
+    } on NetworkException catch (e) {
+      return PlayxVersionUpdateResult.error(
+          PlayxVersionNetworkError(StoreErrorMapper.refine(store, e)));
+    } catch (e) {
+      // The store responded, but its body could not be parsed.
+      return PlayxVersionUpdateResult.error(
+          PlayxVersionNetworkError(InvalidFormatException(cause: e)));
+    }
+  }
+
+  static const _browserUserAgent =
+      'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 '
+      '(KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36';
 }
-
-String getGooglePlayUrl(
-        {required String packageId,
-        required String country,
-        required String language}) =>
-    "https://play.google.com/store/apps/details?id=$packageId&hl=$language&gl=$country";
-
-String getAppStoreInfoUrl(
-        {required String packageId,
-        required String country,
-        required String language}) =>
-    "https://itunes.apple.com/lookup?bundleId=$packageId&country=$country&lang=$language";

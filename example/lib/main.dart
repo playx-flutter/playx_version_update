@@ -497,8 +497,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       },
       error: (error) {
         // network related errors
-        if (error is NetworkException) {
-          if (error is NoInternetConnectionException) {
+        if (error is PlayxVersionNetworkError) {
+          if (error.error is NoInternetConnectionException) {
             _showMessage(
                 'No internet connection. Please check your network settings.',
                 isError: true);

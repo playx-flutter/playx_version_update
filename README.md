@@ -769,5 +769,4 @@ For a complete list of all possible errors, refer to the [PlayxVersionUpdateErro
 
 -   [In-app updates](https://developer.android.com/guide/playcore/in-app-updates) - Official Google Play documentation on in-app updates.
 
--   [playx_network](https://pub.dev/packages/playx_network) - The network package used internally for version checks.
     
