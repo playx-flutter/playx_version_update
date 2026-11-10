@@ -201,18 +201,7 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                           borderRadius:
                                               BorderRadius.circular(25))),
                               onPressed: () {
-                                _controller.updateTapped();
-                                if (widget.uiOptions.onUpdate != null) {
-                                  widget.uiOptions.onUpdate?.call(
-                                      widget.versionUpdateInfo,
-                                      widget.uiOptions.launchMode);
-                                } else {
-                                  PlayxVersionUpdate.openStore(
-                                      storeUrl:
-                                          widget.versionUpdateInfo.storeUrl,
-                                      launchMode: widget.uiOptions.launchMode,
-                  preferStoreApp: widget.uiOptions.preferStoreApp);
-                                }
+                                _controller.performUpdate(widget.uiOptions);
                               },
                               child: Text(
                                 widget.uiOptions.updateButtonText,

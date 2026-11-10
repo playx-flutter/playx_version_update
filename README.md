@@ -341,6 +341,23 @@ await PlayxVersionUpdate.openStore(storeUrl: info.storeUrl);
 
 The update dialog and page use it too; turn the deep link off with `PlayxUpdateUIOptions(preferStoreApp: false)`.
 
+#### Opening the store yourself
+
+Pass `storeLauncher` to open the store your own way (for example another store) and report whether it worked:
+
+```dart
+PlayxUpdateUIOptions(
+  storeLauncher: (info) async {
+    return openMyStore(info.newVersion); // true if the store was opened
+  },
+  events: PlayxUpdateEvents(
+    onStoreOpenResult: (info, opened) => analytics.log('store_opened', opened),
+  ),
+)
+```
+
+On the update button the order is: `onUpdate` (replaces everything, returns nothing) > `storeLauncher` > the default `openStore`. `onStoreOpenResult` fires after the default launcher or `storeLauncher`, with `false` when it failed or threw.
+
 No `<queries>` (Android) or `LSApplicationQueriesSchemes` (iOS) entries are needed, because the package launches the link directly instead of checking `canLaunchUrl` first. `openStore` returns an error when nothing could open the link.
 
 ### Network Settings
@@ -391,6 +408,7 @@ PlayxUpdateUIOptions(
   events: PlayxUpdateEvents(
     onShown: (info) => analytics.log('update_shown', info.newVersion),
     onUpdateTapped: (info) => analytics.log('update_tapped'),
+    onStoreOpenResult: (info, opened) => analytics.log('store_opened', opened),
     onDismissed: (info, reason) => analytics.log('update_dismissed'),
     onVersionSkipped: (info) => analytics.log('update_skipped'),
     onSuppressed: (info, reason) => analytics.log('update_suppressed'),

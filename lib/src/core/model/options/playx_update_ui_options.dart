@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../utils/callbacks.dart';
 
 /// Options for customizing the user interface of Flutter-based update prompts.
 ///
@@ -62,6 +61,15 @@ class PlayxUpdateUIOptions {
   /// Overrides the default behavior of opening the app store.
   /// Applies to Flutter-based UIs on both Android and iOS.
   final UpdatePressedCallback? onUpdate;
+
+  /// Opens the store yourself when the update button is tapped, for example
+  /// to deep link into a store the package does not know.
+  ///
+  /// Unlike [onUpdate], it returns whether the store was opened, which is
+  /// reported to `PlayxUpdateEvents.onStoreOpenResult`. A thrown error counts
+  /// as `false`. Ignored when [onUpdate] is set. Without either, the package
+  /// calls `PlayxVersionUpdate.openStore` with the update info's store URL.
+  final StoreLauncherCallback? storeLauncher;
 
   /// Callback when the dismiss button is pressed.
   /// Applies to Flutter-based UIs on both Android and iOS.
@@ -135,6 +143,7 @@ class PlayxUpdateUIOptions {
     this.updateButtonText = 'Update',
     this.dismissButtonText,
     this.onUpdate,
+    this.storeLauncher,
     this.onCancel,
     this.launchMode = LaunchMode.externalApplication,
     this.preferStoreApp = true,

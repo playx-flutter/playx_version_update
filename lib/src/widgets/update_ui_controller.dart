@@ -1,6 +1,4 @@
-import 'package:playx_version_update/src/core/model/options/playx_update_events.dart';
-import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
-import 'package:playx_version_update/src/core/reminder/playx_update_reminder.dart';
+import 'package:playx_version_update/playx_version_update.dart';
 
 /// Shared by the update dialog and page: reports user actions to
 /// [PlayxUpdateEvents] and records them in the [PlayxUpdateReminder].
@@ -34,6 +32,37 @@ class UpdateUiController {
     // The user may tap update several times (the UI can stay open).
     events.onUpdateTapped?.call(info);
     _resolved = true;
+  }
+
+  /// Handles the update button: reports the tap, then opens the store with
+  /// `onUpdate` (which replaces everything), `storeLauncher` or the default
+  /// `openStore`, and reports whether the store was opened.
+  Future<void> performUpdate(PlayxUpdateUIOptions uiOptions) async {
+    updateTapped();
+
+    final onUpdate = uiOptions.onUpdate;
+    if (onUpdate != null) {
+      onUpdate(info, uiOptions.launchMode);
+      return;
+    }
+
+    var opened = false;
+    try {
+      final launcher = uiOptions.storeLauncher;
+      if (launcher != null) {
+        opened = await launcher(info);
+      } else {
+        final result = await PlayxVersionUpdate.openStore(
+          storeUrl: info.storeUrl,
+          launchMode: uiOptions.launchMode,
+          preferStoreApp: uiOptions.preferStoreApp,
+        );
+        opened = result.updateData ?? false;
+      }
+    } catch (_) {
+      opened = false;
+    }
+    events.onStoreOpenResult?.call(info, opened);
   }
 
   void dismissed(PlayxUpdateDismissReason reason) {

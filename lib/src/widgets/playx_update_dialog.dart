@@ -202,16 +202,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
           ),
         TextButton(
           onPressed: () {
-            _controller.updateTapped();
-            if (widget.uiOptions.onUpdate != null) {
-              widget.uiOptions.onUpdate
-                  ?.call(widget.versionUpdateInfo, widget.uiOptions.launchMode);
-            } else {
-              PlayxVersionUpdate.openStore(
-                  storeUrl: widget.versionUpdateInfo.storeUrl,
-                  launchMode: widget.uiOptions.launchMode,
-                  preferStoreApp: widget.uiOptions.preferStoreApp);
-            }
+            _controller.performUpdate(widget.uiOptions);
             if (isDismissible) {
               Navigator.pop(context, 'Update');
             }
@@ -281,19 +272,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
         CupertinoDialogAction(
           isDefaultAction: true,
           onPressed: () {
-            _controller.updateTapped();
-            if (isDismissible) {
-              Navigator.pop(context, 'Update');
-            }
-            if (widget.uiOptions.onUpdate != null) {
-              widget.uiOptions.onUpdate
-                  ?.call(widget.versionUpdateInfo, widget.uiOptions.launchMode);
-            } else {
-              PlayxVersionUpdate.openStore(
-                  storeUrl: widget.versionUpdateInfo.storeUrl,
-                  launchMode: widget.uiOptions.launchMode,
-                  preferStoreApp: widget.uiOptions.preferStoreApp);
-            }
+            _controller.performUpdate(widget.uiOptions);
             if (isDismissible) {
               Navigator.pop(context, 'Update');
             }

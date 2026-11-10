@@ -1,5 +1,7 @@
 # Changelog
 ## Unreleased
+- Add `PlayxUpdateUIOptions.storeLauncher` to open the store yourself, and `PlayxUpdateEvents.onStoreOpenResult` reporting whether the store opened. On the update button: `onUpdate` > `storeLauncher` > default `openStore`. The callback typedefs (`UpdatePressedCallback`, `StoreLauncherCallback`, ...) are now exported.
+- Fix the iOS update dialog popping the route twice when dismissible.
 - `PlayxVersionUpdate.openStore` now opens the store app directly (`market://` on Android, `itms-apps://` on iOS) before falling back to the web URL; control it with `preferStoreApp` (also on `PlayxUpdateUIOptions`). It launches directly instead of calling `canLaunchUrl`, so no `<queries>` / `LSApplicationQueriesSchemes` are needed, and it now returns an error whenever nothing could be opened (before, `launchUrl` returning `false` gave `success(false)`).
 - Add `PlayxStaticVersionSource`: fixed per-platform version, minimum version, release notes and store URL (`PlayxPlatformVersion` / `PlayxPlatformValue`). The deprecated `newPlatformVersion` / `minPlatformVersion` options now point to it.
 - Add `PlayxUpdateOptions.storeUrls` (`PlayxPlatformValue<String>`) to set a custom store URL per platform. It wins over a version source's URL and the derived one; on iOS, providing it with `newVersion` skips the App Store lookup.

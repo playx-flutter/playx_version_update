@@ -30,6 +30,12 @@ class PlayxUpdateEvents {
   /// The user tapped the update button.
   final void Function(PlayxVersionUpdateInfo info)? onUpdateTapped;
 
+  /// The store was opened (or failed to open) after the user tapped update:
+  /// `opened` tells which. Not reported when `PlayxUpdateUIOptions.onUpdate`
+  /// handles the tap, as it returns nothing.
+  final void Function(PlayxVersionUpdateInfo info, bool opened)?
+      onStoreOpenResult;
+
   /// The user closed the update UI without updating.
   final void Function(
     PlayxVersionUpdateInfo info,
@@ -61,6 +67,7 @@ class PlayxUpdateEvents {
   const PlayxUpdateEvents({
     this.onShown,
     this.onUpdateTapped,
+    this.onStoreOpenResult,
     this.onDismissed,
     this.onVersionSkipped,
     this.onSuppressed,
