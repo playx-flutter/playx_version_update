@@ -1,3 +1,9 @@
+/// Per-platform version values.
+///
+/// Deprecated together with `PlayxUpdateOptions.newPlatformVersion` and
+/// `minPlatformVersion`: use a `PlayxVersionSource` instead, which receives
+/// the platform in its request.
+@Deprecated('Use PlayxUpdateOptions.versionSource instead.')
 class PlayxPlatformVersion {
   final String? android;
   final String? ios;

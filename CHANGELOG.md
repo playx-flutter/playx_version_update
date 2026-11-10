@@ -1,5 +1,8 @@
 # Changelog
 ## Unreleased
+- **Deprecate** `PlayxUpdateOptions.newPlatformVersion`, `minPlatformVersion` and `PlayxPlatformVersion` in favor of `versionSource`, which receives the platform in its request. They keep working and will be removed in a future major release.
+- Add pluggable `PlayxVersionSource` (`PlayxUpdateOptions.versionSource`) with `PlayxStoreVersionSource` (default), `PlayxCallbackVersionSource` (Remote Config / own backend) and `PlayxFallbackVersionSource`. Options values still win over the source.
+- Fix `newVersion` / `newPlatformVersion` not skipping the store lookup. On Android the Google Play page is no longer requested when a version is provided; on iOS the App Store lookup (needed for the store URL) is best-effort and its failure no longer fails the check.
 - Add `PlayxUpdateEvents` (`PlayxUpdateUIOptions.events`) for analytics: shown, update tapped, dismissed, skipped, suppressed, and Android in-app update started/result.
 - Add "Later" snoozing and "Skip this version" through `reminderOptions` on `showUpdateDialog` / `iosReminderOptions` on `showInAppUpdateDialog`, with pluggable `PlayxUpdateStorage` (in-memory by default). `showUpdateDialog` returns `success(false)` when the prompt is suppressed.
 - Detect Google's EU consent page and report it as `ConsentRequiredException` (`STORE_CONSENT_REQUIRED`) instead of a version format error.

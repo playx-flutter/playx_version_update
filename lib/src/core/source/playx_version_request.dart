@@ -1,0 +1,38 @@
+import 'package:playx_version_update/src/core/model/options/playx_network_options.dart';
+
+/// What a [PlayxVersionSource] is asked for.
+class PlayxVersionRequest {
+  /// Whether the check runs on Android (`true`) or iOS (`false`).
+  final bool isAndroid;
+
+  /// The Google Play package name or the App Store bundle id.
+  final String packageId;
+
+  /// The two-letter store country code.
+  final String country;
+
+  /// The two-letter store language code.
+  final String language;
+
+  /// The network settings from `PlayxUpdateOptions.networkOptions`, or `null`
+  /// for the defaults.
+  final PlayxNetworkOptions? networkOptions;
+
+  /// Whether network logging was requested.
+  final bool enableLog;
+
+  /// The new version the caller already supplied (`newVersion` or the
+  /// platform override), if any. It always wins over what a source returns,
+  /// so a source may skip work when it is set.
+  final String? providedVersion;
+
+  const PlayxVersionRequest({
+    required this.isAndroid,
+    required this.packageId,
+    required this.country,
+    required this.language,
+    this.networkOptions,
+    this.enableLog = false,
+    this.providedVersion,
+  });
+}

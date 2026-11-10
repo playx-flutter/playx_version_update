@@ -1,5 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
+import 'package:playx_version_update/src/core/network/network_client.dart';
+import 'package:playx_version_update/src/core/source/playx_callback_version_source.dart';
+import 'package:playx_version_update/src/core/source/playx_remote_version_info.dart';
+import 'package:playx_version_update/src/core/source/playx_version_source.dart';
 import 'package:playx_version_update/src/core/model/playx_platform_version.dart';
+import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
+import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
 import 'package:playx_version_update/src/core/version_checker/version_checker.dart';
 
@@ -298,4 +306,271 @@ void main() {
       expect(result.updateError, isA<VersionFormatException>());
     });
   });
+
+  group('provided new version', () {
+    const appStoreJson =
+        '{"resultCount":1,"results":[{"version":"9.0.0","trackViewUrl":"https://apps.apple.com/x","description":"[Minimum Version: 2.0.0]"}]}';
+
+    (VersionChecker, _CountingAdapter) make(
+        ResponseBody Function() response) {
+      final adapter = _CountingAdapter(response);
+      final dio = Dio(BaseOptions(responseType: ResponseType.plain))
+        ..httpClientAdapter = adapter;
+      final client =
+          NetworkClient(dio: dio, maxRetries: 0, retryDelay: Duration.zero);
+      return (
+        VersionChecker.withDataSource(RemoteStoreDataSource.withClient(client)),
+        adapter,
+      );
+    }
+
+    Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>> android(
+      VersionChecker c, {
+      String? newVersion,
+      String? minVersion,
+      PlayxPlatformVersion? platform,
+      PlayxVersionSource? source,
+    }) =>
+        c.checkVersionFor(
+          isAndroid: true,
+          localVersion: '1.0.0',
+          packageId: 'a.b',
+          country: 'us',
+          language: 'en',
+          newVersion: newVersion,
+          newPlatformVersion: platform,
+          minVersion: minVersion,
+          minPlatformVersion: null,
+          forceUpdate: null,
+          source: source,
+        );
+
+    Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>> ios(
+      VersionChecker c, {
+      String? newVersion,
+      PlayxVersionSource? source,
+    }) =>
+        c.checkVersionFor(
+          isAndroid: false,
+          localVersion: '1.0.0',
+          packageId: 'a.b',
+          country: 'us',
+          language: 'en',
+          newVersion: newVersion,
+          newPlatformVersion: null,
+          minVersion: null,
+          minPlatformVersion: null,
+          forceUpdate: null,
+          source: source,
+        );
+
+    test('android does not request the store', () async {
+      final (c, adapter) = make(() => ResponseBody.fromString('', 500));
+      final result = await android(c, newVersion: '2.0.0');
+
+      expect(adapter.count, 0);
+      final info = result.updateData!;
+      expect(info.newVersion, '2.0.0');
+      expect(info.canUpdate, isTrue);
+      expect(info.storeUrl, contains('play.google.com'));
+    });
+
+    test('android platform override also skips the store', () async {
+      final (c, adapter) = make(() => ResponseBody.fromString('', 500));
+      final result = await android(c,
+          platform: const PlayxPlatformVersion(android: '3.0.0'));
+
+      expect(adapter.count, 0);
+      expect(result.updateData!.newVersion, '3.0.0');
+    });
+
+    test('android still requests the store without a provided version',
+        () async {
+      final (c, adapter) = make(() => ResponseBody.fromString('', 500));
+      final result = await android(c);
+
+      expect(adapter.count, 1);
+      expect(result.isError, isTrue);
+    });
+
+    test('an empty provided version falls back to the store', () async {
+      final (c, adapter) = make(() => ResponseBody.fromString('', 500));
+      await android(c, newVersion: '');
+      expect(adapter.count, 1);
+    });
+
+    test('ios uses the provided version when the lookup fails', () async {
+      final (c, adapter) = make(() => ResponseBody.fromString('', 503));
+      final result = await ios(c, newVersion: '2.0.0');
+
+      expect(adapter.count, 1);
+      final info = result.updateData!;
+      expect(info.newVersion, '2.0.0');
+      expect(info.storeUrl, '');
+    });
+
+    test('ios keeps the store url and extras when the lookup works',
+        () async {
+      final (c, _) = make(() => ResponseBody.fromString(appStoreJson, 200));
+      final info = (await ios(c, newVersion: '2.0.0')).updateData!;
+
+      expect(info.newVersion, '2.0.0');
+      expect(info.storeUrl, 'https://apps.apple.com/x');
+      expect(info.minVersion, '2.0.0');
+    });
+
+    test('ios without a provided version still fails when the lookup fails',
+        () async {
+      final (c, _) = make(() => ResponseBody.fromString('', 503));
+      expect((await ios(c)).isError, isTrue);
+    });
+  });
+
+  group('custom version source', () {
+    PlayxVersionSource source(PlayxRemoteVersionInfo info) =>
+        PlayxCallbackVersionSource((_) async => info);
+
+    final failing = PlayxCallbackVersionSource((_) async => throw 'boom');
+
+    (VersionChecker, _CountingAdapter) make() {
+      final adapter = _CountingAdapter(() => ResponseBody.fromString('', 500));
+      final dio = Dio(BaseOptions(responseType: ResponseType.plain))
+        ..httpClientAdapter = adapter;
+      return (
+        VersionChecker.withDataSource(RemoteStoreDataSource.withClient(
+            NetworkClient(dio: dio, maxRetries: 0))),
+        adapter,
+      );
+    }
+
+    Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>> ios(
+      VersionChecker c,
+      PlayxVersionSource source, {
+      String? newVersion,
+      String? minVersion,
+    }) =>
+        c.checkVersionFor(
+          isAndroid: false,
+          localVersion: '1.0.0',
+          packageId: 'a.b',
+          country: 'us',
+          language: 'en',
+          newVersion: newVersion,
+          newPlatformVersion: null,
+          minVersion: minVersion,
+          minPlatformVersion: null,
+          forceUpdate: null,
+          source: source,
+        );
+
+    Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>> android(
+      VersionChecker c,
+      PlayxVersionSource source,
+    ) =>
+        c.checkVersionFor(
+          isAndroid: true,
+          localVersion: '1.0.0',
+          packageId: 'a.b',
+          country: 'us',
+          language: 'en',
+          newVersion: null,
+          newPlatformVersion: null,
+          minVersion: null,
+          minPlatformVersion: null,
+          forceUpdate: null,
+          source: source,
+        );
+
+    test('uses every value of the source and never touches the store',
+        () async {
+      final (c, adapter) = make();
+      final info = (await ios(
+        c,
+        source(const PlayxRemoteVersionInfo(
+          version: '3.0.0',
+          minVersion: '2.0.0',
+          releaseNotes: 'Notes',
+          storeUrl: 'https://my.store/app',
+        )),
+      ))
+          .updateData!;
+
+      expect(adapter.count, 0);
+      expect(info.newVersion, '3.0.0');
+      expect(info.minVersion, '2.0.0');
+      // The local version 1.0.0 is not above the minimum 2.0.0.
+      expect(info.forceUpdate, isTrue);
+      expect(info.releaseNotes, 'Notes');
+      expect(info.storeUrl, 'https://my.store/app');
+    });
+
+    test('a source minVersion above the local version forces the update',
+        () async {
+      final (c, _) = make();
+      final info = (await ios(
+        c,
+        source(const PlayxRemoteVersionInfo(version: '3.0.0', minVersion: '1.0.0')),
+      ))
+          .updateData!;
+      expect(info.forceUpdate, isTrue);
+    });
+
+    test('options newVersion and minVersion win over the source', () async {
+      final (c, _) = make();
+      final info = (await ios(
+        c,
+        source(const PlayxRemoteVersionInfo(version: '3.0.0', minVersion: '1.0.0')),
+        newVersion: '4.0.0',
+        minVersion: '0.5.0',
+      ))
+          .updateData!;
+
+      expect(info.newVersion, '4.0.0');
+      expect(info.minVersion, '0.5.0');
+    });
+
+    test('android falls back to the Google Play url', () async {
+      final (c, _) = make();
+      final info = (await android(
+              c, source(const PlayxRemoteVersionInfo(version: '3.0.0'))))
+          .updateData!;
+      expect(info.storeUrl, contains('play.google.com'));
+    });
+
+    test('ios without a source url has an empty store url', () async {
+      final (c, _) = make();
+      final info =
+          (await ios(c, source(const PlayxRemoteVersionInfo(version: '3.0.0'))))
+              .updateData!;
+      expect(info.storeUrl, '');
+    });
+
+    test('a failing source fails the check', () async {
+      final (c, _) = make();
+      final result = await ios(c, failing);
+      expect(result.updateError, isA<DefaultFailureError>());
+    });
+
+    test('a failing source is ignored when a version is provided', () async {
+      final (c, _) = make();
+      final info = (await ios(c, failing, newVersion: '2.0.0')).updateData!;
+      expect(info.newVersion, '2.0.0');
+    });
+  });
+}
+
+class _CountingAdapter implements HttpClientAdapter {
+  final ResponseBody Function() response;
+  int count = 0;
+  _CountingAdapter(this.response);
+
+  @override
+  Future<ResponseBody> fetch(RequestOptions options,
+      Stream<List<int>>? requestStream, Future<void>? cancelFuture) async {
+    count++;
+    return response();
+  }
+
+  @override
+  void close({bool force = false}) {}
 }

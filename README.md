@@ -278,12 +278,11 @@ The version value itself follows the same styles supported by the package versio
 
 The package will parse this information and automatically update the `forceUpdate` value of `PlayxVersionUpdateInfo` returned by `checkVersion` accordingly.
 
-### Platform-Specific Version Overrides
+### Platform-Specific Version Overrides (deprecated)
 
-If your backend serves different app versions for Android and iOS, use `newPlatformVersion` and `minPlatformVersion`.
+> **Deprecated:** `newPlatformVersion` and `minPlatformVersion` (and `PlayxPlatformVersion`) are replaced by [`versionSource`](#custom-version-source-remote-config--your-backend), whose request tells you the platform, so you return the right version per platform yourself. They still work and will be removed in a future major release.
 
-These values override `newVersion` and `minVersion` on the current platform only, while `PlayxVersionUpdateInfo.newVersion` and `PlayxVersionUpdateInfo.minVersion` continue to expose the effective resolved values used by the package.
-
+They override `newVersion` and `minVersion` on the current platform only, while `PlayxVersionUpdateInfo.newVersion` and `PlayxVersionUpdateInfo.minVersion` continue to expose the effective resolved values used by the package.
 
 ### Network Settings
 
@@ -366,6 +365,44 @@ await PlayxVersionUpdate.showUpdateDialog(
 - `showUpdateDialog` returns `success(false)` when the prompt was suppressed.
 - Storage is pluggable so the package adds no storage dependency. The default is in-memory (forgotten on restart); implement `PlayxUpdateStorage` (`read`/`write`/`remove`) with `shared_preferences` or similar to persist it.
 - `PlayxUpdateReminder` can be used directly (`shouldPrompt`, `snooze`, `skipVersion`, `reset`) for custom UIs.
+
+### Custom Version Source (Remote Config / your backend)
+
+By default the latest version is read from Google Play / the App Store. Use `versionSource` to read it from Firebase Remote Config or your own API instead, so the store is not queried at all:
+
+```dart
+final result = await PlayxVersionUpdate.checkVersion(
+  options: PlayxUpdateOptions(
+    versionSource: PlayxCallbackVersionSource((request) async {
+      final config = FirebaseRemoteConfig.instance;
+      await config.fetchAndActivate();
+      return PlayxRemoteVersionInfo(
+        version: config.getString('latest_version'),
+        minVersion: config.getString('min_version'), // optional
+        releaseNotes: config.getString('release_notes'), // optional
+        storeUrl: config.getString('store_url'), // needed on iOS
+      );
+    }),
+  ),
+);
+```
+
+Chain sources to fall back to the store when your backend fails:
+
+```dart
+versionSource: PlayxFallbackVersionSource([
+  PlayxCallbackVersionSource(fetchFromMyBackend),
+  PlayxStoreVersionSource(), // the default source
+]),
+```
+
+- The callback receives a `PlayxVersionRequest` (platform, package id, country, language, network options).
+- Throwing a `NetworkException` is reported as a `PlayxVersionNetworkError`, any other error as a `DefaultFailureError`.
+- Values set directly in `PlayxUpdateOptions` (`newVersion`, `minVersion`, `forceUpdate`, and the deprecated platform overrides) always win over the source.
+- If you pass `newVersion`, a failing source is ignored and your version is used. On Android, the default store source then skips the Google Play request entirely.
+- Return a different version per platform with `request.isAndroid`.
+- `storeUrl` is optional on Android (the Google Play URL is used) but required on iOS for the update button when the App Store is not queried.
+- Implement `PlayxVersionSource` yourself for full control.
 
 -----
 

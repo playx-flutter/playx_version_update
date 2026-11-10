@@ -393,14 +393,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         androidPackageName:
             'io.sourcya.playx.verion.update.example', // Example package name
         iosBundleId: 'com.apple.shortcuts', // Example bundle ID
-        newPlatformVersion: const PlayxPlatformVersion(
-          android: '1.0.1',
-          ios: '1.0.2',
-        ),
-        minPlatformVersion: const PlayxPlatformVersion(
-          android: '1.0.0',
-          ios: '1.0.1',
-        ),
+        // Versions can come from Remote Config or your own backend instead
+        // of the stores. The request tells which platform is being checked.
+        versionSource: PlayxCallbackVersionSource((request) async {
+          return request.isAndroid
+              ? const PlayxRemoteVersionInfo(version: '1.0.1', minVersion: '1.0.0')
+              : const PlayxRemoteVersionInfo(
+                  version: '1.0.2',
+                  minVersion: '1.0.1',
+                  // iOS needs the store url when the App Store is not queried.
+                  storeUrl: 'https://apps.apple.com/app/shortcuts/id915249334',
+                );
+        }),
       ),
     );
 

@@ -19,3 +19,9 @@ export 'package:playx_version_update/src/core/model/options/playx_update_events.
 export 'package:playx_version_update/src/core/reminder/playx_update_reminder.dart';
 export 'package:playx_version_update/src/core/reminder/playx_update_reminder_options.dart';
 export 'package:playx_version_update/src/core/reminder/playx_update_storage.dart';
+export 'package:playx_version_update/src/core/source/playx_callback_version_source.dart';
+export 'package:playx_version_update/src/core/source/playx_fallback_version_source.dart';
+export 'package:playx_version_update/src/core/source/playx_remote_version_info.dart';
+export 'package:playx_version_update/src/core/source/playx_store_version_source.dart';
+export 'package:playx_version_update/src/core/source/playx_version_request.dart';
+export 'package:playx_version_update/src/core/source/playx_version_source.dart';
