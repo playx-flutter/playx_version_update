@@ -210,7 +210,8 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                   PlayxVersionUpdate.openStore(
                                       storeUrl:
                                           widget.versionUpdateInfo.storeUrl,
-                                      launchMode: widget.uiOptions.launchMode);
+                                      launchMode: widget.uiOptions.launchMode,
+                  preferStoreApp: widget.uiOptions.preferStoreApp);
                                 }
                               },
                               child: Text(

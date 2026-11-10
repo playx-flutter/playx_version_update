@@ -209,7 +209,8 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
             } else {
               PlayxVersionUpdate.openStore(
                   storeUrl: widget.versionUpdateInfo.storeUrl,
-                  launchMode: widget.uiOptions.launchMode);
+                  launchMode: widget.uiOptions.launchMode,
+                  preferStoreApp: widget.uiOptions.preferStoreApp);
             }
             if (isDismissible) {
               Navigator.pop(context, 'Update');
@@ -290,7 +291,8 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
             } else {
               PlayxVersionUpdate.openStore(
                   storeUrl: widget.versionUpdateInfo.storeUrl,
-                  launchMode: widget.uiOptions.launchMode);
+                  launchMode: widget.uiOptions.launchMode,
+                  preferStoreApp: widget.uiOptions.preferStoreApp);
             }
             if (isDismissible) {
               Navigator.pop(context, 'Update');

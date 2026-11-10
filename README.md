@@ -331,6 +331,18 @@ Set every platform once; the package uses the one of the current platform. Any s
 
 On iOS, passing `storeUrls` together with `newVersion` skips the App Store lookup entirely, because the lookup was only needed for the store URL.
 
+### Opening the Store
+
+`PlayxVersionUpdate.openStore(storeUrl: ...)` opens the store app directly when it can: `market://details?id=<package>` for a Google Play URL on Android and `itms-apps://` for an App Store URL on iOS. If that cannot be opened, or you pass `preferStoreApp: false`, the web URL is opened instead. Any other URL (another store, a short link, a custom scheme) is opened as it is.
+
+```dart
+await PlayxVersionUpdate.openStore(storeUrl: info.storeUrl);
+```
+
+The update dialog and page use it too; turn the deep link off with `PlayxUpdateUIOptions(preferStoreApp: false)`.
+
+No `<queries>` (Android) or `LSApplicationQueriesSchemes` (iOS) entries are needed, because the package launches the link directly instead of checking `canLaunchUrl` first. `openStore` returns an error when nothing could open the link.
+
 ### Network Settings
 
 Tune how the store is queried with `networkOptions`:

@@ -72,6 +72,11 @@ class PlayxUpdateUIOptions {
   /// Applies to Flutter-based UIs on both Android and iOS.
   final LaunchMode launchMode;
 
+  /// Whether the update button opens the store app directly (`market://` on
+  /// Android, `itms-apps://` on iOS) before falling back to the web URL.
+  /// Applies when [onUpdate] is not provided. Defaults to `true`.
+  final bool preferStoreApp;
+
   /// A leading widget to display at the top of the update UI (e.g., an icon or image).
   /// Applies to Flutter-based UIs on both Android and iOS.
   final Widget? leading;
@@ -132,6 +137,7 @@ class PlayxUpdateUIOptions {
     this.onUpdate,
     this.onCancel,
     this.launchMode = LaunchMode.externalApplication,
+    this.preferStoreApp = true,
     this.leading,
     this.displayType = PlayxUpdateDisplayType.pageOnForceUpdate,
     this.titleTextStyle,

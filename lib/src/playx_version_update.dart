@@ -6,6 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 import 'package:playx_version_update/src/platform/playx_version_update_platform_interface.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'core/store/playx_store_opener.dart';
 import 'core/version_checker/version_checker.dart';
 
 /// The main entry point for the Playx Version Update package.
@@ -62,28 +63,29 @@ abstract class PlayxVersionUpdate {
 
   /// Opens the app's page on the Google Play Store or Apple App Store.
   ///
-  /// [storeUrl]: The direct URL to the app's listing.
+  /// By default the store app is opened directly when possible: `market://`
+  /// for a Google Play URL on Android and `itms-apps://` for an App Store URL
+  /// on iOS. If that fails, or [preferStoreApp] is `false`, [storeUrl] itself
+  /// is opened. Other URLs (another store, a short link, a custom scheme) are
+  /// opened as they are.
+  ///
+  /// [storeUrl]: The URL of the app's listing.
   /// [launchMode]: The desired mode for launching the URL. Defaults to opening
   /// externally. See [LaunchMode] for more details.
+  /// [preferStoreApp]: Try the store app's deep link before the web URL.
   ///
-  /// Returns a [PlayxVersionUpdateResult] with a `bool` indicating whether the
-  /// launch was successful.
-  static Future<PlayxVersionUpdateResult<bool>> openStore(
-      {required String storeUrl,
-      LaunchMode launchMode = LaunchMode.externalApplication}) async {
-    final Uri url = Uri.parse(storeUrl);
-    if (await canLaunchUrl(url)) {
-      try {
-        final isLaunched = await launchUrl(url, mode: launchMode);
-        return PlayxVersionUpdateResult.success(isLaunched);
-      } catch (e) {
-        return PlayxVersionUpdateResult.error(DefaultFailureError(
-            errorMsg: 'Could not launch store. : ${e.toString()}'));
-      }
-    } else {
-      return const PlayxVersionUpdateResult.error(
-          DefaultFailureError(errorMsg: 'Could not launch store.'));
-    }
+  /// Returns a [PlayxVersionUpdateResult] with `true` once something was
+  /// opened, or a [DefaultFailureError] if nothing could handle the link.
+  static Future<PlayxVersionUpdateResult<bool>> openStore({
+    required String storeUrl,
+    LaunchMode launchMode = LaunchMode.externalApplication,
+    bool preferStoreApp = true,
+  }) {
+    return openStoreUrl(
+      storeUrl,
+      launchMode: launchMode,
+      preferStoreApp: preferStoreApp,
+    );
   }
 
   /// Checks for an update and displays a platform-adaptive dialog or page if one is available.
