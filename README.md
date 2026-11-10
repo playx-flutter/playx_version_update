@@ -50,9 +50,9 @@ Then, run `flutter pub get` to fetch the package.
 
 > **Note:** This package currently supports **Android** and **iOS** platforms only. Support for other platforms may be added in future updates.
 
--   **Flutter:** `>=3.27.0`
+-   **Flutter:** `>=3.38.1`
 
--   **Dart:** `>=3.6.0 <4.0.0`
+-   **Dart:** `>=3.10.0 <4.0.0`
 
 -   **Android:**
 

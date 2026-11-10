@@ -149,7 +149,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             height: 100,
             width: 100,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
+            errorBuilder: (_, _, _) =>
                 const Icon(Icons.system_update_alt, size: 64),
           ),
         ),
