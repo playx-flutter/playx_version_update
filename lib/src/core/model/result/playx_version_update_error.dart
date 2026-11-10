@@ -1,4 +1,5 @@
-import 'package:playx_network/playx_network.dart' as network;
+import 'package:playx_version_update/src/core/network/exceptions/network_exception.dart'
+    as network;
 
 // Constants for general PlayxVersionUpdate errors
 const String _activityNotFoundErrorCode = 'ACTIVITY_NOT_FOUND';
@@ -9,6 +10,9 @@ const String _playxInAppUpdateCanceledErrorCode = 'PLAYX_UPDATE_CANCELLED';
 const String _playxInAppUpdateFailedErrorCode = 'PLAYX_IN_APP_UPDATE_FAILED';
 const String defaultFailureErrorCode = 'DEFAULT_FAILURE_ERROR';
 const String _platformNotSupportedErrorCode = 'PLATFORM_NOT_SUPPORTED_ERROR';
+const String _updateNotAvailableErrorCode = 'PLAYX_UPDATE_NOT_AVAILABLE';
+const String _updateInProgressErrorCode = 'PLAYX_UPDATE_IN_PROGRESS';
+const String _updateNotAllowedErrorCode = 'PLAYX_UPDATE_NOT_ALLOWED';
 
 // Constants for specific PlayxInstallError codes (matching Kotlin)
 const String _installApiNotAvailableErrorCode = 'INSTALL_API_NOT_AVAILABLE';
@@ -53,6 +57,9 @@ sealed class PlayxVersionUpdateError {
         PlayxInAppUpdateCanceledError(),
       _playxInAppUpdateFailedErrorCode => PlayxInAppUpdateFailedError(),
       _platformNotSupportedErrorCode => PlatformNotSupportedError(),
+      _updateNotAvailableErrorCode => PlayxUpdateNotAvailableError(),
+      _updateInProgressErrorCode => PlayxUpdateInProgressError(),
+      _updateNotAllowedErrorCode => PlayxUpdateNotAllowedError(),
       defaultFailureErrorCode => DefaultFailureError(errorMsg: errorMessage),
       _ => DefaultFailureError(errorMsg: errorMessage)
     };
@@ -61,7 +68,7 @@ sealed class PlayxVersionUpdateError {
 
 /// Represents a network-related error encountered during Playx Version Update operations.
 ///
-/// This class wraps a [network.NetworkException] from the `playx_network` package,
+/// This class wraps a [network.NetworkException] from the internal network client,
 /// providing a unified error type within the `PlayxVersionUpdateError` hierarchy.
 class PlayxVersionNetworkError extends PlayxVersionUpdateError {
   final network.NetworkException error;
@@ -71,10 +78,15 @@ class PlayxVersionNetworkError extends PlayxVersionUpdateError {
   @override
   String get message => error.message;
 
+  /// The stable code of the wrapped exception, see [network.NetworkErrorCode].
   @override
-  String get errorCode => error is network.ApiException
-      ? (error as network.ApiException).statusCode.toString()
-      : error.errorMessage;
+  String get errorCode => error.errorCode;
+
+  /// The HTTP status code if the failure came from a store response.
+  int? get statusCode {
+    final e = error;
+    return e is network.ApiException ? e.statusCode : null;
+  }
 }
 
 /// Sealed class representing specific errors that can occur during the
@@ -267,6 +279,36 @@ class PlayxInAppUpdateFailedError extends PlayxVersionUpdateError {
 
   @override
   String get errorCode => _playxInAppUpdateFailedErrorCode;
+}
+
+/// Error indicating Google Play has no update to offer for this app right now.
+class PlayxUpdateNotAvailableError extends PlayxVersionUpdateError {
+  @override
+  String get message => "No update is available for this app right now.";
+
+  @override
+  String get errorCode => _updateNotAvailableErrorCode;
+}
+
+/// Error indicating an update is already in progress, so another one cannot
+/// be started.
+class PlayxUpdateInProgressError extends PlayxVersionUpdateError {
+  @override
+  String get message => "An update is already in progress.";
+
+  @override
+  String get errorCode => _updateInProgressErrorCode;
+}
+
+/// Error indicating Google Play does not allow this type of update (flexible
+/// or immediate) for this user or device right now.
+class PlayxUpdateNotAllowedError extends PlayxVersionUpdateError {
+  @override
+  String get message =>
+      "This type of update is not allowed right now. Try the other update type or check again later.";
+
+  @override
+  String get errorCode => _updateNotAllowedErrorCode;
 }
 
 /// A generic fallback error when a more specific error message is not available.

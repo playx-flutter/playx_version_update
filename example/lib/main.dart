@@ -6,11 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
+import 'app_ids.dart';
+import 'features_page.dart';
+import 'ui.dart';
+
 final GlobalKey<ScaffoldMessengerState> globalKey =
     GlobalKey<ScaffoldMessengerState>();
 
 void main() {
   runApp(MaterialApp(
+    title: 'Playx Version Update',
+    theme: ThemeData(
+      colorSchemeSeed: Colors.indigo,
+      useMaterial3: true,
+    ),
     home: const MyApp(),
     scaffoldMessengerKey: globalKey,
     debugShowCheckedModeBanner: false, // For cleaner example
@@ -51,68 +60,89 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Playx Version Update Example'),
+        title: const Text('Playx Version Update'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+      body: ExampleBody(
+        children: [
+          StatusCard(message: message),
+          ExampleSection(
+            title: 'App',
+            children: [
+              ActionTile(
+                icon: Icons.tag,
+                title: 'Get app version',
+                onTap: () async {
+                  final version = await PlayxVersionUpdate.getAppVersion();
+                  setState(() {
+                    message = 'App Version: v$version';
+                  });
+                },
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                final version = await PlayxVersionUpdate.getAppVersion();
-                setState(() {
-                  message = 'App Version: v$version';
-                });
-              },
-              child: const Text('Get App Version'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                checkVersion(context);
-              },
-              child: const Text('Check Version (Custom UI)'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                showUpdateDialog(context);
-              },
-              child: const Text('Show Update Dialog (Customizable)'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                checkPlayAvailability(context);
-              },
-              child: const Text('Check Play Store Availability'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                startImmediateUpdate(context);
-              },
-              child: const Text('Start Immediate Update (Android/iOS)'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                startFlexibleUpdate(context);
-              },
-              child: const Text('Start Flexible Update (Android/iOS)'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                startFlexibleUpdateOnly(context);
-              },
-              child: const Text('Start Flexible Update Only (Android)'),
-            ),
-          ],
-        ),
+            ],
+          ),
+          ExampleSection(
+            title: 'Check for updates',
+            subtitle: 'Reads the store (Google Play, App Store, Mac App Store)',
+            children: [
+              ActionTile(
+                icon: Icons.fact_check_outlined,
+                title: 'Check version (custom UI)',
+                subtitle: 'Shows PlayxUpdatePage or PlayxUpdateDialog yourself',
+                onTap: () => checkVersion(context),
+              ),
+              ActionTile(
+                icon: Icons.system_update,
+                title: 'Show update dialog',
+                subtitle: 'Fully customizable dialog',
+                onTap: () => showUpdateDialog(context),
+              ),
+            ],
+          ),
+          ExampleSection(
+            title: 'In-app updates',
+            subtitle: 'Google Play on Android; a dialog on iOS and macOS',
+            children: [
+              ActionTile(
+                icon: Icons.storefront_outlined,
+                title: 'Check Play Store availability',
+                subtitle: 'Android only',
+                onTap: () => checkPlayAvailability(context),
+              ),
+              ActionTile(
+                icon: Icons.bolt,
+                title: 'Start immediate update',
+                onTap: () => startImmediateUpdate(context),
+              ),
+              ActionTile(
+                icon: Icons.downloading,
+                title: 'Start flexible update',
+                onTap: () => startFlexibleUpdate(context),
+              ),
+              ActionTile(
+                icon: Icons.download_for_offline_outlined,
+                title: 'Start flexible update only',
+                subtitle: 'Android only',
+                onTap: () => startFlexibleUpdateOnly(context),
+              ),
+            ],
+          ),
+          ExampleSection(
+            title: 'More',
+            children: [
+              ActionTile(
+                icon: Icons.auto_awesome_outlined,
+                title: 'More features',
+                subtitle: 'Sources, events, Later/Skip, store launcher',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const FeaturesPage(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -131,8 +161,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showUpdateDialog(
       context: context,
       options: const PlayxUpdateOptions(
-        androidPackageName: 'com.google.android.apps.bard',
-        iosBundleId: 'com.apple.shortcuts',
+        // Real apps, so the store lookup works (see app_ids.dart).
+        appIds: kStoreAppIds,
         forceUpdate: false,
       ),
       uiOptions: PlayxUpdateUIOptions(
@@ -149,7 +179,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             height: 100,
             width: 100,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
+            errorBuilder: (_, _, _) =>
                 const Icon(Icons.system_update_alt, size: 64),
           ),
         ),
@@ -262,8 +292,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
       context: context,
       type: PlayxAppUpdateType.flexible,
-      iosOptions: PlayxUpdateOptions(
-        iosBundleId: 'com.apple.shortcuts', // Example bundle ID for iOS
+      iosOptions: const PlayxUpdateOptions(
+        appIds: kStoreAppIds, // Real apps, see app_ids.dart
       ),
       iosUiOptions: PlayxUpdateUIOptions(
         // These UI options apply only to the custom Flutter UI shown on iOS
@@ -326,8 +356,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
       context: context,
       type: PlayxAppUpdateType.immediate,
-      iosOptions: PlayxUpdateOptions(
-        iosBundleId: 'com.apple.shortcuts', // Example bundle ID for iOS
+      iosOptions: const PlayxUpdateOptions(
+        appIds: kStoreAppIds, // Real apps, see app_ids.dart
       ),
       iosUiOptions: PlayxUpdateUIOptions(
         // These UI options apply only to the custom Flutter UI shown on iOS
@@ -390,16 +420,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.checkVersion(
       options: PlayxUpdateOptions(
         forceUpdate: false, // Set to true to test the PlayxUpdatePage flow
-        androidPackageName:
-            'io.sourcya.playx.verion.update.example', // Example package name
-        iosBundleId: 'com.apple.shortcuts', // Example bundle ID
-        newPlatformVersion: const PlayxPlatformVersion(
-          android: '1.0.1',
-          ios: '1.0.2',
-        ),
-        minPlatformVersion: const PlayxPlatformVersion(
-          android: '1.0.0',
-          ios: '1.0.1',
+        appIds: kStoreAppIds, // Real apps, see app_ids.dart
+        // Versions can be set per platform (or come from Remote Config / your
+        // backend with PlayxCallbackVersionSource) instead of the stores.
+        versionSource: const PlayxStaticVersionSource(
+          version: PlayxPlatformVersion(android: '1.0.1', ios: '1.0.2'),
+          minVersion: PlayxPlatformVersion(android: '1.0.0', ios: '1.0.1'),
+          // iOS and macOS need the store url when the stores are not queried.
+          storeUrls: kStoreUrls,
         ),
       ),
     );
@@ -497,8 +525,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       },
       error: (error) {
         // network related errors
-        if (error is NetworkException) {
-          if (error is NoInternetConnectionException) {
+        if (error is PlayxVersionNetworkError) {
+          if (error.error is NoInternetConnectionException) {
             _showMessage(
                 'No internet connection. Please check your network settings.',
                 isError: true);

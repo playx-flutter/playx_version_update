@@ -1,0 +1,142 @@
+.hero {
+  padding: 4.5rem 0 3.5rem;
+  text-align: center;
+  background: radial-gradient(1200px 400px at 50% -10%, rgba(99, 102, 241, 0.25), transparent),
+    var(--ifm-background-color);
+}
+
+.heroLogo {
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(67, 56, 202, 0.35);
+}
+
+.heroTitle {
+  font-size: 3rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.heroTagline {
+  max-width: 640px;
+  margin: 0 auto 1.8rem;
+  font-size: 1.2rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.buttons {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.platforms {
+  margin-top: 1.4rem;
+  font-size: 0.95rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.section {
+  padding: 3rem 0;
+}
+
+.alt {
+  background: var(--ifm-color-emphasis-100);
+}
+
+.center {
+  text-align: center;
+  margin-bottom: 1.6rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+}
+
+@media (max-width: 996px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  padding: 1.4rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 14px;
+  background: var(--ifm-card-background-color);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.card h3 {
+  margin-bottom: 0.4rem;
+}
+
+.card p {
+  margin: 0;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.cardIcon {
+  font-size: 1.8rem;
+  margin-bottom: 0.4rem;
+}
+
+.sample {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.gallery {
+  display: flex;
+  gap: 1.2rem;
+  overflow-x: auto;
+  padding: 0.5rem 0.2rem 1.2rem;
+  scroll-snap-type: x mandatory;
+}
+
+.shot {
+  flex: 0 0 auto;
+  margin: 0;
+  scroll-snap-align: center;
+  text-align: center;
+}
+
+/* Screenshots have different shapes: a fixed height, the natural width. */
+.shot img {
+  height: 380px;
+  width: auto;
+  max-width: none;
+  border-radius: 16px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.shot figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+@media (max-width: 900px) {
+  .sample {
+    grid-template-columns: 1fr;
+  }
+
+  .heroTitle {
+    font-size: 2.2rem;
+  }
+}

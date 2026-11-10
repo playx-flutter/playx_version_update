@@ -21,6 +21,9 @@ migration:
     - platform: ios
       create_revision: fcf2c11572af6f390246c056bc905eca609533a0
       base_revision: fcf2c11572af6f390246c056bc905eca609533a0
+    - platform: macos
+      create_revision: 737ba8f885dc774b53b442759999a312c9461e4e
+      base_revision: 737ba8f885dc774b53b442759999a312c9461e4e
     - platform: linux
       create_revision: fcf2c11572af6f390246c056bc905eca609533a0
       base_revision: fcf2c11572af6f390246c056bc905eca609533a0

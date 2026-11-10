@@ -2,7 +2,6 @@ package io.sourcya.playx_version_update.method_handler
 
 import android.app.Activity
 import android.content.Intent
-import com.google.android.play.core.install.model.ActivityResult.RESULT_IN_APP_UPDATE_FAILED
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.EventChannel
@@ -34,12 +33,9 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler{
 
     private lateinit var updateManger :UpdateManger
 
-    private var startedFlexibleUpdateResult: MethodChannel.Result? = null
-    private var startedImmediateUpdateResult: MethodChannel.Result? = null
-
-
     private val job = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
+    // Main: MethodChannel.Result must be completed on the platform thread.
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + job)
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 
@@ -140,7 +136,6 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler{
     //PlayxRequestCanceledException : The user denied or canceled the update.
     //PlayxInAppUpdateFailed: The flow failed either during the user confirmation, the download, or the installation.
     private fun startImmediateUpdate(result: MethodChannel.Result) {
-        startedImmediateUpdateResult = null
         coroutineScope.launch {
             try {
 
@@ -148,7 +143,6 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler{
                     handleMethodException(ActivityNotFoundException(), result)
                     return@launch
                 }
-                startedImmediateUpdateResult = result
                 val res= updateManger.startImmediateUpdate(activity!!)
                 result.success(res)
             } catch (e: Exception) {
@@ -164,14 +158,12 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler{
     //PlayxRequestCanceledException : The user denied the request to update.
     //PlayxInAppUpdateFailed: Something failed during the request for user confirmation. For example, the user terminates the app before responding to the request.
     private fun startFlexibleUpdate(result: MethodChannel.Result) {
-        startedFlexibleUpdateResult = null
         coroutineScope.launch {
             try {
                 if (activity == null) {
                     handleMethodException(ActivityNotFoundException(), result)
                     return@launch
                 }
-                startedFlexibleUpdateResult = result
                 val  res=   updateManger.startFlexibleUpdate(activity!!)
                 result.success(res);
             } catch (e: Exception) {
@@ -279,15 +271,11 @@ class PlayxMethodCallHandler : MethodChannel.MethodCallHandler{
 
     fun handleOnResume() {
         updateManger.handleOnResume(activity)
-        downloadStatusEventChannel?.setStreamHandler(DownloadStatusEventHandler(updateManger))
-
     }
 
-    fun handleOnPause() {
-        downloadStatusEventChannel?.setStreamHandler(null)
-
-
-    }
+    // The download stream keeps its handler while the app is paused: replacing it would leave the
+    // Dart subscription attached to a handler that is gone, and cancelling it would then fail.
+    fun handleOnPause() {}
 
     private fun handleMethodException(e: Exception, result: MethodChannel.Result) {
         if (e is PlayxUpdateException) {

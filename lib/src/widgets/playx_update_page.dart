@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
+import 'package:playx_version_update/src/core/utils/guard.dart';
+import 'package:playx_version_update/src/widgets/update_ui_controller.dart';
 
 /// A full-screen Flutter widget designed to prompt users for an app update.
 ///
@@ -78,10 +81,15 @@ class PlayxUpdatePage extends StatefulWidget {
   /// This includes text content, styles, button actions, and dismissibility.
   final PlayxUpdateUIOptions uiOptions;
 
+  /// When provided, the page snoozes the version when dismissed and can
+  /// offer a "Skip this version" button, see [PlayxUpdateReminderOptions].
+  final PlayxUpdateReminder? reminder;
+
   const PlayxUpdatePage({
     super.key,
     required this.versionUpdateInfo,
     this.uiOptions = const PlayxUpdateUIOptions(),
+    this.reminder,
   });
 
   @override
@@ -89,8 +97,56 @@ class PlayxUpdatePage extends StatefulWidget {
 }
 
 class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
+  late final UpdateUiController _controller = UpdateUiController(
+    info: widget.versionUpdateInfo,
+    events: widget.uiOptions.events,
+    reminder: widget.reminder,
+  );
+
+  bool _closing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _controller.shown());
+  }
+
+  /// Closes the page once, so a double tap cannot pop another route.
+  void _close() {
+    if (_closing) return;
+    _closing = true;
+    Navigator.maybePop(context);
+  }
+
+  /// The dismiss button. A dismissible page closes, then `onCancel` runs. A
+  /// forced one cannot be closed: `onCancel` runs, or the app exits.
+  void _onDismissPressed() {
+    _controller.dismissed(PlayxUpdateDismissReason.button);
+
+    if (isDismissible) _close();
+
+    final onCancel = widget.uiOptions.onCancel;
+    if (onCancel != null) {
+      guardCallback('calling PlayxUpdateUIOptions.onCancel',
+          () => onCancel(widget.versionUpdateInfo));
+    } else if (!isDismissible) {
+      SystemNavigator.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    return PopScope(
+      canPop: isDismissible,
+      // The back button or gesture (button presses are already resolved).
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _controller.dismissed(PlayxUpdateDismissReason.system);
+      },
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -183,16 +239,7 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                           borderRadius:
                                               BorderRadius.circular(25))),
                               onPressed: () {
-                                if (widget.uiOptions.onUpdate != null) {
-                                  widget.uiOptions.onUpdate?.call(
-                                      widget.versionUpdateInfo,
-                                      widget.uiOptions.launchMode);
-                                } else {
-                                  PlayxVersionUpdate.openStore(
-                                      storeUrl:
-                                          widget.versionUpdateInfo.storeUrl,
-                                      launchMode: widget.uiOptions.launchMode);
-                                }
+                                _controller.performUpdate(widget.uiOptions);
                               },
                               child: Text(
                                 widget.uiOptions.updateButtonText,
@@ -201,6 +248,24 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                               ),
                             ),
                           ),
+                          if (_controller.canSkip)
+                            Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: TextButton(
+                                style: widget.uiOptions.dismissButtonStyle,
+                                onPressed: () {
+                                  _controller.skipped();
+                                  _close();
+                                },
+                                child: Text(
+                                  _controller.skipButtonText,
+                                  style: widget.uiOptions.dismissButtonTextStyle ??
+                                      const TextStyle(
+                                          fontSize: 18,
+                                          color: Color(0xFFCCCBD2)),
+                                ),
+                              ),
+                            ),
                           if (shouldShowDismissButton)
                             Padding(
                               padding: const EdgeInsets.all(4.0),
@@ -213,10 +278,7 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                           borderRadius:
                                               BorderRadius.circular(25),
                                         )),
-                                onPressed: () {
-                                  widget.uiOptions.onCancel
-                                      ?.call(widget.versionUpdateInfo);
-                                },
+                                onPressed: _onDismissPressed,
                                 child: Text(
                                   _getDismissActionTitle(),
                                   style:

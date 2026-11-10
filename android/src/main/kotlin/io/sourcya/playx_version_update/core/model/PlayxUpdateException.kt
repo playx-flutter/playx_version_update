@@ -29,6 +29,15 @@ class PlayxUpdateCanceledException : PlayxUpdateException() {
     override fun errorCode() = "PLAYX_UPDATE_CANCELLED"
 }
 
+/**
+ * Exception thrown when the in-app update flow failed, for example during the user
+ * confirmation, the download or the installation.
+ */
+class PlayxInAppUpdateFailedException : PlayxUpdateException() {
+    override val message: String = "The in-app update process failed."
+    override fun errorCode() = "PLAYX_IN_APP_UPDATE_FAILED"
+}
+
 class PlayxUpdateNotAvailable : PlayxUpdateException() {
 
     override val message: String = "Update is not available."
@@ -38,7 +47,7 @@ class PlayxUpdateNotAvailable : PlayxUpdateException() {
 
 class PlayxUpdateInProgress : PlayxUpdateException() {
 
-    override val message: String = "Update is currently in progress. 122"
+    override val message: String = "Update is currently in progress."
 
     override fun errorCode()= "PLAYX_UPDATE_IN_PROGRESS"
 }

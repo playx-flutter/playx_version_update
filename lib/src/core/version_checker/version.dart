@@ -58,9 +58,9 @@ class Version implements Comparable<Version> {
   ///
   /// [major], [minor], and [patch] are required and must be non-negative.
   /// [additionalComponents] is an optional list of non-negative integers for extra version segments.
-  /// [preRelease] is optional, but if specified, must be a string containing only [0-9A-Za-z-]
+  /// [preRelease] is optional, but if specified, must be a string containing only `[0-9A-Za-z-]`
   ///   and dot-separated segments (e.g., "alpha.1").
-  /// [build] is optional, but if specified, must be a string containing only [0-9A-Za-z-.]
+  /// [build] is optional, but if specified, must be a string containing only `[0-9A-Za-z-.]`
   ///   (e.g., "build.info").
   ///
   /// Throws a [FormatException] if string content violates character constraints.
@@ -98,8 +98,21 @@ class Version implements Comparable<Version> {
     }
   }
 
+  /// Consistent with `==`: build metadata and trailing zero components are
+  /// ignored, as they are by the comparison.
   @override
-  int get hashCode => toString().hashCode;
+  int get hashCode {
+    final extra = List<int>.of(additionalComponents);
+    while (extra.isNotEmpty && extra.last == 0) {
+      extra.removeLast();
+    }
+    // Numeric pre-release segments compare as numbers ("01" == "1").
+    final pre = preRelease.split('.').map((segment) {
+      final number = int.tryParse(segment);
+      return number == null ? segment : number.toString();
+    }).join('.');
+    return Object.hash(major, minor, patch, Object.hashAll(extra), pre);
+  }
 
   /// Determines whether the left-hand [Version] represents a lower precedence than the right-hand [Version].
   bool operator <(covariant Version o) => _compare(this, o) < 0;
@@ -109,7 +122,7 @@ class Version implements Comparable<Version> {
 
   /// Determines whether the left-hand [Version] represents an equal precedence to the right-hand [Version].
   @override
-  bool operator ==(covariant Version o) => _compare(this, o) == 0;
+  bool operator ==(Object o) => o is Version && _compare(this, o) == 0;
 
   /// Determines whether the left-hand [Version] represents a greater precedence than the right-hand [Version].
   bool operator >(covariant Version o) => _compare(this, o) > 0;
@@ -216,6 +229,12 @@ class Version implements Comparable<Version> {
       throw FormatException("Cannot parse empty string into version.");
     }
 
+    // Surrounding spaces and a "v" prefix ("v1.2.3") are not part of the number.
+    versionString = versionString.trim();
+    if (RegExp(r'^[vV]\d').hasMatch(versionString)) {
+      versionString = versionString.substring(1);
+    }
+
     final Match? fullMatch = _fullVersionRegex.firstMatch(versionString);
     if (fullMatch == null) {
       throw FormatException(
@@ -311,10 +330,12 @@ class Version implements Comparable<Version> {
 
       for (int i = 0; i < maxPreReleaseLen; i++) {
         // If one has fewer pre-release identifiers, it has lower precedence
-        if (bPreReleaseSegments.length <= i)
+        if (bPreReleaseSegments.length <= i) {
           return 1; // B ran out of segments, A is longer, so A > B
-        if (aPreReleaseSegments.length <= i)
+        }
+        if (aPreReleaseSegments.length <= i) {
           return -1; // A ran out of segments, B is longer, so A < B
+        }
 
         final String aSegment = aPreReleaseSegments[i];
         final String bSegment = bPreReleaseSegments[i];

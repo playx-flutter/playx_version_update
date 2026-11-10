@@ -13,12 +13,16 @@ class PlayxDownloadInfo {
       required this.installErrorCode});
 
   factory PlayxDownloadInfo.fromJson(String infoJson) {
-    final map = json.decode(infoJson);
+    final map = json.decode(infoJson) as Map<String, dynamic>;
+    // Missing or null numbers (for example before the download starts) are
+    // read as 0 instead of failing.
+    int number(String key) => (map[key] as num?)?.toInt() ?? 0;
+
     return PlayxDownloadInfo(
-        status: PlayxDownloadStatus.from(map["status"] as int?),
-        bytesDownloaded: map["bytesDownloaded"] as int,
-        totalBytesToDownload: map["totalBytesToDownload"] as int,
-        installErrorCode: map["installErrorCode"] as int);
+        status: PlayxDownloadStatus.from(map["status"] as num?),
+        bytesDownloaded: number("bytesDownloaded"),
+        totalBytesToDownload: number("totalBytesToDownload"),
+        installErrorCode: number("installErrorCode"));
   }
 
   @override

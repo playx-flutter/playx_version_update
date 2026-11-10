@@ -1,0 +1,16 @@
+{
+ "resultCount": 1,
+ "results": [
+  {
+   "kind": "software",
+   "bundleId": "com.apple.shortcuts",
+   "trackName": "Shortcuts",
+   "version": "6.7",
+   "trackViewUrl": "https://apps.apple.com/us/app/shortcuts/id1462947752?uo=4",
+   "minimumOsVersion": "12.0",
+   "releaseNotes": "Bug Fixes and Feature Enhancements",
+   "currentVersionReleaseDate": "2026-10-19T20:46:57Z",
+   "description": "Now, with Describe a Shortcut, you can automate daily tasks with a simple description. Just describe what you need, and Shortcuts creates an automation that connects actions across apps.\n\nChoose from hundreds of built-in actions in your favorite apps — like Calendar, Camera, Reminders, and more — to help you accomplish everyday tasks with a simple tap from the Home Screen, by asking Siri, or even automatically.\n\nUse the Shortcuts app to:\n\n\t•\tAdd a Home Screen icon that calls a loved one\n\t•\tMake animated GIFs\n\t•\tMake PDFs from Safari\n\nAnd so much more...\n\nShortcuts opens up incredible possibili"
+  }
+ ]
+}

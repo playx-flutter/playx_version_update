@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:playx_version_update/src/core/network/exceptions/network_exception.dart';
 import 'package:playx_version_update/src/core/utils/utils.dart';
 import 'package:playx_version_update/src/core/version_checker/version.dart';
 
@@ -75,7 +76,7 @@ class StoreInfo {
       final jsonObj = json.decode(body);
       final List results = jsonObj['results'] as List? ?? [];
       if (results.isEmpty) {
-        throw Exception('Not found');
+        throw const AppNotFoundException();
       }
       final storeVersion = jsonObj['results'][0]['version'];
       final appStoreLink = jsonObj['results'][0]['trackViewUrl'];
@@ -91,8 +92,10 @@ class StoreInfo {
         releaseNotes: releaseNotes,
         storeUrl: appStoreLink,
       );
-    } catch (_) {
-      throw Exception('Not found');
+    } on NetworkException {
+      rethrow;
+    } catch (e) {
+      throw InvalidFormatException(cause: e);
     }
   }
 

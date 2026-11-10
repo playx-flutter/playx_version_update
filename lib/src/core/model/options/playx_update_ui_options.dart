@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../utils/callbacks.dart';
 
 /// Options for customizing the user interface of Flutter-based update prompts.
 ///
@@ -63,6 +62,15 @@ class PlayxUpdateUIOptions {
   /// Applies to Flutter-based UIs on both Android and iOS.
   final UpdatePressedCallback? onUpdate;
 
+  /// Opens the store yourself when the update button is tapped, for example
+  /// to deep link into a store the package does not know.
+  ///
+  /// Unlike [onUpdate], it returns whether the store was opened, which is
+  /// reported to `PlayxUpdateEvents.onStoreOpenResult`. A thrown error counts
+  /// as `false`. Ignored when [onUpdate] is set. Without either, the package
+  /// calls `PlayxVersionUpdate.openStore` with the update info's store URL.
+  final StoreLauncherCallback? storeLauncher;
+
   /// Callback when the dismiss button is pressed.
   /// Applies to Flutter-based UIs on both Android and iOS.
   final UpdateCancelPressedCallback? onCancel;
@@ -71,6 +79,11 @@ class PlayxUpdateUIOptions {
   /// and [onUpdate] is not provided. Defaults to [LaunchMode.externalApplication].
   /// Applies to Flutter-based UIs on both Android and iOS.
   final LaunchMode launchMode;
+
+  /// Whether the update button opens the store app directly (`market://` on
+  /// Android, `itms-apps://` on iOS) before falling back to the web URL.
+  /// Applies when [onUpdate] is not provided. Defaults to `true`.
+  final bool preferStoreApp;
 
   /// A leading widget to display at the top of the update UI (e.g., an icon or image).
   /// Applies to Flutter-based UIs on both Android and iOS.
@@ -116,6 +129,10 @@ class PlayxUpdateUIOptions {
   /// Applies to Flutter-based UIs on both Android and iOS.
   final ButtonStyle? dismissButtonStyle;
 
+  /// Callbacks reporting what happens to the update UI (shown, update tapped,
+  /// dismissed, skipped...), mainly for analytics. See [PlayxUpdateEvents].
+  final PlayxUpdateEvents events;
+
   const PlayxUpdateUIOptions({
     this.title,
     this.description,
@@ -126,8 +143,10 @@ class PlayxUpdateUIOptions {
     this.updateButtonText = 'Update',
     this.dismissButtonText,
     this.onUpdate,
+    this.storeLauncher,
     this.onCancel,
     this.launchMode = LaunchMode.externalApplication,
+    this.preferStoreApp = true,
     this.leading,
     this.displayType = PlayxUpdateDisplayType.pageOnForceUpdate,
     this.titleTextStyle,
@@ -138,5 +157,6 @@ class PlayxUpdateUIOptions {
     this.dismissButtonTextStyle,
     this.updateButtonStyle,
     this.dismissButtonStyle,
+    this.events = const PlayxUpdateEvents(),
   });
 }

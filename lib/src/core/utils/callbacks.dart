@@ -7,3 +7,9 @@ typedef UpdatePressedCallback = Function(
     PlayxVersionUpdateInfo info, LaunchMode launchMode);
 
 typedef UpdateCancelPressedCallback = Function(PlayxVersionUpdateInfo info);
+
+/// Opens the store for [info] and reports whether it was opened.
+///
+/// See `PlayxUpdateUIOptions.storeLauncher`.
+typedef StoreLauncherCallback = Future<bool> Function(
+    PlayxVersionUpdateInfo info);

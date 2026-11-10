@@ -1,3 +1,11 @@
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+  errors:
+    # The deprecated options still work and are used internally (and tested)
+    # until they are removed. Older analyzers report that as an info.
+    deprecated_member_use_from_same_package: ignore
 include: package:flutter_lints/flutter.yaml
 
 # Additional information about this file can be found at

@@ -1,0 +1,7 @@
+node_modules/
+build/
+.docusaurus/
+.cache-loader/
+# Generated from ../CHANGELOG.md by scripts/sync-changelog.mjs
+docs/changelog.md
+npm-debug.log*

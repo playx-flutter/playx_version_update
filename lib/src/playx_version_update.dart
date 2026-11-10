@@ -1,11 +1,10 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 import 'package:playx_version_update/src/platform/playx_version_update_platform_interface.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'core/store/playx_store_opener.dart';
+import 'core/utils/guard.dart';
 import 'core/version_checker/version_checker.dart';
 
 /// The main entry point for the Playx Version Update package.
@@ -62,28 +61,47 @@ abstract class PlayxVersionUpdate {
 
   /// Opens the app's page on the Google Play Store or Apple App Store.
   ///
-  /// [storeUrl]: The direct URL to the app's listing.
+  /// By default the store app is opened directly when possible: `market://`
+  /// for a Google Play URL on Android and `itms-apps://` for an App Store URL
+  /// on iOS. If that fails, or [preferStoreApp] is `false`, the web URL itself
+  /// is opened. Other URLs (another store, a short link, a custom scheme) are
+  /// opened as they are.
+  ///
+  /// There are two ways to call it:
+  /// - With a [storeUrl] (for example `info.storeUrl` from [checkVersion]): it
+  ///   is opened as is. No network request is made and [options] is ignored.
+  /// - Without [storeUrl], for an "Update" or "Rate us" button that needs no
+  ///   version check: the URL is worked out from [options]. That is
+  ///   `options.storeUrls` for the current platform, else the Google Play URL
+  ///   built from the package name on Android. On iOS without
+  ///   `options.storeUrls` it costs one App Store lookup (or one request to
+  ///   `options.versionSource`).
+  ///
   /// [launchMode]: The desired mode for launching the URL. Defaults to opening
   /// externally. See [LaunchMode] for more details.
+  /// [preferStoreApp]: Try the store app's deep link before the web URL.
   ///
-  /// Returns a [PlayxVersionUpdateResult] with a `bool` indicating whether the
-  /// launch was successful.
-  static Future<PlayxVersionUpdateResult<bool>> openStore(
-      {required String storeUrl,
-      LaunchMode launchMode = LaunchMode.externalApplication}) async {
-    final Uri url = Uri.parse(storeUrl);
-    if (await canLaunchUrl(url)) {
-      try {
-        final isLaunched = await launchUrl(url, mode: launchMode);
-        return PlayxVersionUpdateResult.success(isLaunched);
-      } catch (e) {
-        return PlayxVersionUpdateResult.error(DefaultFailureError(
-            errorMsg: 'Could not launch store. : ${e.toString()}'));
-      }
-    } else {
-      return const PlayxVersionUpdateResult.error(
-          DefaultFailureError(errorMsg: 'Could not launch store.'));
+  /// Returns a [PlayxVersionUpdateResult] with `true` once something was
+  /// opened. On failure it holds the reason: a [DefaultFailureError] if no URL
+  /// is known or nothing could handle the link, or the error of the lookup.
+  static Future<PlayxVersionUpdateResult<bool>> openStore({
+    String? storeUrl,
+    PlayxUpdateOptions options = const PlayxUpdateOptions(),
+    LaunchMode launchMode = LaunchMode.externalApplication,
+    bool preferStoreApp = true,
+  }) async {
+    var url = storeUrl;
+    if (url == null || url.isEmpty) {
+      final resolved = await _versionChecker.resolveStoreUrl(options);
+      url = resolved.updateData;
+      if (url == null) return PlayxVersionUpdateResult.error(resolved.updateError!);
     }
+
+    return openStoreUrl(
+      url,
+      launchMode: launchMode,
+      preferStoreApp: preferStoreApp,
+    );
   }
 
   /// Checks for an update and displays a platform-adaptive dialog or page if one is available.
@@ -102,10 +120,14 @@ abstract class PlayxVersionUpdate {
   /// - [context]: The `BuildContext` required to show the dialog or page.
   /// - [options]: Configuration for the version check itself, like store IDs or providing a manual version to check against.
   /// - [uiOptions]: Configuration for the look and feel of the update UI, including titles, descriptions, and button callbacks.
+  /// - [reminderOptions]: Optional. Remembers when the user chose "Later" or
+  ///   "Skip this version" and does not prompt again for that version until
+  ///   the snooze ends. Forced updates are never suppressed.
   ///
   /// ### Returns:
-  /// A [PlayxVersionUpdateResult] with a `bool`. On success, the `bool` is `true`,
-  /// indicating that the check was successful and the update UI was triggered.
+  /// A [PlayxVersionUpdateResult] with a `bool`. On success, the `bool` is `true`
+  /// when the update UI was triggered, and `false` when an update is available
+  /// but the prompt was suppressed by [reminderOptions].
   /// It does **not** wait for the user to interact with the dialog.
   ///
   /// ### Example:
@@ -129,20 +151,12 @@ abstract class PlayxVersionUpdate {
     required BuildContext context,
     PlayxUpdateOptions options = const PlayxUpdateOptions(),
     PlayxUpdateUIOptions uiOptions = const PlayxUpdateUIOptions(),
+    PlayxUpdateReminderOptions? reminderOptions,
   }) async {
     final result = await checkVersion(options: options);
-
-    return result.map(
-      success: (info) {
-        if (!info.canUpdate) {
-          return PlayxVersionUpdateResult.error(PlayxVersionCantUpdateError(
-              currentVersion: info.localVersion, newVersion: info.newVersion));
-        }
-        _presentUpdateUI(context, info, uiOptions);
-        return const PlayxVersionUpdateResult.success(true);
-      },
-      error: (error) => PlayxVersionUpdateResult.error(error),
-    );
+    // `context.mounted` is checked inside, after the reminder lookup.
+    // ignore: use_build_context_synchronously
+    return _showUpdateUI(context, result, uiOptions, reminderOptions);
   }
 
   // IN APP UPDATES
@@ -197,6 +211,8 @@ abstract class PlayxVersionUpdate {
   /// - `type`: Specifies the desired Android update flow (`PlayxAppUpdateType.flexible` or `PlayxAppUpdateType.immediate`).
   /// - `iosOptions`: (Optional) iOS-specific Configuration for the version check itself, including store IDs or manual version checking, and the `onIosUpdate` callback. Defaults to `const PlayxUpdateOptions()`.
   /// - `iosUiOptions`: (Optional) iOS-specific UI customization options, such as whether to show a page on force update and divisibility. Defaults to `const PlayxUpdateUIOptions()`.
+  /// - `iosReminderOptions`: (Optional) Remembers "Later" / "Skip this version" choices for the iOS update UI. See [PlayxUpdateReminderOptions].
+  /// - `events`: (Optional) Callbacks for analytics. On Android they report when the in-app update starts and finishes; on iOS they report the update UI. Defaults to `iosUiOptions.events`.
   ///
   /// ### Returns:
   /// A `Future` that resolves to a `PlayxVersionUpdateResult<bool>`.
@@ -234,36 +250,78 @@ abstract class PlayxVersionUpdate {
     required PlayxAppUpdateType type,
     PlayxUpdateOptions iosOptions = const PlayxUpdateOptions(),
     PlayxUpdateUIOptions iosUiOptions = const PlayxUpdateUIOptions(),
+    PlayxUpdateReminderOptions? iosReminderOptions,
+    PlayxUpdateEvents? events,
   }) async {
+    // [events] also covers Android; fall back to the iOS UI options' events.
+    final effectiveEvents = events ?? iosUiOptions.events;
+
     // For Android, delegate to the native in-app update platform channel.
-    if (!kIsWeb && Platform.isAndroid) {
+    if (PlayxPlatform.current == PlayxPlatform.android) {
       // If a flexible update is already downloaded, prompt to complete it.
       final isUpdatedNeeded = await isFlexibleUpdateNeedToBeInstalled();
       if (isUpdatedNeeded.updateData ?? false) {
         return completeFlexibleUpdate();
       }
 
-      if (type == PlayxAppUpdateType.flexible) {
-        return startFlexibleUpdate();
-      } else {
-        return startImmediateUpdate();
-      }
+      guardCallback('calling PlayxUpdateEvents.onInAppUpdateStarted',
+          () => effectiveEvents.onInAppUpdateStarted?.call(type));
+      final updateResult = type == PlayxAppUpdateType.flexible
+          ? await startFlexibleUpdate()
+          : await startImmediateUpdate();
+      guardCallback('calling PlayxUpdateEvents.onInAppUpdateResult',
+          () => effectiveEvents.onInAppUpdateResult?.call(type, updateResult));
+      return updateResult;
     }
 
     // For iOS and other platforms, use the standard dialog flow.
     final result = await checkVersion(options: iosOptions);
+    // `context.mounted` is checked inside, after the reminder lookup.
+    // ignore: use_build_context_synchronously
+    return _showUpdateUI(context, result, iosUiOptions, iosReminderOptions);
+  }
 
-    return result.map(
-      success: (info) {
-        if (!info.canUpdate) {
-          return PlayxVersionUpdateResult.error(PlayxVersionCantUpdateError(
-              currentVersion: info.localVersion, newVersion: info.newVersion));
-        }
-        _presentUpdateUI(context, info, iosUiOptions);
-        return const PlayxVersionUpdateResult.success(true);
-      },
-      error: (error) => PlayxVersionUpdateResult.error(error),
-    );
+  /// Shows the update UI for a successful version check, unless the user
+  /// already snoozed or skipped this version.
+  static Future<PlayxVersionUpdateResult<bool>> _showUpdateUI(
+    BuildContext context,
+    PlayxVersionUpdateResult<PlayxVersionUpdateInfo> result,
+    PlayxUpdateUIOptions uiOptions,
+    PlayxUpdateReminderOptions? reminderOptions,
+  ) async {
+    final info = result.updateData;
+    if (info == null) return PlayxVersionUpdateResult.error(result.updateError!);
+
+    if (!info.canUpdate) {
+      return PlayxVersionUpdateResult.error(PlayxVersionCantUpdateError(
+          currentVersion: info.localVersion, newVersion: info.newVersion));
+    }
+
+    // The dialog is rendered on Android, iOS and macOS. On other platforms use
+    // `checkVersion` with a custom `versionSource` and build your own UI (for
+    // example with `PlayxUpdatePage`).
+    final platform = PlayxPlatform.current;
+    if (platform != PlayxPlatform.android &&
+        platform != PlayxPlatform.ios &&
+        platform != PlayxPlatform.macos) {
+      return const PlayxVersionUpdateResult.error(NotSupportedException());
+    }
+
+    final reminder =
+        reminderOptions == null ? null : PlayxUpdateReminder(reminderOptions);
+    final suppressedReason = await reminder?.suppressionReason(info);
+    if (suppressedReason != null) {
+      guardCallback('calling PlayxUpdateEvents.onSuppressed',
+          () => uiOptions.events.onSuppressed?.call(info, suppressedReason));
+      return const PlayxVersionUpdateResult.success(false);
+    }
+
+    // The caller's context may be gone after the async work above.
+    if (!context.mounted) {
+      return const PlayxVersionUpdateResult.success(false);
+    }
+    _presentUpdateUI(context, info, uiOptions, reminder);
+    return const PlayxVersionUpdateResult.success(true);
   }
 
   /// Presents the update UI based on the update info and UI options.
@@ -271,6 +329,7 @@ abstract class PlayxVersionUpdate {
     BuildContext context,
     PlayxVersionUpdateInfo info,
     PlayxUpdateUIOptions uiOptions,
+    PlayxUpdateReminder? reminder,
   ) {
     final shouldForceUpdate = info.forceUpdate;
     final isUiDismissible = uiOptions.isDismissible ?? !shouldForceUpdate;
@@ -282,6 +341,7 @@ abstract class PlayxVersionUpdate {
       final page = PlayxUpdatePage(
         versionUpdateInfo: info,
         uiOptions: uiOptions,
+        reminder: reminder,
       );
       // Pushing a non-dismissible page should remove all previous routes.
       if (isUiDismissible) {
@@ -300,6 +360,7 @@ abstract class PlayxVersionUpdate {
         builder: (_) => PlayxUpdateDialog(
           versionUpdateInfo: info,
           uiOptions: uiOptions,
+          reminder: reminder,
         ),
       );
     }
@@ -365,6 +426,9 @@ abstract class PlayxVersionUpdate {
   /// - [AppUpdateMangerNotFoundError]: If the Android App Update Manager service is unavailable or outdated on the device (e.g., missing Google Play Services).
   /// - [PlayxInAppUpdateCanceledError]: The user explicitly denied or canceled the update prompt.
   /// - [PlayxInAppUpdateFailedError]: A general failure occurred during the update process (e.g., user confirmation, download, or initial installation preparation).
+  /// - [PlayxUpdateNotAvailableError]: Google Play has no update to offer.
+  /// - [PlayxUpdateInProgressError]: Another update is already in progress.
+  /// - [PlayxUpdateNotAllowedError]: This type of update is not allowed right now.
   /// - [PlatformNotSupportedError]: If the method is called on a platform that does not support in-app updates (e.g., iOS, web).
   /// - [DefaultFailureError]: A generic fallback for other unspecified errors.
   ///
@@ -404,6 +468,9 @@ abstract class PlayxVersionUpdate {
   /// - [AppUpdateMangerNotFoundError]: If the Android App Update Manager service is unavailable or outdated on the device (e.g., missing Google Play Services).
   /// - [PlayxInAppUpdateCanceledError]: The user explicitly denied or canceled the update prompt.
   /// - [PlayxInAppUpdateFailedError]: A general failure occurred during the update process (e.g., user confirmation, download, or initial installation preparation).
+  /// - [PlayxUpdateNotAvailableError]: Google Play has no update to offer.
+  /// - [PlayxUpdateInProgressError]: Another update is already in progress.
+  /// - [PlayxUpdateNotAllowedError]: This type of update is not allowed right now.
   /// - [PlatformNotSupportedError]: If the method is called on a platform that does not support in-app updates (e.g., iOS, web).
   /// - [DefaultFailureError]: A generic fallback for other unspecified errors.
   ///
