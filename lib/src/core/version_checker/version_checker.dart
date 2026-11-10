@@ -29,7 +29,7 @@ String? resolvePlatformVersionForCurrentPlatform({
 }
 
 /// The app id used to look the app up on [platform]: `options.appIds`, then
-/// `androidPackageName` / `iosBundleId`, then [fallback] (the package name
+/// the deprecated `androidPackageName` / `iosBundleId`, then [fallback] (the package name
 /// read from the app itself). Empty values count as not provided.
 String resolvePackageId({
   required PlayxPlatform platform,

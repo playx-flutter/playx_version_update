@@ -92,7 +92,7 @@ Future<void> showInAppUpdateFlow(BuildContext context) async {
 
     // PlayxUpdateOptions: Basic options for the version check for ios
     iosOptions: const PlayxUpdateOptions(
-      iosBundleId: 'com.your_company.your_app_id',  // If not provided it will get it from app info
+      appIds: PlayxPlatformValue(ios: 'com.your_company.your_app_id'), // If not provided it will get it from app info
     ),
     // PlayxUpdateUIOptions: Customize iOS-specific Flutter UI (Android uses native UI)
     iosUiOptions: PlayxUpdateUIOptions(
@@ -136,16 +136,16 @@ Future<void> showSimpleUpdateDialog(BuildContext context) async {
     context: context,
     // PlayxUpdateOptions: Configure the version check
     options: const PlayxUpdateOptions(
-      androidPackageName: 'com.your_company.your_app_id', // Your Android package name
-      iosBundleId: 'com.your_company.your_app_id',      // Your iOS bundle ID
-      minVersion: '1.0.0', // Optional: Sets a minimum required version for a forced update
-      newPlatformVersion: PlayxPlatformVersion(
-        android: '1.2.0',
-        ios: '1.3.0',
+      // Optional: your app's ids, read from the app itself if not provided
+      appIds: PlayxPlatformValue(
+        android: 'com.your_company.your_app_id', // Your Android package name
+        ios: 'com.your_company.your_app_id',     // Your iOS bundle ID
       ),
-      minPlatformVersion: PlayxPlatformVersion(
-        android: '1.1.0',
-        ios: '1.2.0',
+      minVersion: '1.0.0', // Optional: Sets a minimum required version for a forced update
+      // Optional: take the versions from your own backend instead of the stores
+      versionSource: PlayxStaticVersionSource(
+        version: PlayxPlatformVersion(android: '1.2.0', ios: '1.3.0'),
+        minVersion: PlayxPlatformVersion(android: '1.1.0', ios: '1.2.0'),
       ),
     ),
     // PlayxUpdateUIOptions: Customize the Flutter UI of the dialog
@@ -205,8 +205,10 @@ Future<void> checkForUpdateAndShowCustomUI(BuildContext context) async {
       // If null, it's calculated based on localVersion vs. minVersion
       forceUpdate: true,
       // Your app's store identifiers (essential for store lookups)
-      androidPackageName: 'com.your_company.your_app_id',
-      iosBundleId: 'com.your_company.your_app_id',
+      appIds: PlayxPlatformValue(
+        android: 'com.your_company.your_app_id',
+        ios: 'com.your_company.your_app_id',
+      ),
       // Optional: Country and language for fetching store information
       country: 'us',
       language: 'en',
@@ -312,7 +314,7 @@ PlayxUpdateOptions(
 )
 ```
 
-`androidPackageName` and `iosBundleId` remain as shortcuts. Precedence: `appIds` > `androidPackageName` / `iosBundleId` > the id read from the app.
+> **Deprecated:** `androidPackageName` and `iosBundleId` are replaced by `appIds` (`appIds: PlayxPlatformValue(android: ..., ios: ...)`). They still work and will be removed in a future major release. Precedence: `appIds` > `androidPackageName` / `iosBundleId` > the id read from the app.
 
 ### Custom Store URL
 
@@ -376,7 +378,7 @@ No `<queries>` (Android) or `LSApplicationQueriesSchemes` (iOS) entries are need
 
 ### macOS
 
-On macOS the default source looks the app up in the **Mac App Store** by its bundle id (`appIds` / `iosBundleId` can override it), reads its version, release notes and store URL, and shows the update dialog with the Cupertino style. The "Update" button opens the Mac App Store app (`macappstores://`) and falls back to the web URL.
+On macOS the default source looks the app up in the **Mac App Store** by its bundle id (`appIds` can override it), reads its version, release notes and store URL, and shows the update dialog with the Cupertino style. The "Update" button opens the Mac App Store app (`macappstores://`) and falls back to the web URL.
 
 - **Sandboxed apps** need the network entitlement to reach the lookup. Add it to `DebugProfile.entitlements` and `Release.entitlements`:
 

@@ -58,15 +58,17 @@ class PlayxUpdateOptions {
   /// The app's package name on the Google Play Store (e.g., 'com.example.app').
   /// If not provided, it's fetched from `package_info_plus`.
   ///
-  /// A shortcut for `appIds: PlayxPlatformValue(android: ...)`; [appIds] wins
-  /// when both are set.
+  /// Deprecated: use `appIds: PlayxPlatformValue(android: ...)`. [appIds]
+  /// wins when both are set.
+  @Deprecated('Use appIds: PlayxPlatformValue(android: ...) instead.')
   final String? androidPackageName;
 
   /// The app's bundle ID on the Apple App Store (e.g., 'com.example.app').
   /// If not provided, it's fetched from `package_info_plus`.
   ///
-  /// A shortcut for `appIds: PlayxPlatformValue(ios: ...)`; [appIds] wins
+  /// Deprecated: use `appIds: PlayxPlatformValue(ios: ...)`. [appIds] wins
   /// when both are set.
+  @Deprecated('Use appIds: PlayxPlatformValue(ios: ...) instead.')
   final String? iosBundleId;
 
   /// The app's id on each platform: the Google Play package name, the App
@@ -116,7 +118,9 @@ class PlayxUpdateOptions {
     @Deprecated('Use versionSource: PlayxStaticVersionSource(version: ...) instead.')
     this.minPlatformVersion,
     this.forceUpdate,
+    @Deprecated('Use appIds: PlayxPlatformValue(android: ...) instead.')
     this.androidPackageName,
+    @Deprecated('Use appIds: PlayxPlatformValue(ios: ...) instead.')
     this.iosBundleId,
     this.country = 'us',
     this.language = 'en',
