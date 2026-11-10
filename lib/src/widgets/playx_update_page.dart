@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
+import 'package:playx_version_update/src/widgets/update_ui_controller.dart';
 
 /// A full-screen Flutter widget designed to prompt users for an app update.
 ///
@@ -89,6 +90,17 @@ class PlayxUpdatePage extends StatefulWidget {
 }
 
 class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
+  late final UpdateUiController _controller = UpdateUiController(
+    info: widget.versionUpdateInfo,
+    events: widget.uiOptions.events,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _controller.shown());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -183,6 +195,7 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                           borderRadius:
                                               BorderRadius.circular(25))),
                               onPressed: () {
+                                _controller.updateTapped();
                                 if (widget.uiOptions.onUpdate != null) {
                                   widget.uiOptions.onUpdate?.call(
                                       widget.versionUpdateInfo,
@@ -214,6 +227,8 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                               BorderRadius.circular(25),
                                         )),
                                 onPressed: () {
+                                  _controller.dismissed(
+                                      PlayxUpdateDismissReason.button);
                                   widget.uiOptions.onCancel
                                       ?.call(widget.versionUpdateInfo);
                                 },

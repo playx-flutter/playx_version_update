@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
+import 'package:playx_version_update/src/widgets/update_ui_controller.dart';
 
 /// A platform-adaptive Flutter widget that displays an update dialog.
 ///
@@ -85,6 +86,22 @@ class PlayxUpdateDialog extends StatefulWidget {
 }
 
 class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
+  late final UpdateUiController _controller = UpdateUiController(
+    info: widget.versionUpdateInfo,
+    events: widget.uiOptions.events,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _controller.shown());
+  }
+
+  void _onPopInvoked(bool didPop) {
+    // Back button or tap outside; button presses are already resolved.
+    if (didPop) _controller.dismissed(PlayxUpdateDismissReason.system);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!widget.versionUpdateInfo.canUpdate) {
@@ -97,12 +114,12 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
     if (Platform.isAndroid) {
       return PopScope(
           canPop: isDismissible,
-          onPopInvokedWithResult: (didPop, _) {},
+          onPopInvokedWithResult: (didPop, _) => _onPopInvoked(didPop),
           child: _buildAndroidDialog(context));
     } else if (Platform.isIOS) {
       return PopScope(
           canPop: isDismissible,
-          onPopInvokedWithResult: (didPop, _) {},
+          onPopInvokedWithResult: (didPop, _) => _onPopInvoked(didPop),
           child: _buildIosDialog(context));
     } else {
       return const SizedBox.shrink();
@@ -150,6 +167,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
         if (shouldShowDismissButton)
           TextButton(
             onPressed: () {
+              _controller.dismissed(PlayxUpdateDismissReason.button);
               Navigator.pop(context, 'Later');
               if (isDismissible) {
                 widget.uiOptions.onCancel?.call(widget.versionUpdateInfo);
@@ -166,6 +184,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
           ),
         TextButton(
           onPressed: () {
+            _controller.updateTapped();
             if (widget.uiOptions.onUpdate != null) {
               widget.uiOptions.onUpdate
                   ?.call(widget.versionUpdateInfo, widget.uiOptions.launchMode);
@@ -221,6 +240,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
         if (shouldShowDismissButton)
           CupertinoDialogAction(
             onPressed: () {
+              _controller.dismissed(PlayxUpdateDismissReason.button);
               Navigator.pop(context, 'Later');
               if (isDismissible) {
                 widget.uiOptions.onCancel?.call(widget.versionUpdateInfo);
@@ -234,6 +254,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
         CupertinoDialogAction(
           isDefaultAction: true,
           onPressed: () {
+            _controller.updateTapped();
             if (isDismissible) {
               Navigator.pop(context, 'Update');
             }

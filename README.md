@@ -324,6 +324,25 @@ error: (error) {
 
 In some regions Google Play answers with a cookie-consent page instead of the app page, so the version cannot be read. This is reported as `ConsentRequiredException` (`NetworkErrorCode.consentRequired`). Retrying does not help: provide `newVersion` from your own backend, or send users to the store page with `PlayxVersionUpdate.openStore`.
 
+### Update Events (Analytics)
+
+Pass `events` in `PlayxUpdateUIOptions` to know what the user did:
+
+```dart
+PlayxUpdateUIOptions(
+  events: PlayxUpdateEvents(
+    onShown: (info) => analytics.log('update_shown', info.newVersion),
+    onUpdateTapped: (info) => analytics.log('update_tapped'),
+    onDismissed: (info, reason) => analytics.log('update_dismissed'),
+    // Android in-app updates (showInAppUpdateDialog)
+    onInAppUpdateStarted: (type) {},
+    onInAppUpdateResult: (type, result) {},
+  ),
+)
+```
+
+For `showInAppUpdateDialog` you can also pass `events:` directly.
+
 -----
 
 ## Google Play In-App Updates (Android Only)

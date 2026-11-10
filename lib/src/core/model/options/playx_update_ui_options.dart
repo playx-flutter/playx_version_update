@@ -116,6 +116,10 @@ class PlayxUpdateUIOptions {
   /// Applies to Flutter-based UIs on both Android and iOS.
   final ButtonStyle? dismissButtonStyle;
 
+  /// Callbacks reporting what happens to the update UI (shown, update tapped,
+  /// dismissed, skipped...), mainly for analytics. See [PlayxUpdateEvents].
+  final PlayxUpdateEvents events;
+
   const PlayxUpdateUIOptions({
     this.title,
     this.description,
@@ -138,5 +142,6 @@ class PlayxUpdateUIOptions {
     this.dismissButtonTextStyle,
     this.updateButtonStyle,
     this.dismissButtonStyle,
+    this.events = const PlayxUpdateEvents(),
   });
 }

@@ -197,6 +197,7 @@ abstract class PlayxVersionUpdate {
   /// - `type`: Specifies the desired Android update flow (`PlayxAppUpdateType.flexible` or `PlayxAppUpdateType.immediate`).
   /// - `iosOptions`: (Optional) iOS-specific Configuration for the version check itself, including store IDs or manual version checking, and the `onIosUpdate` callback. Defaults to `const PlayxUpdateOptions()`.
   /// - `iosUiOptions`: (Optional) iOS-specific UI customization options, such as whether to show a page on force update and divisibility. Defaults to `const PlayxUpdateUIOptions()`.
+  /// - `events`: (Optional) Callbacks for analytics. On Android they report when the in-app update starts and finishes; on iOS they report the update UI. Defaults to `iosUiOptions.events`.
   ///
   /// ### Returns:
   /// A `Future` that resolves to a `PlayxVersionUpdateResult<bool>`.
@@ -234,7 +235,11 @@ abstract class PlayxVersionUpdate {
     required PlayxAppUpdateType type,
     PlayxUpdateOptions iosOptions = const PlayxUpdateOptions(),
     PlayxUpdateUIOptions iosUiOptions = const PlayxUpdateUIOptions(),
+    PlayxUpdateEvents? events,
   }) async {
+    // [events] also covers Android; fall back to the iOS UI options' events.
+    final effectiveEvents = events ?? iosUiOptions.events;
+
     // For Android, delegate to the native in-app update platform channel.
     if (!kIsWeb && Platform.isAndroid) {
       // If a flexible update is already downloaded, prompt to complete it.
@@ -243,11 +248,12 @@ abstract class PlayxVersionUpdate {
         return completeFlexibleUpdate();
       }
 
-      if (type == PlayxAppUpdateType.flexible) {
-        return startFlexibleUpdate();
-      } else {
-        return startImmediateUpdate();
-      }
+      effectiveEvents.onInAppUpdateStarted?.call(type);
+      final updateResult = type == PlayxAppUpdateType.flexible
+          ? await startFlexibleUpdate()
+          : await startImmediateUpdate();
+      effectiveEvents.onInAppUpdateResult?.call(type, updateResult);
+      return updateResult;
     }
 
     // For iOS and other platforms, use the standard dialog flow.
