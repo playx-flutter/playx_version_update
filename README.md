@@ -341,6 +341,20 @@ await PlayxVersionUpdate.openStore(storeUrl: info.storeUrl);
 
 The update dialog and page use it too; turn the deep link off with `PlayxUpdateUIOptions(preferStoreApp: false)`.
 
+#### Opening the store without a version check
+
+Call `openStore` without a URL (for an "Update" or "Rate us" button). The URL is worked out from your options:
+
+```dart
+await PlayxVersionUpdate.openStore(
+  options: PlayxUpdateOptions(
+    storeUrls: PlayxPlatformValue(ios: 'https://apps.apple.com/app/id123456789'),
+  ),
+);
+```
+
+The URL is `storeUrls` for the current platform, else on Android the Google Play URL built from the package name (no network). On iOS without `storeUrls` it costs one App Store lookup (or one request to `versionSource`). With a `storeUrl` argument, `options` is ignored and nothing is requested.
+
 #### Opening the store yourself
 
 Pass `storeLauncher` to open the store your own way (for example another store) and report whether it worked:

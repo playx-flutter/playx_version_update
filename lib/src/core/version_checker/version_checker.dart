@@ -202,6 +202,69 @@ class VersionChecker {
     });
   }
 
+  /// The store URL of the current platform, without a version check.
+  ///
+  /// See [resolveStoreUrlFor].
+  Future<PlayxVersionUpdateResult<String>> resolveStoreUrl(
+      PlayxUpdateOptions options) async {
+    final platform = PlayxPlatform.current;
+    if (platform == null) {
+      return const PlayxVersionUpdateResult.error(NotSupportedException());
+    }
+
+    final packageInfo = await PackageInfo.fromPlatform();
+    return resolveStoreUrlFor(
+      platform: platform,
+      packageId: resolvePackageId(
+          platform: platform,
+          options: options,
+          fallback: packageInfo.packageName),
+      options: options,
+    );
+  }
+
+  /// Finds the store URL of [platform]: `options.storeUrls`, then on Android
+  /// the Google Play URL built from [packageId] (no network), otherwise one
+  /// request to the version source (the store by default).
+  @visibleForTesting
+  Future<PlayxVersionUpdateResult<String>> resolveStoreUrlFor({
+    required PlayxPlatform platform,
+    required String packageId,
+    required PlayxUpdateOptions options,
+  }) async {
+    final provided = _usable(options.storeUrls?.forPlatform(platform));
+    if (provided != null) return PlayxVersionUpdateResult.success(provided);
+
+    if (platform == PlayxPlatform.android) {
+      return PlayxVersionUpdateResult.success(getGooglePlayUrl(
+          packageId: packageId,
+          country: options.country,
+          language: options.language));
+    }
+
+    final result = await (options.versionSource ?? _defaultSource).fetch(
+      PlayxVersionRequest(
+        platform: platform,
+        packageId: packageId,
+        country: options.country,
+        language: options.language,
+        networkOptions: options.networkOptions,
+        enableLog: options.enableNetworkLogging,
+      ),
+    );
+    return result.map(
+      success: (info) {
+        final url = _usable(info.storeUrl);
+        return url == null
+            ? const PlayxVersionUpdateResult.error(DefaultFailureError(
+                errorMsg:
+                    'No store URL available. Set PlayxUpdateOptions.storeUrls.'))
+            : PlayxVersionUpdateResult.success(url);
+      },
+      error: PlayxVersionUpdateResult.error,
+    );
+  }
+
   static String? _usable(String? value) =>
       value == null || value.isEmpty ? null : value;
 

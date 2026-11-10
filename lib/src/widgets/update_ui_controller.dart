@@ -1,4 +1,5 @@
 import 'package:playx_version_update/playx_version_update.dart';
+import 'package:playx_version_update/src/core/store/playx_store_opener.dart';
 
 /// Shared by the update dialog and page: reports user actions to
 /// [PlayxUpdateEvents] and records them in the [PlayxUpdateReminder].
@@ -52,8 +53,9 @@ class UpdateUiController {
       if (launcher != null) {
         opened = await launcher(info);
       } else {
-        final result = await PlayxVersionUpdate.openStore(
-          storeUrl: info.storeUrl,
+        // Not `openStore`: an empty URL must fail here, not trigger a lookup.
+        final result = await openStoreUrl(
+          info.storeUrl,
           launchMode: uiOptions.launchMode,
           preferStoreApp: uiOptions.preferStoreApp,
         );

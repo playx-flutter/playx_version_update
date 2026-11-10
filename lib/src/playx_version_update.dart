@@ -65,24 +65,42 @@ abstract class PlayxVersionUpdate {
   ///
   /// By default the store app is opened directly when possible: `market://`
   /// for a Google Play URL on Android and `itms-apps://` for an App Store URL
-  /// on iOS. If that fails, or [preferStoreApp] is `false`, [storeUrl] itself
+  /// on iOS. If that fails, or [preferStoreApp] is `false`, the web URL itself
   /// is opened. Other URLs (another store, a short link, a custom scheme) are
   /// opened as they are.
   ///
-  /// [storeUrl]: The URL of the app's listing.
+  /// There are two ways to call it:
+  /// - With a [storeUrl] (for example `info.storeUrl` from [checkVersion]): it
+  ///   is opened as is. No network request is made and [options] is ignored.
+  /// - Without [storeUrl], for an "Update" or "Rate us" button that needs no
+  ///   version check: the URL is worked out from [options]. That is
+  ///   `options.storeUrls` for the current platform, else the Google Play URL
+  ///   built from the package name on Android. On iOS without
+  ///   `options.storeUrls` it costs one App Store lookup (or one request to
+  ///   `options.versionSource`).
+  ///
   /// [launchMode]: The desired mode for launching the URL. Defaults to opening
   /// externally. See [LaunchMode] for more details.
   /// [preferStoreApp]: Try the store app's deep link before the web URL.
   ///
   /// Returns a [PlayxVersionUpdateResult] with `true` once something was
-  /// opened, or a [DefaultFailureError] if nothing could handle the link.
+  /// opened. On failure it holds the reason: a [DefaultFailureError] if no URL
+  /// is known or nothing could handle the link, or the error of the lookup.
   static Future<PlayxVersionUpdateResult<bool>> openStore({
-    required String storeUrl,
+    String? storeUrl,
+    PlayxUpdateOptions options = const PlayxUpdateOptions(),
     LaunchMode launchMode = LaunchMode.externalApplication,
     bool preferStoreApp = true,
-  }) {
+  }) async {
+    var url = storeUrl;
+    if (url == null || url.isEmpty) {
+      final resolved = await _versionChecker.resolveStoreUrl(options);
+      url = resolved.updateData;
+      if (url == null) return PlayxVersionUpdateResult.error(resolved.updateError!);
+    }
+
     return openStoreUrl(
-      storeUrl,
+      url,
       launchMode: launchMode,
       preferStoreApp: preferStoreApp,
     );

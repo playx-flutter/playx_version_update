@@ -693,6 +693,125 @@ void main() {
       expect(withoutOptions.storeUrl, 'https://source.url');
     });
   });
+
+  group('resolveStoreUrlFor', () {
+    const appStoreJson =
+        '{"resultCount":1,"results":[{"version":"9.0.0","trackViewUrl":"https://apps.apple.com/lookup"}]}';
+
+    (VersionChecker, _CountingAdapter) make(ResponseBody Function() response) {
+      final adapter = _CountingAdapter(response);
+      final dio = Dio(BaseOptions(responseType: ResponseType.plain))
+        ..httpClientAdapter = adapter;
+      return (
+        VersionChecker.withDataSource(RemoteStoreDataSource.withClient(
+            NetworkClient(dio: dio, maxRetries: 0))),
+        adapter,
+      );
+    }
+
+    Future<PlayxVersionUpdateResult<String>> resolve(
+      VersionChecker c,
+      PlayxPlatform platform, [
+      PlayxUpdateOptions options = const PlayxUpdateOptions(),
+    ]) =>
+        c.resolveStoreUrlFor(
+            platform: platform, packageId: 'a.b', options: options);
+
+    test('android derives the Google Play url without a request', () async {
+      final (c, adapter) = make(() => ResponseBody.fromString('', 500));
+      final url = (await resolve(
+              c,
+              PlayxPlatform.android,
+              const PlayxUpdateOptions(country: 'de', language: 'fr')))
+          .updateData!;
+
+      expect(adapter.count, 0);
+      expect(url,
+          'https://play.google.com/store/apps/details?id=a.b&hl=fr&gl=de');
+    });
+
+    test('storeUrls win and need no request', () async {
+      final (c, adapter) = make(() => ResponseBody.fromString('', 500));
+      const options = PlayxUpdateOptions(
+        storeUrls: PlayxPlatformValue(
+            android: 'market://details?id=a.b', ios: 'https://my.link/ios'),
+      );
+
+      expect((await resolve(c, PlayxPlatform.android, options)).updateData,
+          'market://details?id=a.b');
+      expect((await resolve(c, PlayxPlatform.ios, options)).updateData,
+          'https://my.link/ios');
+      expect(adapter.count, 0);
+    });
+
+    test('an empty storeUrls value is ignored', () async {
+      final (c, adapter) = make(() => ResponseBody.fromString('', 500));
+      final url = (await resolve(
+              c,
+              PlayxPlatform.android,
+              const PlayxUpdateOptions(
+                  storeUrls: PlayxPlatformValue(android: ''))))
+          .updateData!;
+
+      expect(adapter.count, 0);
+      expect(url, contains('play.google.com'));
+    });
+
+    test('ios without storeUrls does one lookup', () async {
+      final (c, adapter) =
+          make(() => ResponseBody.fromString(appStoreJson, 200));
+      final url = (await resolve(c, PlayxPlatform.ios)).updateData;
+
+      expect(adapter.count, 1);
+      expect(url, 'https://apps.apple.com/lookup');
+    });
+
+    test('a failing ios lookup is an error', () async {
+      final (c, _) = make(() => ResponseBody.fromString('', 503));
+      expect((await resolve(c, PlayxPlatform.ios)).updateError,
+          isA<PlayxVersionNetworkError>());
+    });
+
+    test('ios uses the url of a custom version source', () async {
+      final (c, adapter) = make(() => ResponseBody.fromString('', 500));
+      final source = PlayxCallbackVersionSource((_) async =>
+          const PlayxRemoteVersionInfo(
+              version: '3.0.0', storeUrl: 'https://source.url'));
+
+      final url = (await resolve(c, PlayxPlatform.ios,
+              PlayxUpdateOptions(versionSource: source)))
+          .updateData;
+      expect(adapter.count, 0);
+      expect(url, 'https://source.url');
+    });
+
+    test('a source without a url is an error', () async {
+      final (c, _) = make(() => ResponseBody.fromString('', 500));
+      final source = PlayxCallbackVersionSource(
+          (_) async => const PlayxRemoteVersionInfo(version: '3.0.0'));
+
+      final error = (await resolve(c, PlayxPlatform.ios,
+              PlayxUpdateOptions(versionSource: source)))
+          .updateError;
+      expect(error, isA<DefaultFailureError>());
+      expect(error!.message, contains('storeUrls'));
+    });
+
+    test('platforms without a store need storeUrls or a source', () async {
+      final (c, _) = make(() => ResponseBody.fromString('', 500));
+      expect((await resolve(c, PlayxPlatform.windows)).updateError,
+          isA<NotSupportedException>());
+      expect(
+          (await resolve(
+                  c,
+                  PlayxPlatform.windows,
+                  const PlayxUpdateOptions(
+                      storeUrls:
+                          PlayxPlatformValue(windows: 'ms-windows-store://x'))))
+              .updateData,
+          'ms-windows-store://x');
+    });
+  });
 }
 
 class _CountingAdapter implements HttpClientAdapter {
