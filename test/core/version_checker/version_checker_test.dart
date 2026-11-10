@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:playx_version_update/src/core/model/playx_platform.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
 import 'package:playx_version_update/src/core/network/network_client.dart';
 import 'package:playx_version_update/src/core/source/playx_callback_version_source.dart';
@@ -24,7 +25,7 @@ void main() {
 
       expect(
         resolvePlatformVersionForCurrentPlatform(
-          isAndroid: true,
+          platform: PlayxPlatform.android,
           genericVersion: '1.0.0',
           platformVersion: platformVersion,
         ),
@@ -32,7 +33,7 @@ void main() {
       );
       expect(
         resolvePlatformVersionForCurrentPlatform(
-          isAndroid: false,
+          platform: PlayxPlatform.ios,
           genericVersion: '1.0.0',
           platformVersion: platformVersion,
         ),
@@ -45,7 +46,7 @@ void main() {
         () {
       expect(
         resolvePlatformVersionForCurrentPlatform(
-          isAndroid: true,
+          platform: PlayxPlatform.android,
           genericVersion: '1.0.0',
           platformVersion: const PlayxPlatformVersion(ios: '3.0.0'),
         ),
@@ -53,7 +54,7 @@ void main() {
       );
       expect(
         resolvePlatformVersionForCurrentPlatform(
-          isAndroid: false,
+          platform: PlayxPlatform.ios,
           genericVersion: '1.0.0',
           platformVersion: const PlayxPlatformVersion(android: '2.0.0'),
         ),
@@ -64,7 +65,7 @@ void main() {
     test('returns the generic version when no platform object is provided', () {
       expect(
         resolvePlatformVersionForCurrentPlatform(
-          isAndroid: true,
+          platform: PlayxPlatform.android,
           genericVersion: '1.0.0',
           platformVersion: null,
         ),
@@ -332,7 +333,7 @@ void main() {
       PlayxVersionSource? source,
     }) =>
         c.checkVersionFor(
-          isAndroid: true,
+          platform: PlayxPlatform.android,
           localVersion: '1.0.0',
           packageId: 'a.b',
           country: 'us',
@@ -351,7 +352,7 @@ void main() {
       PlayxVersionSource? source,
     }) =>
         c.checkVersionFor(
-          isAndroid: false,
+          platform: PlayxPlatform.ios,
           localVersion: '1.0.0',
           packageId: 'a.b',
           country: 'us',
@@ -450,7 +451,7 @@ void main() {
       String? minVersion,
     }) =>
         c.checkVersionFor(
-          isAndroid: false,
+          platform: PlayxPlatform.ios,
           localVersion: '1.0.0',
           packageId: 'a.b',
           country: 'us',
@@ -468,7 +469,7 @@ void main() {
       PlayxVersionSource source,
     ) =>
         c.checkVersionFor(
-          isAndroid: true,
+          platform: PlayxPlatform.android,
           localVersion: '1.0.0',
           packageId: 'a.b',
           country: 'us',

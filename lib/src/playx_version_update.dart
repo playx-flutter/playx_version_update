@@ -277,6 +277,14 @@ abstract class PlayxVersionUpdate {
           currentVersion: info.localVersion, newVersion: info.newVersion));
     }
 
+    // The dialog and page are rendered on Android and iOS only. On other
+    // platforms use `checkVersion` with a custom `versionSource` and build
+    // your own UI (for example with `PlayxUpdatePage`).
+    final platform = PlayxPlatform.current;
+    if (platform != PlayxPlatform.android && platform != PlayxPlatform.ios) {
+      return const PlayxVersionUpdateResult.error(NotSupportedException());
+    }
+
     final reminder =
         reminderOptions == null ? null : PlayxUpdateReminder(reminderOptions);
     final suppressedReason = await reminder?.suppressionReason(info);

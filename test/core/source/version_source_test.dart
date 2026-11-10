@@ -24,7 +24,7 @@ class _CountingAdapter implements HttpClientAdapter {
 }
 
 const _request = PlayxVersionRequest(
-  isAndroid: true,
+  platform: PlayxPlatform.android,
   packageId: 'a.b',
   country: 'us',
   language: 'en',
@@ -132,7 +132,7 @@ void main() {
       final (source, adapter) = make(() => ResponseBody.fromString('', 500));
       final info = (await source.fetch(
         const PlayxVersionRequest(
-          isAndroid: true,
+          platform: PlayxPlatform.android,
           packageId: 'a.b',
           country: 'us',
           language: 'en',
@@ -171,7 +171,7 @@ void main() {
       );
       final info = (await source.fetch(
         const PlayxVersionRequest(
-          isAndroid: false,
+          platform: PlayxPlatform.ios,
           packageId: 'a.b',
           country: 'us',
           language: 'en',
@@ -182,6 +182,22 @@ void main() {
       expect(adapter.count, 1);
       expect(info.version, '9.0.0');
       expect(info.storeUrl, 'https://apps.apple.com/x');
+    });
+
+    test('platforms without a store return NotSupportedException', () async {
+      final (source, adapter) = make(() => ResponseBody.fromString('', 200));
+      final error = (await source.fetch(
+        const PlayxVersionRequest(
+          platform: PlayxPlatform.windows,
+          packageId: 'a.b',
+          country: 'us',
+          language: 'en',
+        ),
+      ))
+          .updateError;
+
+      expect(error, isA<NotSupportedException>());
+      expect(adapter.count, 0);
     });
 
     test('store errors are returned as errors', () async {

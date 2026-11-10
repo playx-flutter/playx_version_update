@@ -1,6 +1,8 @@
 # Changelog
 ## Unreleased
-- **Deprecate** `PlayxUpdateOptions.newPlatformVersion`, `minPlatformVersion` and `PlayxPlatformVersion` in favor of `versionSource`, which receives the platform in its request. They keep working and will be removed in a future major release.
+- Add `PlayxPlatform` (android, ios, macos, windows, linux) and the generic `PlayxPlatformValue<T>`. `PlayxPlatformVersion` now extends it and gains `macos`, `windows` and `linux` values, so each platform can have its own version or minimum version. `PlayxVersionRequest` exposes `platform` (with `isAndroid` / `isIos` helpers).
+- `checkVersion` can run on macOS, Windows and Linux when a custom `versionSource` is provided; the default store source supports Android and iOS only. `showUpdateDialog` still needs Android or iOS (use `checkVersion` with `PlayxUpdatePage` elsewhere).
+- **Deprecate** the `PlayxUpdateOptions.newPlatformVersion` and `minPlatformVersion` options in favor of `versionSource`, which receives the platform in its request. They keep working and will be removed in a future major release.
 - Add pluggable `PlayxVersionSource` (`PlayxUpdateOptions.versionSource`) with `PlayxStoreVersionSource` (default), `PlayxCallbackVersionSource` (Remote Config / own backend) and `PlayxFallbackVersionSource`. Options values still win over the source.
 - Fix `newVersion` / `newPlatformVersion` not skipping the store lookup. On Android the Google Play page is no longer requested when a version is provided; on iOS the App Store lookup (needed for the store URL) is best-effort and its failure no longer fails the check.
 - Add `PlayxUpdateEvents` (`PlayxUpdateUIOptions.events`) for analytics: shown, update tapped, dismissed, skipped, suppressed, and Android in-app update started/result.

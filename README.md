@@ -280,7 +280,7 @@ The package will parse this information and automatically update the `forceUpdat
 
 ### Platform-Specific Version Overrides (deprecated)
 
-> **Deprecated:** `newPlatformVersion` and `minPlatformVersion` (and `PlayxPlatformVersion`) are replaced by [`versionSource`](#custom-version-source-remote-config--your-backend), whose request tells you the platform, so you return the right version per platform yourself. They still work and will be removed in a future major release.
+> **Deprecated:** the `newPlatformVersion` and `minPlatformVersion` options are replaced by [`versionSource`](#custom-version-source-remote-config--your-backend), whose request tells you the platform, so you return the right version per platform yourself. They still work and will be removed in a future major release.
 
 They override `newVersion` and `minVersion` on the current platform only, while `PlayxVersionUpdateInfo.newVersion` and `PlayxVersionUpdateInfo.minVersion` continue to expose the effective resolved values used by the package.
 
@@ -400,7 +400,8 @@ versionSource: PlayxFallbackVersionSource([
 - Throwing a `NetworkException` is reported as a `PlayxVersionNetworkError`, any other error as a `DefaultFailureError`.
 - Values set directly in `PlayxUpdateOptions` (`newVersion`, `minVersion`, `forceUpdate`, and the deprecated platform overrides) always win over the source.
 - If you pass `newVersion`, a failing source is ignored and your version is used. On Android, the default store source then skips the Google Play request entirely.
-- Return a different version per platform with `request.isAndroid`.
+- Return a different version per platform with `request.platform` (`PlayxPlatform`) or the `request.isAndroid` / `request.isIos` helpers. `PlayxPlatformVersion` and `PlayxPlatformValue<T>` hold per-platform values (Android, iOS, macOS, Windows, Linux).
+- On macOS, Windows and Linux `checkVersion` works with a custom `versionSource`; the default store source supports Android and iOS only. The update dialog is Android/iOS only, so elsewhere build your own UI (for example `PlayxUpdatePage`).
 - `storeUrl` is optional on Android (the Google Play URL is used) but required on iOS for the update button when the App Store is not queried.
 - Implement `PlayxVersionSource` yourself for full control.
 

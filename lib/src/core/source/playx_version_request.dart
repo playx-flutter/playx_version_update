@@ -1,9 +1,16 @@
 import 'package:playx_version_update/src/core/model/options/playx_network_options.dart';
+import 'package:playx_version_update/src/core/model/playx_platform.dart';
 
 /// What a [PlayxVersionSource] is asked for.
 class PlayxVersionRequest {
-  /// Whether the check runs on Android (`true`) or iOS (`false`).
-  final bool isAndroid;
+  /// The platform the check runs on.
+  final PlayxPlatform platform;
+
+  /// Whether the check runs on Android.
+  bool get isAndroid => platform == PlayxPlatform.android;
+
+  /// Whether the check runs on iOS.
+  bool get isIos => platform == PlayxPlatform.ios;
 
   /// The Google Play package name or the App Store bundle id.
   final String packageId;
@@ -27,7 +34,7 @@ class PlayxVersionRequest {
   final String? providedVersion;
 
   const PlayxVersionRequest({
-    required this.isAndroid,
+    required this.platform,
     required this.packageId,
     required this.country,
     required this.language,

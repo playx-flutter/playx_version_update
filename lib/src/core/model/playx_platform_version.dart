@@ -1,36 +1,20 @@
-/// Per-platform version values.
-///
-/// Deprecated together with `PlayxUpdateOptions.newPlatformVersion` and
-/// `minPlatformVersion`: use a `PlayxVersionSource` instead, which receives
-/// the platform in its request.
-@Deprecated('Use PlayxUpdateOptions.versionSource instead.')
-class PlayxPlatformVersion {
-  final String? android;
-  final String? ios;
+import 'playx_platform_value.dart';
 
+/// Per-platform version values, for example the latest or the minimum version
+/// on Android and on iOS.
+///
+/// Each platform can have its own value, so the minimum version can differ
+/// between platforms.
+class PlayxPlatformVersion extends PlayxPlatformValue<String> {
   const PlayxPlatformVersion({
-    this.android,
-    this.ios,
+    super.android,
+    super.ios,
+    super.macos,
+    super.windows,
+    super.linux,
   });
 
   String? forCurrentPlatform({required bool isAndroid}) {
     return isAndroid ? android : ios;
   }
-
-  @override
-  String toString() {
-    return 'PlayxPlatformVersion{android: $android, ios: $ios}';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is PlayxPlatformVersion &&
-        other.android == android &&
-        other.ios == ios;
-  }
-
-  @override
-  int get hashCode => android.hashCode ^ ios.hashCode;
 }

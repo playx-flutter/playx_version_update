@@ -1,9 +1,9 @@
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
 import 'package:playx_version_update/src/core/datasource/store_urls.dart';
+import 'package:playx_version_update/src/core/model/playx_platform.dart';
 import 'package:playx_version_update/src/core/model/playx_platform_version.dart';
 import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
@@ -18,11 +18,11 @@ import '../model/options/playx_network_options.dart';
 import '../model/options/playx_update_options.dart';
 
 String? resolvePlatformVersionForCurrentPlatform({
-  required bool isAndroid,
+  required PlayxPlatform platform,
   required String? genericVersion,
   required PlayxPlatformVersion? platformVersion,
 }) {
-  final version = platformVersion?.forCurrentPlatform(isAndroid: isAndroid);
+  final version = platformVersion?.forPlatform(platform);
   if (version == null || version.isEmpty) return genericVersion;
   return version;
 }
@@ -47,7 +47,12 @@ class VersionChecker {
   Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>> checkVersion({
     PlayxUpdateOptions options = const PlayxUpdateOptions(),
   }) async {
-    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+    final platform = PlayxPlatform.current;
+    // The default source reads Google Play and the App Store only; other
+    // platforms are supported through a custom version source.
+    final hasStore =
+        platform == PlayxPlatform.android || platform == PlayxPlatform.ios;
+    if (platform == null || (!hasStore && options.versionSource == null)) {
       return const PlayxVersionUpdateResult.error(NotSupportedException());
     }
 
@@ -55,13 +60,15 @@ class VersionChecker {
 
     String version = packageInfo.version;
 
-    final isAndroid = Platform.isAndroid;
-    final packageId = isAndroid
-        ? options.androidPackageName ?? packageInfo.packageName
-        : options.iosBundleId ?? packageInfo.packageName;
+    final packageId = switch (platform) {
+      PlayxPlatform.android =>
+        options.androidPackageName ?? packageInfo.packageName,
+      PlayxPlatform.ios => options.iosBundleId ?? packageInfo.packageName,
+      _ => packageInfo.packageName,
+    };
 
     return checkVersionFor(
-      isAndroid: isAndroid,
+      platform: platform,
       localVersion: version,
       packageId: packageId,
       country: options.country,
@@ -85,7 +92,7 @@ class VersionChecker {
   /// the new version, a failing source is ignored.
   @visibleForTesting
   Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>> checkVersionFor({
-    required bool isAndroid,
+    required PlayxPlatform platform,
     required String localVersion,
     required String packageId,
     required String country,
@@ -100,13 +107,13 @@ class VersionChecker {
     PlayxNetworkOptions? networkOptions,
   }) async {
     final providedVersion = _providedVersion(
-        isAndroid: isAndroid,
+        platform: platform,
         newVersion: newVersion,
         newPlatformVersion: newPlatformVersion);
 
     var sourceResult = await (source ?? _defaultSource).fetch(
       PlayxVersionRequest(
-        isAndroid: isAndroid,
+        platform: platform,
         packageId: packageId,
         country: country,
         language: language,
@@ -122,7 +129,7 @@ class VersionChecker {
 
     return sourceResult.mapAsync(success: (info) async {
       final currentVersion = resolvePlatformVersionForCurrentPlatform(
-            isAndroid: isAndroid,
+            platform: platform,
             genericVersion: providedVersion ?? info.version,
             platformVersion: newPlatformVersion,
           ) ??
@@ -132,7 +139,7 @@ class VersionChecker {
 
       return canUpdateResult.mapAsync(success: (shouldUpdate) async {
         final effectiveMinVersion = resolvePlatformVersionForCurrentPlatform(
-          isAndroid: isAndroid,
+          platform: platform,
           genericVersion: minVersion ?? info.minVersion,
           platformVersion: minPlatformVersion,
         );
@@ -146,7 +153,7 @@ class VersionChecker {
         final sourceUrl = info.storeUrl;
         final storeUrl = sourceUrl != null && sourceUrl.isNotEmpty
             ? sourceUrl
-            : isAndroid
+            : platform == PlayxPlatform.android
                 ? getGooglePlayUrl(
                     packageId: packageId, country: country, language: language)
                 : '';
@@ -175,12 +182,12 @@ class VersionChecker {
 
   /// The new version supplied by the caller for the current platform, if any.
   String? _providedVersion({
-    required bool isAndroid,
+    required PlayxPlatform platform,
     required String? newVersion,
     required PlayxPlatformVersion? newPlatformVersion,
   }) {
     final version = resolvePlatformVersionForCurrentPlatform(
-      isAndroid: isAndroid,
+      platform: platform,
       genericVersion: newVersion,
       platformVersion: newPlatformVersion,
     );
