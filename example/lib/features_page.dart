@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
+import 'ui.dart';
+
 /// Demonstrates the newer features of the package:
 ///
 /// - custom version sources (static, callback, fallback)
@@ -211,17 +213,61 @@ class _FeaturesPageState extends State<FeaturesPage> {
     );
   }
 
-  Widget _section(String title) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
-    child: Text(title, style: Theme.of(context).textTheme.titleMedium),
-  );
+  /// The latest events first, pinned below the demos so it stays visible.
+  Widget _eventLog(BuildContext context) {
+    final theme = Theme.of(context);
 
-  Widget _demo(String label, String hint, VoidCallback onPressed) => ListTile(
-    title: Text(label),
-    subtitle: Text(hint),
-    trailing: const Icon(Icons.play_arrow),
-    onTap: onPressed,
-  );
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: kContentMaxWidth),
+        child: Card(
+          elevation: 0,
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          color: theme.colorScheme.surfaceContainerHighest,
+          child: SizedBox(
+            height: 168,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 8, 0),
+                  child: Row(
+                    children: [
+                      Text('Event log', style: theme.textTheme.titleSmall),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: _log.isEmpty
+                            ? null
+                            : () => setState(_log.clear),
+                        child: const Text('Clear'),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: _log.isEmpty
+                      ? Center(
+                          child: Text(
+                            'Events and results appear here.',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                          itemCount: _log.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 4),
+                          itemBuilder: (_, i) =>
+                              Text(_log[i], style: theme.textTheme.bodySmall),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -230,87 +276,83 @@ class _FeaturesPageState extends State<FeaturesPage> {
       body: Column(
         children: [
           Expanded(
-            child: ListView(
+            child: ExampleBody(
               children: [
-                _section('Dialog'),
-                _demo(
-                  'Events + Later + Skip',
-                  'Dismiss it to snooze for 1 minute, or skip this version',
-                  _showDialogWithReminder,
+                ExampleSection(
+                  title: 'Dialog',
+                  children: [
+                    ActionTile(
+                      icon: Icons.notifications_active_outlined,
+                      title: 'Events + Later + Skip',
+                      subtitle:
+                          'Dismiss to snooze for a minute, or skip this version',
+                      onTap: _showDialogWithReminder,
+                    ),
+                    ActionTile(
+                      icon: Icons.restart_alt,
+                      title: 'Reset Later / Skip',
+                      subtitle: 'Forget snoozed and skipped versions',
+                      onTap: _resetReminder,
+                    ),
+                    ActionTile(
+                      icon: Icons.open_in_new,
+                      title: 'Custom store launcher',
+                      subtitle:
+                          'storeLauncher opens the store, result reported',
+                      onTap: _showDialogWithStoreLauncher,
+                    ),
+                  ],
                 ),
-                _demo(
-                  'Reset Later / Skip',
-                  'Forget snoozed and skipped versions',
-                  _resetReminder,
+                ExampleSection(
+                  title: 'Store',
+                  children: [
+                    ActionTile(
+                      icon: Icons.storefront_outlined,
+                      title: 'Open the store (no check)',
+                      subtitle:
+                          'openStore without a url: storeUrls or Play url',
+                      onTap: _openStoreWithoutCheck,
+                    ),
+                  ],
                 ),
-                _demo(
-                  'Custom store launcher',
-                  'storeLauncher opens the store and reports the result',
-                  _showDialogWithStoreLauncher,
+                ExampleSection(
+                  title: 'Version sources',
+                  children: [
+                    ActionTile(
+                      icon: Icons.devices_outlined,
+                      title: 'Per-platform versions',
+                      subtitle: 'A different minimum version for each platform',
+                      onTap: _checkPerPlatformVersions,
+                    ),
+                    ActionTile(
+                      icon: Icons.cloud_off_outlined,
+                      title: 'Backend, then the store',
+                      subtitle: 'A failing source falls back to the store',
+                      onTap: _checkWithFallbackSource,
+                    ),
+                  ],
                 ),
-                _section('Store'),
-                _demo(
-                  'Open the store (no check)',
-                  'openStore without a url: storeUrls or the Play url',
-                  _openStoreWithoutCheck,
-                ),
-                _section('Version sources'),
-                _demo(
-                  'Per-platform versions',
-                  'Static source: a different minimum version per platform',
-                  _checkPerPlatformVersions,
-                ),
-                _demo(
-                  'Backend, then the store',
-                  'Fallback source: a failing source falls back to the store',
-                  _checkWithFallbackSource,
-                ),
-                _section('Network'),
-                _demo(
-                  'Store lookup with options',
-                  'Retries, timeouts, headers and request logging',
-                  () => _checkWithNetworkOptions(unknownApp: false),
-                ),
-                _demo(
-                  'App not on the store',
-                  'Shows the stable error code (STORE_APP_NOT_FOUND)',
-                  () => _checkWithNetworkOptions(unknownApp: true),
+                ExampleSection(
+                  title: 'Network',
+                  children: [
+                    ActionTile(
+                      icon: Icons.network_check,
+                      title: 'Store lookup with options',
+                      subtitle: 'Retries, timeouts, headers and logging',
+                      onTap: () => _checkWithNetworkOptions(unknownApp: false),
+                    ),
+                    ActionTile(
+                      icon: Icons.error_outline,
+                      title: 'App not on the store',
+                      subtitle: 'Shows the stable error code',
+                      onTap: () => _checkWithNetworkOptions(unknownApp: true),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          const Divider(height: 1),
-          SizedBox(
-            height: 170,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Event log',
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () => setState(_log.clear),
-                        child: const Text('Clear'),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _log.length,
-                    itemBuilder: (_, i) => Text(_log[i]),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _eventLog(context),
         ],
       ),
     );
