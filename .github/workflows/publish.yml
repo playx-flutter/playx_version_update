@@ -28,7 +28,7 @@ jobs:
       contents: read
       id-token: write # Required for authentication using OIDC
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Configures the OIDC token that `pub publish` uses.
       - uses: dart-lang/setup-dart@v1
@@ -73,7 +73,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # A tag with a suffix (v2.0.0-beta.1, v2.0.0-rc.1) is marked as a pre-release.
       - name: Create the release
         env:
