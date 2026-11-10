@@ -1,5 +1,6 @@
 # Changelog
 ## Unreleased
+- Add `PlayxStaticVersionSource`: fixed per-platform version, minimum version, release notes and store URL (`PlayxPlatformVersion` / `PlayxPlatformValue`). The deprecated `newPlatformVersion` / `minPlatformVersion` options now point to it.
 - Add `PlayxUpdateOptions.storeUrls` (`PlayxPlatformValue<String>`) to set a custom store URL per platform. It wins over a version source's URL and the derived one; on iOS, providing it with `newVersion` skips the App Store lookup.
 - Add `PlayxUpdateOptions.appIds` (`PlayxPlatformValue<String>`) to set the app id per platform. `androidPackageName` and `iosBundleId` still work; `appIds` wins when both are set.
 - Add `PlayxPlatform` (android, ios, macos, windows, linux) and the generic `PlayxPlatformValue<T>`. `PlayxPlatformVersion` now extends it and gains `macos`, `windows` and `linux` values, so each platform can have its own version or minimum version. `PlayxVersionRequest` exposes `platform` (with `isAndroid` / `isIos` helpers).

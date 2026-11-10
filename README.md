@@ -278,11 +278,25 @@ The version value itself follows the same styles supported by the package versio
 
 The package will parse this information and automatically update the `forceUpdate` value of `PlayxVersionUpdateInfo` returned by `checkVersion` accordingly.
 
-### Platform-Specific Version Overrides (deprecated)
+### Platform-Specific Versions (`PlayxStaticVersionSource`)
 
-> **Deprecated:** the `newPlatformVersion` and `minPlatformVersion` options are replaced by [`versionSource`](#custom-version-source-remote-config--your-backend), whose request tells you the platform, so you return the right version per platform yourself. They still work and will be removed in a future major release.
+Each platform can have its own latest and minimum version. Use `PlayxStaticVersionSource`, which takes a `PlayxPlatformVersion` per value:
 
-They override `newVersion` and `minVersion` on the current platform only, while `PlayxVersionUpdateInfo.newVersion` and `PlayxVersionUpdateInfo.minVersion` continue to expose the effective resolved values used by the package.
+```dart
+PlayxUpdateOptions(
+  versionSource: PlayxStaticVersionSource(
+    version: PlayxPlatformVersion(android: '2.1.0', ios: '2.0.5'),
+    minVersion: PlayxPlatformVersion(android: '1.5.0', ios: '2.0.0'),
+    // optional
+    releaseNotes: PlayxPlatformValue(android: 'Bug fixes', ios: 'Bug fixes'),
+    storeUrls: PlayxPlatformValue(ios: 'https://apps.apple.com/app/id123456789'),
+  ),
+)
+```
+
+If `version` has no value for the current platform the check fails; wrap it in `PlayxFallbackVersionSource([PlayxStaticVersionSource(...), PlayxStoreVersionSource()])` to fall back to the store.
+
+> **Deprecated:** the `newPlatformVersion` and `minPlatformVersion` options are replaced by `PlayxStaticVersionSource` and take the same `PlayxPlatformVersion`. Migrate by moving them into the source: `versionSource: PlayxStaticVersionSource(version: <newPlatformVersion>, minVersion: <minPlatformVersion>)`. They still work and will be removed in a future major release.
 
 ### App IDs per Platform
 

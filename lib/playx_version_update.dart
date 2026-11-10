@@ -27,3 +27,4 @@ export 'package:playx_version_update/src/core/source/playx_version_request.dart'
 export 'package:playx_version_update/src/core/source/playx_version_source.dart';
 export 'package:playx_version_update/src/core/model/playx_platform.dart';
 export 'package:playx_version_update/src/core/model/playx_platform_value.dart';
+export 'package:playx_version_update/src/core/source/playx_static_version_source.dart';

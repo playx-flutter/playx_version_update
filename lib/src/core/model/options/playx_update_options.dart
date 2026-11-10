@@ -34,20 +34,18 @@ class PlayxUpdateOptions {
   ///
   /// On the current platform, this value overrides [newVersion] when provided.
   ///
-  /// Deprecated: a [PlayxVersionSource] already knows the platform
-  /// (`PlayxVersionRequest.isAndroid`), so return the right version from
-  /// [versionSource] instead.
-  @Deprecated('Use versionSource, which receives the platform in its request.')
+  /// Deprecated: use `versionSource: PlayxStaticVersionSource(version: ...)`,
+  /// which takes the same `PlayxPlatformVersion`.
+  @Deprecated('Use versionSource: PlayxStaticVersionSource(version: ...) instead.')
   final PlayxPlatformVersion? newPlatformVersion;
 
   /// Platform-specific minimum required app versions, typically provided by a custom backend.
   ///
   /// On the current platform, this value overrides [minVersion] when provided.
   ///
-  /// Deprecated: a [PlayxVersionSource] already knows the platform
-  /// (`PlayxVersionRequest.isAndroid`), so return the right minimum version
-  /// from [versionSource] instead.
-  @Deprecated('Use versionSource, which receives the platform in its request.')
+  /// Deprecated: use `versionSource: PlayxStaticVersionSource(minVersion: ...)`,
+  /// which takes the same `PlayxPlatformVersion`.
+  @Deprecated('Use versionSource: PlayxStaticVersionSource(version: ...) instead.')
   final PlayxPlatformVersion? minPlatformVersion;
 
   /// Manually set the force update status.
@@ -113,9 +111,9 @@ class PlayxUpdateOptions {
     this.localVersion,
     this.newVersion,
     this.minVersion,
-    @Deprecated('Use versionSource, which receives the platform in its request.')
+    @Deprecated('Use versionSource: PlayxStaticVersionSource(version: ...) instead.')
     this.newPlatformVersion,
-    @Deprecated('Use versionSource, which receives the platform in its request.')
+    @Deprecated('Use versionSource: PlayxStaticVersionSource(version: ...) instead.')
     this.minPlatformVersion,
     this.forceUpdate,
     this.androidPackageName,
