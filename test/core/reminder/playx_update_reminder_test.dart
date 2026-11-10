@@ -101,6 +101,24 @@ void main() {
     await r.reset();
     expect(await r.shouldPrompt(_info('2.0.0')), isTrue);
   });
+
+  test('the snooze deadline is stored in UTC', () async {
+    await reminder().snooze(_info('2.0.0'));
+
+    final stored = await storage.read('playx_update.snoozed_until');
+    expect(stored, endsWith('Z'));
+    expect(DateTime.parse(stored!), now.add(const Duration(days: 1)).toUtc());
+  });
+
+  test('the deadline is an instant: a local clock in another zone agrees',
+      () async {
+    final r = reminder();
+    await r.snooze(_info('2.0.0'));
+
+    // The same instant expressed as UTC is still inside the snooze.
+    now = now.add(const Duration(hours: 23)).toUtc();
+    expect(await r.shouldPrompt(_info('2.0.0')), isFalse);
+  });
 }
 
 class _ThrowingStorage implements PlayxUpdateStorage {

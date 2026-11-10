@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
+import 'package:playx_version_update/src/core/utils/guard.dart';
 import 'package:playx_version_update/src/widgets/update_ui_controller.dart';
 
 /// A platform-adaptive Flutter widget that displays an update dialog.
@@ -94,6 +95,31 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
     reminder: widget.reminder,
   );
 
+  bool _closing = false;
+
+  /// Closes the dialog once, so a double tap cannot pop another route.
+  void _close(String result) {
+    if (_closing) return;
+    _closing = true;
+    Navigator.pop(context, result);
+  }
+
+  /// The dismiss button. A dismissible dialog closes, then `onCancel` runs. A
+  /// forced one cannot be closed: `onCancel` runs, or the app exits.
+  void _onDismissPressed() {
+    _controller.dismissed(PlayxUpdateDismissReason.button);
+
+    if (isDismissible) _close('Later');
+
+    final onCancel = widget.uiOptions.onCancel;
+    if (onCancel != null) {
+      guardCallback('calling PlayxUpdateUIOptions.onCancel',
+          () => onCancel(widget.versionUpdateInfo));
+    } else if (!isDismissible) {
+      SystemNavigator.pop();
+    }
+  }
+
   void _onPopInvoked(bool didPop) {
     // Back button or tap outside; button presses are already resolved.
     if (didPop) _controller.dismissed(PlayxUpdateDismissReason.system);
@@ -171,7 +197,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
           TextButton(
             onPressed: () {
               _controller.skipped();
-              Navigator.pop(context, 'Skip');
+              _close('Skip');
             },
             style: widget.uiOptions.dismissButtonStyle,
             child: Text(
@@ -181,16 +207,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
           ),
         if (shouldShowDismissButton)
           TextButton(
-            onPressed: () {
-              _controller.dismissed(PlayxUpdateDismissReason.button);
-              Navigator.pop(context, 'Later');
-              if (isDismissible) {
-                widget.uiOptions.onCancel?.call(widget.versionUpdateInfo);
-              } else {
-                widget.uiOptions.onCancel?.call(widget.versionUpdateInfo) ??
-                    SystemNavigator.pop();
-              }
-            },
+            onPressed: _onDismissPressed,
             style: widget.uiOptions.dismissButtonStyle,
             child: Text(
               _getDismissActionTitle(),
@@ -200,9 +217,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
         TextButton(
           onPressed: () {
             _controller.performUpdate(widget.uiOptions);
-            if (isDismissible) {
-              Navigator.pop(context, 'Update');
-            }
+            if (isDismissible) _close('Update');
           },
           style: widget.uiOptions.updateButtonStyle,
           child: Text(
@@ -248,31 +263,20 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
           CupertinoDialogAction(
             onPressed: () {
               _controller.skipped();
-              Navigator.pop(context, 'Skip');
+              _close('Skip');
             },
             child: Text(_controller.skipButtonText),
           ),
         if (shouldShowDismissButton)
           CupertinoDialogAction(
-            onPressed: () {
-              _controller.dismissed(PlayxUpdateDismissReason.button);
-              Navigator.pop(context, 'Later');
-              if (isDismissible) {
-                widget.uiOptions.onCancel?.call(widget.versionUpdateInfo);
-              } else {
-                widget.uiOptions.onCancel?.call(widget.versionUpdateInfo) ??
-                    SystemNavigator.pop();
-              }
-            },
+            onPressed: _onDismissPressed,
             child: Text(_getDismissActionTitle()),
           ),
         CupertinoDialogAction(
           isDefaultAction: true,
           onPressed: () {
             _controller.performUpdate(widget.uiOptions);
-            if (isDismissible) {
-              Navigator.pop(context, 'Update');
-            }
+            if (isDismissible) _close('Update');
           },
           child: Text(widget.uiOptions.updateButtonText),
         ),

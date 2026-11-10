@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
+import 'package:playx_version_update/src/core/utils/guard.dart';
 import 'package:playx_version_update/src/widgets/update_ui_controller.dart';
 
 /// A full-screen Flutter widget designed to prompt users for an app update.
@@ -101,14 +103,50 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
     reminder: widget.reminder,
   );
 
+  bool _closing = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _controller.shown());
   }
 
+  /// Closes the page once, so a double tap cannot pop another route.
+  void _close() {
+    if (_closing) return;
+    _closing = true;
+    Navigator.maybePop(context);
+  }
+
+  /// The dismiss button. A dismissible page closes, then `onCancel` runs. A
+  /// forced one cannot be closed: `onCancel` runs, or the app exits.
+  void _onDismissPressed() {
+    _controller.dismissed(PlayxUpdateDismissReason.button);
+
+    if (isDismissible) _close();
+
+    final onCancel = widget.uiOptions.onCancel;
+    if (onCancel != null) {
+      guardCallback('calling PlayxUpdateUIOptions.onCancel',
+          () => onCancel(widget.versionUpdateInfo));
+    } else if (!isDismissible) {
+      SystemNavigator.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    return PopScope(
+      canPop: isDismissible,
+      // The back button or gesture (button presses are already resolved).
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _controller.dismissed(PlayxUpdateDismissReason.system);
+      },
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -217,7 +255,7 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                 style: widget.uiOptions.dismissButtonStyle,
                                 onPressed: () {
                                   _controller.skipped();
-                                  Navigator.maybePop(context);
+                                  _close();
                                 },
                                 child: Text(
                                   _controller.skipButtonText,
@@ -240,12 +278,7 @@ class _PlayxUpdatePageState extends State<PlayxUpdatePage> {
                                           borderRadius:
                                               BorderRadius.circular(25),
                                         )),
-                                onPressed: () {
-                                  _controller.dismissed(
-                                      PlayxUpdateDismissReason.button);
-                                  widget.uiOptions.onCancel
-                                      ?.call(widget.versionUpdateInfo);
-                                },
+                                onPressed: _onDismissPressed,
                                 child: Text(
                                   _getDismissActionTitle(),
                                   style:

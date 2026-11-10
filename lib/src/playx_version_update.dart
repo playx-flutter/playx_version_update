@@ -4,6 +4,7 @@ import 'package:playx_version_update/playx_version_update.dart';
 import 'package:playx_version_update/src/platform/playx_version_update_platform_interface.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'core/store/playx_store_opener.dart';
+import 'core/utils/guard.dart';
 import 'core/version_checker/version_checker.dart';
 
 /// The main entry point for the Playx Version Update package.
@@ -263,11 +264,13 @@ abstract class PlayxVersionUpdate {
         return completeFlexibleUpdate();
       }
 
-      effectiveEvents.onInAppUpdateStarted?.call(type);
+      guardCallback('calling PlayxUpdateEvents.onInAppUpdateStarted',
+          () => effectiveEvents.onInAppUpdateStarted?.call(type));
       final updateResult = type == PlayxAppUpdateType.flexible
           ? await startFlexibleUpdate()
           : await startImmediateUpdate();
-      effectiveEvents.onInAppUpdateResult?.call(type, updateResult);
+      guardCallback('calling PlayxUpdateEvents.onInAppUpdateResult',
+          () => effectiveEvents.onInAppUpdateResult?.call(type, updateResult));
       return updateResult;
     }
 
@@ -308,7 +311,8 @@ abstract class PlayxVersionUpdate {
         reminderOptions == null ? null : PlayxUpdateReminder(reminderOptions);
     final suppressedReason = await reminder?.suppressionReason(info);
     if (suppressedReason != null) {
-      uiOptions.events.onSuppressed?.call(info, suppressedReason);
+      guardCallback('calling PlayxUpdateEvents.onSuppressed',
+          () => uiOptions.events.onSuppressed?.call(info, suppressedReason));
       return const PlayxVersionUpdateResult.success(false);
     }
 

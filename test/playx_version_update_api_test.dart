@@ -270,6 +270,38 @@ void main() {
       expect(find.byType(PlayxUpdateDialog), findsNothing);
     });
 
+    testWidgets('a throwing onSuppressed does not break showUpdateDialog', (
+      tester,
+    ) async {
+      await pumpHost(tester);
+      final reminder = PlayxUpdateReminderOptions(
+        storage: PlayxInMemoryUpdateStorage(),
+      );
+      await PlayxUpdateReminder(reminder).snooze(
+        const PlayxVersionUpdateInfo(
+          localVersion: '1.0.0',
+          newVersion: '2.0.0',
+          canUpdate: true,
+          forceUpdate: false,
+          storeUrl: '',
+        ),
+      );
+
+      final result = await PlayxVersionUpdate.showUpdateDialog(
+        context: context,
+        options: _options(),
+        uiOptions: PlayxUpdateUIOptions(
+          events: PlayxUpdateEvents(
+            onSuppressed: (_, _) => throw StateError('analytics'),
+          ),
+        ),
+        reminderOptions: reminder,
+      );
+
+      expect(result.updateData, isFalse);
+      expect(tester.takeException(), isA<StateError>());
+    });
+
     testWidgets('returns the error of a failing check', (tester) async {
       await pumpHost(tester);
 

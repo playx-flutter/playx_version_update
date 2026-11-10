@@ -67,6 +67,8 @@ void main() {
   testWidgets('a throwing storeLauncher reports opened:false', (tester) async {
     await pumpPage(tester, storeLauncher: (_) async => throw StateError('x'));
     expect(log, ['tapped', 'opened:false']);
+    // The error is reported to the app instead of being swallowed.
+    expect(tester.takeException(), isA<StateError>());
   });
 
   testWidgets('onUpdate wins over storeLauncher and reports no result', (

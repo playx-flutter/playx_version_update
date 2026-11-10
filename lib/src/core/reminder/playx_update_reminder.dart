@@ -75,7 +75,8 @@ class PlayxUpdateReminder {
       await _storage.write(_snoozedVersionKey, info.newVersion);
       await _storage.write(
         _snoozedUntilKey,
-        _now().add(duration).toIso8601String(),
+        // UTC, so a time zone or daylight saving change cannot shift the deadline.
+        _now().add(duration).toUtc().toIso8601String(),
       );
     } catch (_) {}
   }
