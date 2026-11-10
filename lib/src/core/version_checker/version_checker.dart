@@ -163,15 +163,20 @@ class VersionChecker {
       return canUpdateResult.mapAsync(success: (shouldUpdate) async {
         final effectiveMinVersion = resolvePlatformVersionForCurrentPlatform(
           platform: platform,
-          genericVersion: minVersion ?? info.minVersion,
+          genericVersion: _usable(minVersion) ?? info.minVersion,
           platformVersion: minPlatformVersion,
         );
         final normalizedMinVersion = await getMinVersionVersion(
             minVersion: effectiveMinVersion, storeVersion: currentVersion);
-        bool shouldAppForcedToUpdate = await shouldForceUpdate(
-            version: localVersion,
-            minVersion: normalizedMinVersion,
-            playxForceUpdate: forceUpdate);
+        // A newer version must exist to force it: a minimum version above
+        // the store version (a misconfiguration) must not lock an app that is
+        // already current. An explicit `forceUpdate` is always respected.
+        bool shouldAppForcedToUpdate = forceUpdate == null && !shouldUpdate
+            ? false
+            : await shouldForceUpdate(
+                version: localVersion,
+                minVersion: normalizedMinVersion,
+                playxForceUpdate: forceUpdate);
 
         // Caller's URL > the source's URL > the one derived from the package.
         final storeUrl = providedStoreUrl ??

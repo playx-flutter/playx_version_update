@@ -98,8 +98,21 @@ class Version implements Comparable<Version> {
     }
   }
 
+  /// Consistent with `==`: build metadata and trailing zero components are
+  /// ignored, as they are by the comparison.
   @override
-  int get hashCode => toString().hashCode;
+  int get hashCode {
+    final extra = List<int>.of(additionalComponents);
+    while (extra.isNotEmpty && extra.last == 0) {
+      extra.removeLast();
+    }
+    // Numeric pre-release segments compare as numbers ("01" == "1").
+    final pre = preRelease.split('.').map((segment) {
+      final number = int.tryParse(segment);
+      return number == null ? segment : number.toString();
+    }).join('.');
+    return Object.hash(major, minor, patch, Object.hashAll(extra), pre);
+  }
 
   /// Determines whether the left-hand [Version] represents a lower precedence than the right-hand [Version].
   bool operator <(covariant Version o) => _compare(this, o) < 0;
@@ -109,7 +122,7 @@ class Version implements Comparable<Version> {
 
   /// Determines whether the left-hand [Version] represents an equal precedence to the right-hand [Version].
   @override
-  bool operator ==(covariant Version o) => _compare(this, o) == 0;
+  bool operator ==(Object o) => o is Version && _compare(this, o) == 0;
 
   /// Determines whether the left-hand [Version] represents a greater precedence than the right-hand [Version].
   bool operator >(covariant Version o) => _compare(this, o) > 0;
@@ -214,6 +227,12 @@ class Version implements Comparable<Version> {
   static Version parse(String versionString) {
     if (versionString.trim().isEmpty) {
       throw FormatException("Cannot parse empty string into version.");
+    }
+
+    // Surrounding spaces and a "v" prefix ("v1.2.3") are not part of the number.
+    versionString = versionString.trim();
+    if (RegExp(r'^[vV]\d').hasMatch(versionString)) {
+      versionString = versionString.substring(1);
     }
 
     final Match? fullMatch = _fullVersionRegex.firstMatch(versionString);

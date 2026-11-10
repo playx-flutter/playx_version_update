@@ -841,6 +841,79 @@ void main() {
     expect(info.canUpdate, isTrue);
     expect(info.storeUrl, 'https://apps.apple.com/x?mt=12');
   });
+
+  group('minimum version and force update', () {
+    Future<PlayxVersionUpdateInfo> check({
+      required String local,
+      required PlayxRemoteVersionInfo remote,
+      String? minVersion,
+      bool? forceUpdate,
+    }) async {
+      final result = await VersionChecker().checkVersionFor(
+        platform: PlayxPlatform.android,
+        localVersion: local,
+        packageId: 'a.b',
+        country: 'us',
+        language: 'en',
+        newVersion: null,
+        newPlatformVersion: null,
+        minVersion: minVersion,
+        minPlatformVersion: null,
+        forceUpdate: forceUpdate,
+        source: PlayxCallbackVersionSource((_) async => remote),
+      );
+      return result.updateData!;
+    }
+
+    test('an empty minVersion option falls back to the source', () async {
+      final info = await check(
+        local: '1.0.0',
+        remote: const PlayxRemoteVersionInfo(version: '3.0.0', minVersion: '2.0.0'),
+        minVersion: '',
+      );
+      expect(info.minVersion, '2.0.0');
+      expect(info.forceUpdate, isTrue);
+    });
+
+    test('a minVersion option wins over the source', () async {
+      final info = await check(
+        local: '1.5.0',
+        remote: const PlayxRemoteVersionInfo(version: '3.0.0', minVersion: '2.0.0'),
+        minVersion: '1.0.0',
+      );
+      expect(info.forceUpdate, isFalse);
+    });
+
+    test('an app that is already current is never forced automatically',
+        () async {
+      // The minimum (3.0.0) is above the store version: a misconfiguration.
+      final info = await check(
+        local: '2.0.0',
+        remote: const PlayxRemoteVersionInfo(version: '2.0.0'),
+        minVersion: '3.0.0',
+      );
+      expect(info.canUpdate, isFalse);
+      expect(info.forceUpdate, isFalse);
+    });
+
+    test('an explicit forceUpdate is always respected', () async {
+      final info = await check(
+        local: '2.0.0',
+        remote: const PlayxRemoteVersionInfo(version: '2.0.0'),
+        forceUpdate: true,
+      );
+      expect(info.canUpdate, isFalse);
+      expect(info.forceUpdate, isTrue);
+    });
+
+    test('a version with a v prefix is compared as a number', () async {
+      final info = await check(
+        local: '1.0.0',
+        remote: const PlayxRemoteVersionInfo(version: 'v2.0.0'),
+      );
+      expect(info.canUpdate, isTrue);
+    });
+  });
 }
 
 class _CountingAdapter implements HttpClientAdapter {

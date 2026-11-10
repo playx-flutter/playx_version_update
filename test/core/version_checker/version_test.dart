@@ -51,10 +51,60 @@ void main() {
       expect(() => Version.parse('1.2.3-alpha..1'), throwsArgumentError);
     });
 
-    test('remains permissive for non-numeric suffix noise in the core string',
-        () {
-      expect(Version.parse('1.2.3+build?1').toString(), '1.2.0');
-      expect(Version.parse('not-a-version').toString(), '0.0.0-a-version');
+    test(
+      'remains permissive for non-numeric suffix noise in the core string',
+      () {
+        expect(Version.parse('1.2.3+build?1').toString(), '1.2.0');
+        expect(Version.parse('not-a-version').toString(), '0.0.0-a-version');
+      },
+    );
+  });
+
+  group('Version.parse tolerance', () {
+    test('ignores surrounding spaces and a v prefix', () {
+      expect(Version.parse(' 1.2.3 ').toString(), '1.2.3');
+      expect(Version.parse('v2.0.1').toString(), '2.0.1');
+      expect(Version.parse('V2.0.1-beta.1').toString(), '2.0.1-beta.1');
+      expect(Version.parse('v1.2.3') > Version.parse('1.2.2'), isTrue);
+    });
+
+    test('only strips a v that precedes a digit', () {
+      expect(Version.parse('vx.1').major, 0);
+      expect(Version.parse('version').major, 0);
+    });
+  });
+
+  group('Version equality', () {
+    test('is not equal to anything that is not a version', () {
+      final version = Version.parse('1.0.0');
+      expect(version == Object(), isFalse);
+      // ignore: unrelated_type_equality_checks
+      expect(version == '1.0.0', isFalse);
+    });
+
+    test('equal versions have equal hash codes', () {
+      final pairs = [
+        ['1.0.0+1', '1.0.0+2'],
+        ['1.0.0', '1.0.0.0'],
+        ['1.0.0.0.0', '1.0'],
+        ['1.0.0-alpha.01', '1.0.0-alpha.1'],
+      ];
+      for (final pair in pairs) {
+        final a = Version.parse(pair[0]);
+        final b = Version.parse(pair[1]);
+        expect(a, b, reason: pair.toString());
+        expect(a.hashCode, b.hashCode, reason: pair.toString());
+      }
+      expect({
+        Version.parse('1.0.0+1'),
+        Version.parse('1.0.0+2'),
+      }, hasLength(1));
+    });
+
+    test('different versions are different', () {
+      expect(Version.parse('1.0.0'), isNot(Version.parse('1.0.1')));
+      expect(Version.parse('1.0.0'), isNot(Version.parse('1.0.0-beta')));
+      expect(Version.parse('1.0.0.1'), isNot(Version.parse('1.0.0')));
     });
   });
 
@@ -79,12 +129,18 @@ void main() {
 
     test('follows pre-release precedence rules implemented by the parser', () {
       expect(Version.parse('1.2.3-alpha') < Version.parse('1.2.3'), isTrue);
-      expect(Version.parse('1.2.3-alpha.1') < Version.parse('1.2.3-alpha.beta'),
-          isTrue);
-      expect(Version.parse('1.2.3-alpha.2') > Version.parse('1.2.3-alpha.1'),
-          isTrue);
-      expect(Version.parse('1.2.3-alpha.beta') > Version.parse('1.2.3-alpha.1'),
-          isTrue);
+      expect(
+        Version.parse('1.2.3-alpha.1') < Version.parse('1.2.3-alpha.beta'),
+        isTrue,
+      );
+      expect(
+        Version.parse('1.2.3-alpha.2') > Version.parse('1.2.3-alpha.1'),
+        isTrue,
+      );
+      expect(
+        Version.parse('1.2.3-alpha.beta') > Version.parse('1.2.3-alpha.1'),
+        isTrue,
+      );
     });
 
     test('ignores build metadata when comparing precedence', () {
