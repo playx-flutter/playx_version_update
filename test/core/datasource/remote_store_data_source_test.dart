@@ -235,6 +235,18 @@ void main() {
       expect(adapter.requests, hasLength(1));
     });
 
+    test('a page with only a modern version marker that mentions consent '
+        'is still parsed', () async {
+      final (s, _) = _source([
+        (_) => ResponseBody.fromString(
+          'var a="https://consent.google.com/x"; [[["3.4.5"]]',
+          200,
+        ),
+      ]);
+      final result = await play(s);
+      expect(result.isSuccess, isTrue, reason: result.updateError?.message);
+    });
+
     test('a normal page that mentions consent is still parsed', () async {
       final (s, _) = _source([
         (_) => ResponseBody.fromString(
@@ -251,12 +263,37 @@ void main() {
       expect(
         StoreResponseValidator.isGoogleConsentPage(
           r('https://consent.google.com/m?continue=x', '<html>'),
+          versionFound: false,
+        ),
+        isTrue,
+      );
+      // The redirect is conclusive, even if something looked like a version.
+      expect(
+        StoreResponseValidator.isGoogleConsentPage(
+          r('https://consent.google.com/m?continue=x', '<html>'),
+          versionFound: true,
         ),
         isTrue,
       );
       expect(
         StoreResponseValidator.isGoogleConsentPage(
           r('https://play.google.com/store/apps/details', '<html>'),
+          versionFound: false,
+        ),
+        isFalse,
+      );
+      // An inline form is only recognized when no version could be read.
+      expect(
+        StoreResponseValidator.isGoogleConsentPage(
+          r('https://play.google.com/x', 'consent.google.com'),
+          versionFound: false,
+        ),
+        isTrue,
+      );
+      expect(
+        StoreResponseValidator.isGoogleConsentPage(
+          r('https://play.google.com/x', 'consent.google.com'),
+          versionFound: true,
         ),
         isFalse,
       );

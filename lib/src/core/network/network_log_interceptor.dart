@@ -11,13 +11,21 @@ class NetworkLogInterceptor extends Interceptor {
   static const _startKey = 'playx_log_start';
   static const _tag = '[PlayxVersionUpdate]';
 
-  /// Headers whose values are never printed.
-  static const _sensitiveHeaders = {
-    'authorization',
+  /// A header whose name contains one of these is never printed: standard
+  /// credentials and the usual names of custom API keys and tokens.
+  static const _sensitiveNameParts = [
+    'auth',
     'cookie',
-    'set-cookie',
-    'proxy-authorization',
-  };
+    'token',
+    'secret',
+    'password',
+    'key',
+  ];
+
+  static bool _isSensitive(String name) {
+    final lower = name.toLowerCase();
+    return _sensitiveNameParts.any(lower.contains);
+  }
 
   /// Maximum number of response body characters printed.
   final int maxBodyLength;
@@ -104,6 +112,6 @@ class NetworkLogInterceptor extends Interceptor {
   Map<String, Object?> _headers(Map<String, dynamic> headers) => {
         for (final e in headers.entries)
           e.key:
-              _sensitiveHeaders.contains(e.key.toLowerCase()) ? '***' : e.value,
+              _isSensitive(e.key) ? '***' : e.value,
       };
 }

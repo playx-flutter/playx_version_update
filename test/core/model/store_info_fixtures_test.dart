@@ -27,7 +27,13 @@ void main() {
         body: page,
         finalUri: Uri.parse('https://play.google.com/store/apps/details'),
       );
-      expect(StoreResponseValidator.isGoogleConsentPage(response), isFalse);
+      expect(
+        StoreResponseValidator.isGoogleConsentPage(
+          response,
+          versionFound: true,
+        ),
+        isFalse,
+      );
     });
 
     test('an unrelated page has no version', () {

@@ -86,8 +86,13 @@ class RemoteStoreDataSource {
         enableLog: enableLog,
         options: networkOptions,
       );
-      StoreResponseValidator.validate(store, response);
-      return PlayxVersionUpdateResult.success(parse(response.body));
+      final info = parse(response.body);
+      StoreResponseValidator.validate(
+        store,
+        response,
+        versionFound: info.version.isNotEmpty,
+      );
+      return PlayxVersionUpdateResult.success(info);
     } on NetworkException catch (e) {
       return PlayxVersionUpdateResult.error(
         PlayxVersionNetworkError(StoreErrorMapper.refine(store, e)),

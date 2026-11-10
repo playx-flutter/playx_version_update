@@ -36,5 +36,24 @@ void main() {
         'https://itunes.apple.com/lookup?bundleId=com.example.app&country=us&lang=en&entity=macSoftware',
       );
     });
+
+    test('encodes the values so they cannot change the query', () {
+      expect(
+        getGooglePlayUrl(
+          packageId: 'a.b&hl=xx',
+          country: 'u s',
+          language: 'e#n',
+        ),
+        'https://play.google.com/store/apps/details?id=a.b%26hl%3Dxx&hl=e%23n&gl=u+s',
+      );
+      expect(
+        getAppStoreInfoUrl(
+          packageId: 'a.b&country=xx',
+          country: 'us',
+          language: 'en',
+        ),
+        'https://itunes.apple.com/lookup?bundleId=a.b%26country%3Dxx&country=us&lang=en',
+      );
+    });
   });
 }

@@ -163,6 +163,23 @@ void loggingTests() {
       expect(out, isNot(contains('secret')));
     });
 
+    test('masks custom credential headers too', () async {
+      final logs = <String>[];
+      await make(200, logs).get('https://x.test',
+          headers: {
+            'X-Api-Key': 'key-value',
+            'X-Auth-Token': 'token-value',
+            'My-Secret': 'secret-value',
+            'Accept-Language': 'en',
+          },
+          enableLog: true);
+      final out = logs.join('\n');
+      expect(out, isNot(contains('key-value')));
+      expect(out, isNot(contains('token-value')));
+      expect(out, isNot(contains('secret-value')));
+      expect(out, contains('en'));
+    });
+
     test('logs errors when enabled', () async {
       final logs = <String>[];
       await expectLater(make(404, logs).get('https://x.test', enableLog: true),

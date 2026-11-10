@@ -330,10 +330,12 @@ class Version implements Comparable<Version> {
 
       for (int i = 0; i < maxPreReleaseLen; i++) {
         // If one has fewer pre-release identifiers, it has lower precedence
-        if (bPreReleaseSegments.length <= i)
+        if (bPreReleaseSegments.length <= i) {
           return 1; // B ran out of segments, A is longer, so A > B
-        if (aPreReleaseSegments.length <= i)
+        }
+        if (aPreReleaseSegments.length <= i) {
           return -1; // A ran out of segments, B is longer, so A < B
+        }
 
         final String aSegment = aPreReleaseSegments[i];
         final String bSegment = bPreReleaseSegments[i];

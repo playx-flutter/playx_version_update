@@ -7,8 +7,15 @@ import 'store_type.dart';
 /// the data we are looking for.
 abstract final class StoreResponseValidator {
   /// Throws a [NetworkException] if [response] is not the expected page.
-  static void validate(StoreType store, NetworkResponse response) {
-    if (store == StoreType.googlePlay && isGoogleConsentPage(response)) {
+  ///
+  /// [versionFound] tells whether a version could be read from the body.
+  static void validate(
+    StoreType store,
+    NetworkResponse response, {
+    required bool versionFound,
+  }) {
+    if (store == StoreType.googlePlay &&
+        isGoogleConsentPage(response, versionFound: versionFound)) {
       throw const ConsentRequiredException();
     }
   }
@@ -16,15 +23,15 @@ abstract final class StoreResponseValidator {
   /// Whether [response] is Google's cookie-consent page.
   ///
   /// Google redirects users in some regions (EU/UK) to
-  /// `consent.google.com`. Some clients get the consent form inline instead,
-  /// so a page that mentions the consent host but has none of the app-page
-  /// version markers is treated as one too.
-  static bool isGoogleConsentPage(NetworkResponse response) {
+  /// `consent.google.com`, which is conclusive. Some clients get the consent
+  /// form inline instead: a page that mentions the consent host is only
+  /// treated as the form when no version could be read from it, because a
+  /// real app page may also reference that host in its scripts.
+  static bool isGoogleConsentPage(
+    NetworkResponse response, {
+    required bool versionFound,
+  }) {
     if (response.finalUri.host == 'consent.google.com') return true;
-
-    final body = response.body;
-    return body.contains('consent.google.com') &&
-        !body.contains('softwareVersion') &&
-        !body.contains('Current Version');
+    return !versionFound && response.body.contains('consent.google.com');
   }
 }
