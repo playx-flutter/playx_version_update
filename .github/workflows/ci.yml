@@ -120,6 +120,28 @@ jobs:
       - run: ./gradlew :playx_version_update:testDebugUnitTest
         working-directory: example/android
 
+  docs:
+    name: Documentation site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      # Fails on a broken link in the docs, and checks the API doc comments.
+      - run: dart doc .
+      - run: npm ci
+        working-directory: website
+      - run: npm run build
+        working-directory: website
+
   pub-dry-run:
     name: Package is publishable
     runs-on: ubuntu-latest

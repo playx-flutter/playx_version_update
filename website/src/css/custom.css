@@ -1,0 +1,41 @@
+/* Indigo theme, matching the example app. */
+:root {
+  --ifm-color-primary: #4f46e5;
+  --ifm-color-primary-dark: #4338ca;
+  --ifm-color-primary-darker: #3f36c0;
+  --ifm-color-primary-darkest: #342da0;
+  --ifm-color-primary-light: #6366f1;
+  --ifm-color-primary-lighter: #7276f3;
+  --ifm-color-primary-lightest: #9498f7;
+  --ifm-code-font-size: 92%;
+  --ifm-font-family-base: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --docusaurus-highlighted-code-line-bg: rgba(79, 70, 229, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #818cf8;
+  --ifm-color-primary-dark: #6a77f6;
+  --ifm-color-primary-darker: #5e6cf5;
+  --ifm-color-primary-darkest: #3646f1;
+  --ifm-color-primary-light: #9aa3fa;
+  --ifm-color-primary-lighter: #a6aefb;
+  --ifm-color-primary-lightest: #c9cefd;
+  --docusaurus-highlighted-code-line-bg: rgba(129, 140, 248, 0.2);
+}
+
+.navbar__logo img {
+  border-radius: 6px;
+}
+
+.markdown > h2 {
+  margin-top: 2.2rem;
+}
+
+table {
+  display: table;
+  width: 100%;
+}
+
+.admonition {
+  border-radius: 10px;
+}
