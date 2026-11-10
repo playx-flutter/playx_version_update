@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/playx_version_update.dart';
@@ -259,7 +256,7 @@ abstract class PlayxVersionUpdate {
     final effectiveEvents = events ?? iosUiOptions.events;
 
     // For Android, delegate to the native in-app update platform channel.
-    if (!kIsWeb && Platform.isAndroid) {
+    if (PlayxPlatform.current == PlayxPlatform.android) {
       // If a flexible update is already downloaded, prompt to complete it.
       final isUpdatedNeeded = await isFlexibleUpdateNeedToBeInstalled();
       if (isUpdatedNeeded.updateData ?? false) {

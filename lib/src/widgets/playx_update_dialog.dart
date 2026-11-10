@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
@@ -97,12 +94,6 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
     reminder: widget.reminder,
   );
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _controller.shown());
-  }
-
   void _onPopInvoked(bool didPop) {
     // Back button or tap outside; button presses are already resolved.
     if (didPop) _controller.dismissed(PlayxUpdateDismissReason.system);
@@ -113,16 +104,22 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
     if (!widget.versionUpdateInfo.canUpdate) {
       return const SizedBox.shrink();
     }
-    if (kIsWeb) {
-      return const SizedBox.shrink();
+    final platform = PlayxPlatform.current;
+    final hasDialog = platform == PlayxPlatform.android ||
+        platform == PlayxPlatform.ios ||
+        platform == PlayxPlatform.macos;
+    if (hasDialog) {
+      // Only report a dialog that is really on screen (once).
+      WidgetsBinding.instance.addPostFrameCallback((_) => _controller.shown());
     }
 
-    if (Platform.isAndroid) {
+    if (platform == PlayxPlatform.android) {
       return PopScope(
           canPop: isDismissible,
           onPopInvokedWithResult: (didPop, _) => _onPopInvoked(didPop),
           child: _buildAndroidDialog(context));
-    } else if (Platform.isIOS || Platform.isMacOS) {
+    } else if (platform == PlayxPlatform.ios ||
+        platform == PlayxPlatform.macos) {
       return PopScope(
           canPop: isDismissible,
           onPopInvokedWithResult: (didPop, _) => _onPopInvoked(didPop),
