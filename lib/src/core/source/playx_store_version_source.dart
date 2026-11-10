@@ -8,9 +8,10 @@ import 'playx_remote_version_info.dart';
 import 'playx_version_request.dart';
 import 'playx_version_source.dart';
 
-/// Reads the version from Google Play (Android) or the App Store (iOS).
-/// This is the default [PlayxVersionSource]. It supports Android and iOS only;
-/// other platforms need a custom source.
+/// Reads the version from Google Play (Android), the App Store (iOS) or the
+/// Mac App Store (macOS). This is the default [PlayxVersionSource]. Other
+/// platforms, and Mac apps distributed outside the Mac App Store, need a
+/// custom source.
 ///
 /// When the caller already supplied the new version
 /// ([PlayxVersionRequest.providedVersion]), Android does not request the
@@ -62,8 +63,9 @@ class PlayxStoreVersionSource implements PlayxVersionSource {
       );
     }
 
-    if (request.platform != PlayxPlatform.ios) {
-      // Only Google Play and the App Store can be read. Other platforms need
+    final isMac = request.platform == PlayxPlatform.macos;
+    if (request.platform != PlayxPlatform.ios && !isMac) {
+      // Only Google Play and the App Stores can be read. Other platforms need
       // a custom PlayxVersionSource.
       return const PlayxVersionUpdateResult.error(NotSupportedException());
     }
@@ -83,6 +85,7 @@ class PlayxStoreVersionSource implements PlayxVersionSource {
       language: request.language,
       enableLog: request.enableLog,
       networkOptions: request.networkOptions,
+      isMac: isMac,
     );
     return result.map(
       success: (info) => PlayxVersionUpdateResult.success(

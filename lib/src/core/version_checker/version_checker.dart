@@ -69,10 +69,11 @@ class VersionChecker {
     PlayxUpdateOptions options = const PlayxUpdateOptions(),
   }) async {
     final platform = PlayxPlatform.current;
-    // The default source reads Google Play and the App Store only; other
-    // platforms are supported through a custom version source.
-    final hasStore =
-        platform == PlayxPlatform.android || platform == PlayxPlatform.ios;
+    // The default source reads Google Play and the App Stores (iOS, macOS)
+    // only; other platforms are supported through a custom version source.
+    final hasStore = platform == PlayxPlatform.android ||
+        platform == PlayxPlatform.ios ||
+        platform == PlayxPlatform.macos;
     if (platform == null || (!hasStore && options.versionSource == null)) {
       return const PlayxVersionUpdateResult.error(NotSupportedException());
     }

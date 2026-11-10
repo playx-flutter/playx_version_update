@@ -7,6 +7,8 @@ abstract final class PlayxStoreLinks {
   ///
   /// - Android, a Google Play page -> `market://details?id=<package>`
   /// - iOS, an App Store page -> the same URL with the `itms-apps` scheme
+  /// - macOS, a Mac App Store page -> the same URL with the `macappstores`
+  ///   scheme
   ///
   /// Any other URL (a custom scheme, another store, a short link) has no
   /// deep link: it is opened as it is.
@@ -32,6 +34,12 @@ abstract final class PlayxStoreLinks {
         final isWeb = uri.scheme == 'https' || uri.scheme == 'http';
         if (!isAppStore || !isWeb) return null;
         return uri.replace(scheme: 'itms-apps');
+      case PlayxPlatform.macos:
+        final isMacAppStore =
+            uri.host == 'apps.apple.com' || uri.host == 'itunes.apple.com';
+        final isWebUrl = uri.scheme == 'https' || uri.scheme == 'http';
+        if (!isMacAppStore || !isWebUrl) return null;
+        return uri.replace(scheme: 'macappstores');
       default:
         return null;
     }

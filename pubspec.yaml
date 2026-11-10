@@ -55,3 +55,4 @@ flutter:
 platforms:
   android:
   ios:
+  macos:

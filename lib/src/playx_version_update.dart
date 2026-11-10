@@ -297,11 +297,13 @@ abstract class PlayxVersionUpdate {
           currentVersion: info.localVersion, newVersion: info.newVersion));
     }
 
-    // The dialog and page are rendered on Android and iOS only. On other
-    // platforms use `checkVersion` with a custom `versionSource` and build
-    // your own UI (for example with `PlayxUpdatePage`).
+    // The dialog is rendered on Android, iOS and macOS. On other platforms use
+    // `checkVersion` with a custom `versionSource` and build your own UI (for
+    // example with `PlayxUpdatePage`).
     final platform = PlayxPlatform.current;
-    if (platform != PlayxPlatform.android && platform != PlayxPlatform.ios) {
+    if (platform != PlayxPlatform.android &&
+        platform != PlayxPlatform.ios &&
+        platform != PlayxPlatform.macos) {
       return const PlayxVersionUpdateResult.error(NotSupportedException());
     }
 

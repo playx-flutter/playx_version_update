@@ -51,6 +51,7 @@ class RemoteStoreDataSource {
     required String language,
     bool enableLog = false,
     PlayxNetworkOptions? networkOptions,
+    bool isMac = false,
   }) {
     return _fetch(
       store: StoreType.appStore,
@@ -58,6 +59,7 @@ class RemoteStoreDataSource {
         packageId: packageId,
         country: country,
         language: language,
+        isMac: isMac,
       ),
       parse: StoreInfo.fromAppStore,
       enableLog: enableLog,

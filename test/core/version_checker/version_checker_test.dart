@@ -812,6 +812,35 @@ void main() {
           'ms-windows-store://x');
     });
   });
+
+  test('macos is checked with the default store source', () async {
+    final adapter = _CountingAdapter(() => ResponseBody.fromString(
+        '{"results":[{"version":"3.0.0","trackViewUrl":"https://apps.apple.com/x?mt=12"}]}',
+        200));
+    final dio = Dio(BaseOptions(responseType: ResponseType.plain))
+      ..httpClientAdapter = adapter;
+    final c = VersionChecker.withDataSource(RemoteStoreDataSource.withClient(
+        NetworkClient(dio: dio, maxRetries: 0)));
+
+    final info = (await c.checkVersionFor(
+      platform: PlayxPlatform.macos,
+      localVersion: '1.0.0',
+      packageId: 'com.example.mac',
+      country: 'us',
+      language: 'en',
+      newVersion: null,
+      newPlatformVersion: null,
+      minVersion: null,
+      minPlatformVersion: null,
+      forceUpdate: null,
+    ))
+        .updateData!;
+
+    expect(adapter.count, 1);
+    expect(info.newVersion, '3.0.0');
+    expect(info.canUpdate, isTrue);
+    expect(info.storeUrl, 'https://apps.apple.com/x?mt=12');
+  });
 }
 
 class _CountingAdapter implements HttpClientAdapter {

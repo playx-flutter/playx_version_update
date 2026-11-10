@@ -7,6 +7,7 @@ import 'package:playx_version_update/src/core/network/network_client.dart';
 class _CountingAdapter implements HttpClientAdapter {
   final ResponseBody Function() response;
   int count = 0;
+  Uri? lastUri;
   _CountingAdapter(this.response);
 
   @override
@@ -16,6 +17,7 @@ class _CountingAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     count++;
+    lastUri = options.uri;
     return response();
   }
 
@@ -201,6 +203,45 @@ void main() {
       expect(adapter.count, 0);
       expect(info.version, '2.0.0');
       expect(info.storeUrl, 'https://my.link/ios');
+    });
+
+    test('macos looks up the Mac App Store', () async {
+      final (source, adapter) = make(
+        () => ResponseBody.fromString(
+          '{"results":[{"version":"4.0.0","trackViewUrl":"https://apps.apple.com/us/app/x/id1?mt=12"}]}',
+          200,
+        ),
+      );
+      final info = (await source.fetch(
+        const PlayxVersionRequest(
+          platform: PlayxPlatform.macos,
+          packageId: 'com.example.mac',
+          country: 'us',
+          language: 'en',
+        ),
+      ))
+          .updateData!;
+
+      expect(adapter.count, 1);
+      expect(adapter.lastUri!.queryParameters['entity'], 'macSoftware');
+      expect(adapter.lastUri!.queryParameters['bundleId'], 'com.example.mac');
+      expect(info.version, '4.0.0');
+      expect(info.storeUrl, contains('mt=12'));
+    });
+
+    test('ios lookups do not search the Mac App Store', () async {
+      final (source, adapter) = make(
+        () => ResponseBody.fromString('{"results":[{"version":"1.0.0"}]}', 200),
+      );
+      await source.fetch(
+        const PlayxVersionRequest(
+          platform: PlayxPlatform.ios,
+          packageId: 'a.b',
+          country: 'us',
+          language: 'en',
+        ),
+      );
+      expect(adapter.lastUri!.queryParameters.containsKey('entity'), isFalse);
     });
 
     test('platforms without a store return NotSupportedException', () async {

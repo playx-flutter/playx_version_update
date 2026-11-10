@@ -9,8 +9,8 @@ import 'package:playx_version_update/src/widgets/update_ui_controller.dart';
 
 /// A platform-adaptive Flutter widget that displays an update dialog.
 ///
-/// On Android, it renders a `Material` `AlertDialog`. On iOS, it renders a
-/// `Cupertino` `CupertinoAlertDialog`. This widget is used by
+/// On Android, it renders a `Material` `AlertDialog`. On iOS and macOS, it
+/// renders a `Cupertino` `CupertinoAlertDialog`. This widget is used by
 /// [PlayxVersionUpdate.showUpdateDialog] to present update prompts.
 ///
 /// It requires [PlayxVersionUpdateInfo] which contains details about the
@@ -122,7 +122,7 @@ class _PlayxUpdateDialogState extends State<PlayxUpdateDialog> {
           canPop: isDismissible,
           onPopInvokedWithResult: (didPop, _) => _onPopInvoked(didPop),
           child: _buildAndroidDialog(context));
-    } else if (Platform.isIOS) {
+    } else if (Platform.isIOS || Platform.isMacOS) {
       return PopScope(
           canPop: isDismissible,
           onPopInvokedWithResult: (didPop, _) => _onPopInvoked(didPop),

@@ -374,6 +374,28 @@ On the update button the order is: `onUpdate` (replaces everything, returns noth
 
 No `<queries>` (Android) or `LSApplicationQueriesSchemes` (iOS) entries are needed, because the package launches the link directly instead of checking `canLaunchUrl` first. `openStore` returns an error when nothing could open the link.
 
+### macOS
+
+On macOS the default source looks the app up in the **Mac App Store** by its bundle id (`appIds` / `iosBundleId` can override it), reads its version, release notes and store URL, and shows the update dialog with the Cupertino style. The "Update" button opens the Mac App Store app (`macappstores://`) and falls back to the web URL.
+
+- **Sandboxed apps** need the network entitlement to reach the lookup. Add it to `DebugProfile.entitlements` and `Release.entitlements`:
+
+  ```xml
+  <key>com.apple.security.network.client</key>
+  <true/>
+  ```
+
+- **Apps distributed outside the Mac App Store** (notarized downloads) are not found by the lookup. Use a `PlayxCallbackVersionSource` (your backend, Sparkle's appcast, ...) or a `PlayxStaticVersionSource`, and point `storeUrls` at your download page:
+
+  ```dart
+  PlayxUpdateOptions(
+    versionSource: PlayxCallbackVersionSource(fetchLatestFromMyServer),
+    storeUrls: PlayxPlatformValue(macos: 'https://example.com/download'),
+  )
+  ```
+
+- Google Play in-app updates are Android only.
+
 ### Network Settings
 
 Tune how the store is queried with `networkOptions`:
@@ -492,7 +514,7 @@ versionSource: PlayxFallbackVersionSource([
 - Values set directly in `PlayxUpdateOptions` (`newVersion`, `minVersion`, `forceUpdate`, and the deprecated platform overrides) always win over the source.
 - If you pass `newVersion`, a failing source is ignored and your version is used. On Android, the default store source then skips the Google Play request entirely.
 - Return a different version per platform with `request.platform` (`PlayxPlatform`) or the `request.isAndroid` / `request.isIos` helpers. `PlayxPlatformVersion` and `PlayxPlatformValue<T>` hold per-platform values (Android, iOS, macOS, Windows, Linux).
-- On macOS, Windows and Linux `checkVersion` works with a custom `versionSource`; the default store source supports Android and iOS only. The update dialog is Android/iOS only, so elsewhere build your own UI (for example `PlayxUpdatePage`).
+- On Windows and Linux `checkVersion` works with a custom `versionSource`; the default store source reads Google Play (Android), the App Store (iOS) and the Mac App Store (macOS). The update dialog is rendered on Android, iOS and macOS, so on Windows and Linux build your own UI (for example `PlayxUpdatePage`).
 - `storeUrl` is optional on Android (the Google Play URL is used) but required on iOS for the update button when the App Store is not queried.
 - Implement `PlayxVersionSource` yourself for full control.
 

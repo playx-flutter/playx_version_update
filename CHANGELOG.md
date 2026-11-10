@@ -1,5 +1,6 @@
 # Changelog
 ## Unreleased
+- Support macOS: the default source looks the app up in the Mac App Store (`entity=macSoftware`), the update dialog renders with the Cupertino style, and the update button opens the Mac App Store app (`macappstores://`) before the web URL. macOS is listed in the supported platforms and the example app has a macOS runner. Apps distributed outside the Mac App Store need a custom `versionSource`.
 - `PlayxVersionUpdate.openStore` can open the store without a version check: `storeUrl` is now optional and an `options` parameter resolves it (`storeUrls`, else the Google Play URL on Android, else one App Store lookup / `versionSource` request on iOS).
 - Add `PlayxUpdateUIOptions.storeLauncher` to open the store yourself, and `PlayxUpdateEvents.onStoreOpenResult` reporting whether the store opened. On the update button: `onUpdate` > `storeLauncher` > default `openStore`. The callback typedefs (`UpdatePressedCallback`, `StoreLauncherCallback`, ...) are now exported.
 - Fix the iOS update dialog popping the route twice when dismissible.
@@ -8,7 +9,7 @@
 - Add `PlayxUpdateOptions.storeUrls` (`PlayxPlatformValue<String>`) to set a custom store URL per platform. It wins over a version source's URL and the derived one; on iOS, providing it with `newVersion` skips the App Store lookup.
 - Add `PlayxUpdateOptions.appIds` (`PlayxPlatformValue<String>`) to set the app id per platform. `androidPackageName` and `iosBundleId` still work; `appIds` wins when both are set.
 - Add `PlayxPlatform` (android, ios, macos, windows, linux) and the generic `PlayxPlatformValue<T>`. `PlayxPlatformVersion` now extends it and gains `macos`, `windows` and `linux` values, so each platform can have its own version or minimum version. `PlayxVersionRequest` exposes `platform` (with `isAndroid` / `isIos` helpers).
-- `checkVersion` can run on macOS, Windows and Linux when a custom `versionSource` is provided; the default store source supports Android and iOS only. `showUpdateDialog` still needs Android or iOS (use `checkVersion` with `PlayxUpdatePage` elsewhere).
+- `checkVersion` can run on Windows and Linux when a custom `versionSource` is provided; the default store source supports Android, iOS and macOS. `showUpdateDialog` needs Android, iOS or macOS (use `checkVersion` with `PlayxUpdatePage` elsewhere).
 - **Deprecate** the `PlayxUpdateOptions.newPlatformVersion` and `minPlatformVersion` options in favor of `versionSource`, which receives the platform in its request. They keep working and will be removed in a future major release.
 - Add pluggable `PlayxVersionSource` (`PlayxUpdateOptions.versionSource`) with `PlayxStoreVersionSource` (default), `PlayxCallbackVersionSource` (Remote Config / own backend) and `PlayxFallbackVersionSource`. Options values still win over the source.
 - Fix `newVersion` / `newPlatformVersion` not skipping the store lookup. On Android the Google Play page is no longer requested when a version is provided; on iOS the App Store lookup (needed for the store URL) is best-effort and its failure no longer fails the check.

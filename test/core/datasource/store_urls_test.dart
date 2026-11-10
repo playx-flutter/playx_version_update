@@ -24,5 +24,17 @@ void main() {
         'https://itunes.apple.com/lookup?bundleId=com.example.app&country=in&lang=en',
       );
     });
+
+    test('builds the Mac App Store lookup url', () {
+      expect(
+        getAppStoreInfoUrl(
+          packageId: 'com.example.app',
+          country: 'us',
+          language: 'en',
+          isMac: true,
+        ),
+        'https://itunes.apple.com/lookup?bundleId=com.example.app&country=us&lang=en&entity=macSoftware',
+      );
+    });
   });
 }
