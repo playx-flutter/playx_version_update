@@ -1,5 +1,6 @@
 # Changelog
 ## Unreleased
+- Detect Google's EU consent page and report it as `ConsentRequiredException` (`STORE_CONSENT_REQUIRED`) instead of a version format error.
 - Add `PlayxUpdateOptions.networkOptions` (`PlayxNetworkOptions`): retries, timeouts, headers, a custom `Dio` and a `CancelToken`.
 - **Breaking:** raise the minimum Dart SDK to 3.10 and Flutter to 3.38.1; update `dio` to ^5.11.1 and `package_info_plus` to ^10.2.2.
 - Remove the `playx_network` dependency in favor of a small lightweight built-in `dio` based network client.

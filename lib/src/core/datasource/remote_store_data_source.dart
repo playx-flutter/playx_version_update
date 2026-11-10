@@ -6,6 +6,7 @@ import 'package:playx_version_update/src/core/network/exceptions/network_excepti
 import 'package:playx_version_update/src/core/network/network_client.dart';
 
 import 'store_error_mapper.dart';
+import 'store_response_validator.dart';
 import 'store_type.dart';
 import 'store_urls.dart';
 
@@ -83,6 +84,7 @@ class RemoteStoreDataSource {
         enableLog: enableLog,
         options: networkOptions,
       );
+      StoreResponseValidator.validate(store, response);
       return PlayxVersionUpdateResult.success(parse(response.body));
     } on NetworkException catch (e) {
       return PlayxVersionUpdateResult.error(

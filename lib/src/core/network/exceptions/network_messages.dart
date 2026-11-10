@@ -9,6 +9,8 @@ abstract final class NetworkMessages {
       'Could not find the app on the store while checking for updates.';
   static const appNotFound =
       'The app was not found on the store. Check the package name / bundle id and that the app is published in this country.';
+  static const consentRequired =
+      'Google Play asked for cookie consent instead of showing the app page (common in the EU/UK). Provide `newVersion` manually, or open the store page.';
   static const conflict =
       'Version check could not be completed due to a conflict on the server.';
   static const requestTimeout =

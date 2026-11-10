@@ -2,8 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
+import 'package:playx_version_update/src/core/datasource/store_response_validator.dart';
 import 'package:playx_version_update/src/core/network/network_client.dart';
 import 'package:playx_version_update/src/core/network/network_log_interceptor.dart';
+import 'package:playx_version_update/src/core/network/network_response.dart';
 
 class _FakeAdapter implements HttpClientAdapter {
   final List<ResponseBody Function(RequestOptions)> responses;
@@ -215,6 +217,56 @@ void main() {
       expect(e.error, isA<RequestCanceledException>());
       expect(e.errorCode, NetworkErrorCode.requestCanceled);
       expect(adapter.requests, isEmpty);
+    });
+  });
+
+  group('google consent page', () {
+    test('consent redirect body -> ConsentRequiredException', () async {
+      final (s, adapter) = _source([
+        (_) => ResponseBody.fromString(
+          '<form action="https://consent.google.com/save">',
+          200,
+        ),
+      ], maxRetries: 2);
+      final e = _error(await play(s));
+      expect(e.error, isA<ConsentRequiredException>());
+      expect(e.errorCode, NetworkErrorCode.consentRequired);
+      expect(e.error.isRetryable, isFalse);
+      expect(adapter.requests, hasLength(1));
+    });
+
+    test('a normal page that mentions consent is still parsed', () async {
+      final (s, _) = _source([
+        (_) => ResponseBody.fromString(
+          'consent.google.com <span itemprop="softwareVersion">1.2.3<',
+          200,
+        ),
+      ]);
+      expect((await play(s)).isSuccess, isTrue);
+    });
+
+    test('detects the consent host after redirects', () {
+      NetworkResponse r(String url, String body) =>
+          NetworkResponse(body: body, finalUri: Uri.parse(url));
+      expect(
+        StoreResponseValidator.isGoogleConsentPage(
+          r('https://consent.google.com/m?continue=x', '<html>'),
+        ),
+        isTrue,
+      );
+      expect(
+        StoreResponseValidator.isGoogleConsentPage(
+          r('https://play.google.com/store/apps/details', '<html>'),
+        ),
+        isFalse,
+      );
+    });
+
+    test('the app store is never treated as consent', () async {
+      final (s, _) = _source([
+        (_) => ResponseBody.fromString('consent.google.com', 200),
+      ]);
+      expect(_error(await apple(s)).error, isA<InvalidFormatException>());
     });
   });
 }

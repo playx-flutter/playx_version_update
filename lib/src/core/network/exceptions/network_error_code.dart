@@ -16,6 +16,10 @@ abstract final class NetworkErrorCode {
   /// The store answered, but has no app for the given package / bundle id.
   static const String appNotFound = 'STORE_APP_NOT_FOUND';
   static const String requestTimeout = 'NETWORK_REQUEST_TIMEOUT';
+
+  /// Google Play answered with its cookie-consent page (EU/UK) instead of
+  /// the app page.
+  static const String consentRequired = 'STORE_CONSENT_REQUIRED';
   static const String conflict = 'NETWORK_CONFLICT';
   static const String unableToProcess = 'NETWORK_UNABLE_TO_PROCESS';
   static const String tooManyRequests = 'NETWORK_TOO_MANY_REQUESTS';

@@ -117,6 +117,19 @@ class AppNotFoundException extends ApiException {
             errorCode: NetworkErrorCode.appNotFound);
 }
 
+/// Google Play showed its cookie-consent page instead of the app page.
+///
+/// This happens for users in regions such as the EU/UK, where the store page
+/// cannot be read without accepting the consent form. Retrying will not help;
+/// provide `PlayxUpdateOptions.newVersion` from your own backend, or send the
+/// user to the store page.
+class ConsentRequiredException extends NetworkException {
+  const ConsentRequiredException({super.cause})
+      : super(
+            errorMessage: NetworkMessages.consentRequired,
+            errorCode: NetworkErrorCode.consentRequired);
+}
+
 /// Exception for conflicts (409).
 class ConflictException extends ApiException {
   const ConflictException({super.cause})

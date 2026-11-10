@@ -312,12 +312,17 @@ error: (error) {
     switch (error.errorCode) {
       case NetworkErrorCode.noInternetConnection: /* show offline banner */ break;
       case NetworkErrorCode.appNotFound: /* wrong package id / not published */ break;
+      case NetworkErrorCode.consentRequired: /* see below */ break;
     }
     if (error.error.isRetryable) { /* offer a retry button */ }
   }
 },
 ```
 
+
+#### Google consent page (EU/UK)
+
+In some regions Google Play answers with a cookie-consent page instead of the app page, so the version cannot be read. This is reported as `ConsentRequiredException` (`NetworkErrorCode.consentRequired`). Retrying does not help: provide `newVersion` from your own backend, or send users to the store page with `PlayxVersionUpdate.openStore`.
 
 -----
 
