@@ -114,8 +114,11 @@ jobs:
         with:
           channel: stable
           cache: true
-      # Creates example/android/local.properties and registers the plugin.
       - run: flutter pub get
+        working-directory: example
+      # Creates local.properties, the Gradle wrapper script (not committed) and
+      # registers the plugin. The Kotlin unit tests then run on this project.
+      - run: flutter build apk --debug --config-only
         working-directory: example
       - run: ./gradlew :playx_version_update:testDebugUnitTest
         working-directory: example/android
