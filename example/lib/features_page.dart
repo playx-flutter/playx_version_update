@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
+import 'app_ids.dart';
 import 'ui.dart';
 
 /// Demonstrates the newer features of the package:
@@ -47,13 +48,8 @@ class _FeaturesPageState extends State<FeaturesPage> {
       ios: '• iOS notes\n• Bug fixes',
       macos: '• macOS notes\n• Bug fixes',
     ),
-    storeUrls: PlayxPlatformValue(
-      // Any scheme works. `market://` and `itms-apps://` also work.
-      android:
-          'https://play.google.com/store/apps/details?id=com.google.android.apps.bard',
-      ios: 'https://apps.apple.com/app/shortcuts/id915249334',
-      macos: 'https://apps.apple.com/app/xcode/id497799835?mt=12',
-    ),
+    // Any scheme works: `market://` and `itms-apps://` are fine too.
+    storeUrls: kStoreUrls,
   );
 
   void _add(String line) {
@@ -124,14 +120,8 @@ class _FeaturesPageState extends State<FeaturesPage> {
   Future<void> _openStoreWithoutCheck() async {
     final result = await PlayxVersionUpdate.openStore(
       options: const PlayxUpdateOptions(
-        appIds: PlayxPlatformValue(
-          android: 'com.google.android.apps.bard',
-          ios: 'com.apple.shortcuts',
-        ),
-        storeUrls: PlayxPlatformValue(
-          ios: 'https://apps.apple.com/app/shortcuts/id915249334',
-          macos: 'https://apps.apple.com/app/xcode/id497799835?mt=12',
-        ),
+        appIds: kStoreAppIds,
+        storeUrls: kStoreUrls,
       ),
     );
     result.when(
@@ -160,8 +150,7 @@ class _FeaturesPageState extends State<FeaturesPage> {
   Future<void> _checkWithFallbackSource() async {
     final result = await PlayxVersionUpdate.checkVersion(
       options: PlayxUpdateOptions(
-        androidPackageName: 'com.google.android.apps.bard',
-        iosBundleId: 'com.apple.shortcuts',
+        appIds: kStoreAppIds,
         versionSource: PlayxFallbackVersionSource([
           PlayxCallbackVersionSource((request) async {
             _add('backend for ${request.platform.name}...');
@@ -182,17 +171,7 @@ class _FeaturesPageState extends State<FeaturesPage> {
     final result = await PlayxVersionUpdate.checkVersion(
       options: PlayxUpdateOptions(
         enableNetworkLogging: true, // see the debug console
-        androidPackageName: unknownApp
-            ? 'com.example.not.published'
-            : 'com.google.android.apps.bard',
-        iosBundleId: unknownApp
-            ? 'com.example.not.published'
-            : 'com.apple.shortcuts',
-        appIds: PlayxPlatformValue(
-          macos: unknownApp
-              ? 'com.example.not.published'
-              : 'com.apple.dt.Xcode',
-        ),
+        appIds: unknownApp ? kUnknownAppIds : kStoreAppIds,
         networkOptions: const PlayxNetworkOptions(
           maxRetries: 2,
           connectTimeout: Duration(seconds: 10),

@@ -39,5 +39,20 @@ Events and results are printed in the event log at the bottom of the screen.
   try in-app updates (see the package README).
 - macOS apps are sandboxed: `macos/Runner/*.entitlements` include
   `com.apple.security.network.client` so the store lookup can run.
-- The store demos use public apps (`com.google.android.apps.bard`,
-  `com.apple.shortcuts`, `com.apple.dt.Xcode`) as examples.
+- The store lookups use real published apps, so they work without the example
+  being on any store (`lib/app_ids.dart`): Gemini on Google Play
+  (`com.google.android.apps.bard`), Shortcuts on the App Store
+  (`com.apple.shortcuts`) and Xcode on the Mac App Store
+  (`com.apple.dt.Xcode`). For your own app the ids are read from the app, so
+  you do not need `appIds` at all.
+
+## Tests
+
+```sh
+flutter test                                   # widget tests (layout at phone and desktop sizes)
+flutter test integration_test -d macos         # real store lookups, needs a network
+```
+
+The integration test (`integration_test/store_lookup_test.dart`) reads the
+version of the real apps above and checks the "app not on the store" error. It
+also runs on an Android or iOS device.

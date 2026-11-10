@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
+import 'app_ids.dart';
 import 'features_page.dart';
 import 'ui.dart';
 
@@ -160,8 +161,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showUpdateDialog(
       context: context,
       options: const PlayxUpdateOptions(
-        androidPackageName: 'com.google.android.apps.bard',
-        iosBundleId: 'com.apple.shortcuts',
+        // Real apps, so the store lookup works (see app_ids.dart).
+        appIds: kStoreAppIds,
         forceUpdate: false,
       ),
       uiOptions: PlayxUpdateUIOptions(
@@ -291,8 +292,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
       context: context,
       type: PlayxAppUpdateType.flexible,
-      iosOptions: PlayxUpdateOptions(
-        iosBundleId: 'com.apple.shortcuts', // Example bundle ID for iOS
+      iosOptions: const PlayxUpdateOptions(
+        appIds: kStoreAppIds, // Real apps, see app_ids.dart
       ),
       iosUiOptions: PlayxUpdateUIOptions(
         // These UI options apply only to the custom Flutter UI shown on iOS
@@ -355,8 +356,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.showInAppUpdateDialog(
       context: context,
       type: PlayxAppUpdateType.immediate,
-      iosOptions: PlayxUpdateOptions(
-        iosBundleId: 'com.apple.shortcuts', // Example bundle ID for iOS
+      iosOptions: const PlayxUpdateOptions(
+        appIds: kStoreAppIds, // Real apps, see app_ids.dart
       ),
       iosUiOptions: PlayxUpdateUIOptions(
         // These UI options apply only to the custom Flutter UI shown on iOS
@@ -419,17 +420,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final result = await PlayxVersionUpdate.checkVersion(
       options: PlayxUpdateOptions(
         forceUpdate: false, // Set to true to test the PlayxUpdatePage flow
-        androidPackageName:
-            'io.sourcya.playx.verion.update.example', // Example package name
-        iosBundleId: 'com.apple.shortcuts', // Example bundle ID
+        appIds: kStoreAppIds, // Real apps, see app_ids.dart
         // Versions can be set per platform (or come from Remote Config / your
         // backend with PlayxCallbackVersionSource) instead of the stores.
         versionSource: const PlayxStaticVersionSource(
           version: PlayxPlatformVersion(android: '1.0.1', ios: '1.0.2'),
           minVersion: PlayxPlatformVersion(android: '1.0.0', ios: '1.0.1'),
-          // iOS needs the store url when the App Store is not queried.
-          storeUrls: PlayxPlatformValue(
-              ios: 'https://apps.apple.com/app/shortcuts/id915249334'),
+          // iOS and macOS need the store url when the stores are not queried.
+          storeUrls: kStoreUrls,
         ),
       ),
     );
