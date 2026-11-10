@@ -96,9 +96,12 @@ void main() {
 
   group('NetworkClient.get', () {
     test('returns the body', () async {
-      final body = await _client(() async => ResponseBody.fromString('hi', 200))
-          .get('https://x.test');
-      expect(body, 'hi');
+      final response =
+          await _client(() async => ResponseBody.fromString('hi', 200))
+              .get('https://x.test');
+      expect(response.body, 'hi');
+      expect(response.statusCode, 200);
+      expect(response.finalUri.host, 'x.test');
     });
 
     test('throws ApiException on error status', () async {

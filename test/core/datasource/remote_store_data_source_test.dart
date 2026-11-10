@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
 import 'package:playx_version_update/src/core/network/network_client.dart';
+import 'package:playx_version_update/src/core/network/network_log_interceptor.dart';
 
 class _FakeAdapter implements HttpClientAdapter {
   final List<ResponseBody Function(RequestOptions)> responses;
@@ -10,8 +11,11 @@ class _FakeAdapter implements HttpClientAdapter {
   _FakeAdapter(this.responses);
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options,
-      Stream<List<int>>? requestStream, Future<void>? cancelFuture) async {
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<List<int>>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
     requests.add(options);
     final i = requests.length - 1;
     return responses[i < responses.length ? i : responses.length - 1](options);
@@ -22,13 +26,17 @@ class _FakeAdapter implements HttpClientAdapter {
 }
 
 (RemoteStoreDataSource, _FakeAdapter) _source(
-    List<ResponseBody Function(RequestOptions)> responses,
-    {int maxRetries = 0}) {
+  List<ResponseBody Function(RequestOptions)> responses, {
+  int maxRetries = 0,
+}) {
   final adapter = _FakeAdapter(responses);
   final dio = Dio(BaseOptions(responseType: ResponseType.plain))
     ..httpClientAdapter = adapter;
   final client = NetworkClient(
-      dio: dio, maxRetries: maxRetries, retryDelay: Duration.zero);
+    dio: dio,
+    maxRetries: maxRetries,
+    retryDelay: Duration.zero,
+  );
   return (RemoteStoreDataSource.withClient(client), adapter);
 }
 
@@ -45,15 +53,16 @@ void main() {
       s.getAppStoreInfo(packageId: 'a.b', country: 'us', language: 'en');
 
   test('app store success', () async {
-    final (s, _) =
-        _source([(_) => ResponseBody.fromString(_appStoreJson, 200)]);
+    final (s, _) = _source([
+      (_) => ResponseBody.fromString(_appStoreJson, 200),
+    ]);
     final r = await apple(s);
     expect((r.updateData as dynamic).version, '2.0.0');
   });
 
   test('app store empty results -> AppNotFoundException', () async {
     final (s, _) = _source([
-      (_) => ResponseBody.fromString('{"resultCount":0,"results":[]}', 200)
+      (_) => ResponseBody.fromString('{"resultCount":0,"results":[]}', 200),
     ]);
     final e = _error(await apple(s));
     expect(e.error, isA<AppNotFoundException>());
@@ -78,7 +87,9 @@ void main() {
   test('google play sends browser headers', () async {
     final (s, adapter) = _source([
       (_) => ResponseBody.fromString(
-          '<span itemprop="softwareVersion">1.2.3<', 200)
+        '<span itemprop="softwareVersion">1.2.3<',
+        200,
+      ),
     ]);
     await play(s);
     final h = adapter.requests.single.headers;
@@ -97,18 +108,113 @@ void main() {
   });
 
   test('does not retry non-retryable failures', () async {
-    final (s, adapter) =
-        _source([(_) => ResponseBody.fromString('', 404)], maxRetries: 3);
+    final (s, adapter) = _source([
+      (_) => ResponseBody.fromString('', 404),
+    ], maxRetries: 3);
     await apple(s);
     expect(adapter.requests, hasLength(1));
   });
 
   test('gives up after maxRetries', () async {
-    final (s, adapter) =
-        _source([(_) => ResponseBody.fromString('', 503)], maxRetries: 2);
+    final (s, adapter) = _source([
+      (_) => ResponseBody.fromString('', 503),
+    ], maxRetries: 2);
     final e = _error(await apple(s));
     expect(e.error, isA<ServiceUnavailableException>());
     expect(e.error.isRetryable, isTrue);
     expect(adapter.requests, hasLength(3));
+  });
+
+  group('network options', () {
+    Future<PlayxVersionUpdateResult> playWith(
+      RemoteStoreDataSource s,
+      PlayxNetworkOptions o,
+    ) => s.getPlayStoreInfo(
+      packageId: 'a.b',
+      country: 'us',
+      language: 'en',
+      networkOptions: o,
+    );
+
+    const okPlay = '<span itemprop="softwareVersion">1.2.3<';
+
+    test('custom headers override the defaults', () async {
+      final (s, adapter) = _source([
+        (_) => ResponseBody.fromString(okPlay, 200),
+      ]);
+      await playWith(
+        s,
+        const PlayxNetworkOptions(
+          headers: {'User-Agent': 'custom', 'X-App': 'me'},
+        ),
+      );
+      final h = adapter.requests.single.headers;
+      expect(h['User-Agent'], 'custom');
+      expect(h['X-App'], 'me');
+      expect(h['Accept-Language'], 'en');
+    });
+
+    test('timeouts are applied to the request', () async {
+      final (s, adapter) = _source([
+        (_) => ResponseBody.fromString(okPlay, 200),
+      ]);
+      await playWith(
+        s,
+        const PlayxNetworkOptions(
+          connectTimeout: Duration(seconds: 3),
+          sendTimeout: Duration(seconds: 4),
+          receiveTimeout: Duration(seconds: 5),
+        ),
+      );
+      final r = adapter.requests.single;
+      expect(r.connectTimeout, const Duration(seconds: 3));
+      expect(r.sendTimeout, const Duration(seconds: 4));
+      expect(r.receiveTimeout, const Duration(seconds: 5));
+    });
+
+    test('maxRetries is taken from the options', () async {
+      final (s, adapter) = _source([
+        (_) => ResponseBody.fromString('', 503),
+      ], maxRetries: 3);
+      await playWith(s, const PlayxNetworkOptions(maxRetries: 0));
+      expect(adapter.requests, hasLength(1));
+
+      final (s2, adapter2) = _source([(_) => ResponseBody.fromString('', 503)]);
+      await playWith(
+        s2,
+        const PlayxNetworkOptions(maxRetries: 2, retryDelay: Duration.zero),
+      );
+      expect(adapter2.requests, hasLength(3));
+    });
+
+    test('uses a custom Dio and attaches the logger only once', () async {
+      final (s, defaultAdapter) = _source([]);
+      final custom = _FakeAdapter([
+        (_) => ResponseBody.fromString(okPlay, 200),
+      ]);
+      final dio = Dio(BaseOptions(responseType: ResponseType.plain))
+        ..httpClientAdapter = custom;
+
+      final options = PlayxNetworkOptions(dio: dio);
+      expect((await playWith(s, options)).isSuccess, isTrue);
+      await playWith(s, options);
+
+      expect(defaultAdapter.requests, isEmpty);
+      expect(custom.requests, hasLength(2));
+      expect(dio.interceptors.whereType<NetworkLogInterceptor>(), hasLength(1));
+    });
+
+    test('a cancelled token fails with RequestCanceledException', () async {
+      final (s, adapter) = _source([
+        (_) => ResponseBody.fromString(okPlay, 200),
+      ]);
+      final token = CancelToken()..cancel();
+      final e = _error(
+        await playWith(s, PlayxNetworkOptions(cancelToken: token)),
+      );
+      expect(e.error, isA<RequestCanceledException>());
+      expect(e.errorCode, NetworkErrorCode.requestCanceled);
+      expect(adapter.requests, isEmpty);
+    });
   });
 }

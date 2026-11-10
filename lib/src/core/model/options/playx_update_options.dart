@@ -1,3 +1,4 @@
+import 'package:playx_version_update/src/core/model/options/playx_network_options.dart';
 import 'package:playx_version_update/src/core/model/playx_platform_version.dart';
 
 /// Configuration for version checking.
@@ -54,6 +55,10 @@ class PlayxUpdateOptions {
   /// short body preview, plus errors and retries. Sensitive headers are masked.
   final bool enableNetworkLogging;
 
+  /// Settings for the store request: retries, timeouts, headers, a custom
+  /// `Dio` instance and cancellation. See [PlayxNetworkOptions].
+  final PlayxNetworkOptions networkOptions;
+
   const PlayxUpdateOptions({
     this.localVersion,
     this.newVersion,
@@ -66,5 +71,6 @@ class PlayxUpdateOptions {
     this.country = 'us',
     this.language = 'en',
     this.enableNetworkLogging = false,
+    this.networkOptions = const PlayxNetworkOptions(),
   });
 }

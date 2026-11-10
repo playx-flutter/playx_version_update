@@ -14,3 +14,4 @@ export 'package:playx_version_update/src/core/model/options/playx_update_display
 export 'package:playx_version_update/src/core/model/options/playx_update_ui_options.dart';
 export 'package:playx_version_update/src/core/network/exceptions/network_exception.dart';
 export 'package:playx_version_update/src/core/network/exceptions/network_error_code.dart';
+export 'package:playx_version_update/src/core/model/options/playx_network_options.dart';

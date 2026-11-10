@@ -1,5 +1,6 @@
 # Changelog
 ## Unreleased
+- Add `PlayxUpdateOptions.networkOptions` (`PlayxNetworkOptions`): retries, timeouts, headers, a custom `Dio` and a `CancelToken`.
 - **Breaking:** raise the minimum Dart SDK to 3.10 and Flutter to 3.38.1; update `dio` to ^5.11.1 and `package_info_plus` to ^10.2.2.
 - Remove the `playx_network` dependency in favor of a small lightweight built-in `dio` based network client.
 - The `NetworkException` types are still exported from this package, so existing error handling keeps working.

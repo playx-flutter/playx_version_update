@@ -10,6 +10,7 @@ import 'package:playx_version_update/src/core/model/result/playx_version_update_
 import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
 import 'package:playx_version_update/src/core/version_checker/version.dart';
 
+import '../model/options/playx_network_options.dart';
 import '../model/options/playx_update_options.dart';
 
 String? resolvePlatformVersionForCurrentPlatform({
@@ -58,6 +59,7 @@ class VersionChecker {
         minPlatformVersion: options.minPlatformVersion,
         forceUpdate: options.forceUpdate,
         enableLog: options.enableNetworkLogging,
+        networkOptions: options.networkOptions,
       );
     } else if (Platform.isIOS) {
       final packageId = options.iosBundleId ?? packageInfo.packageName;
@@ -72,6 +74,7 @@ class VersionChecker {
         minPlatformVersion: options.minPlatformVersion,
         forceUpdate: options.forceUpdate,
         enableLog: options.enableNetworkLogging,
+        networkOptions: options.networkOptions,
       );
     }
 
@@ -90,12 +93,14 @@ class VersionChecker {
     required PlayxPlatformVersion? minPlatformVersion,
     required bool? forceUpdate,
     bool enableLog = false,
+    PlayxNetworkOptions? networkOptions,
   }) async {
     final storeInfo = await _dataSource.getPlayStoreInfo(
         packageId: packageId,
         country: country,
         language: language,
-        enableLog: enableLog);
+        enableLog: enableLog,
+        networkOptions: networkOptions);
 
     return storeInfo.mapAsync(success: (info) async {
       final currentVersion = resolvePlatformVersionForCurrentPlatform(
@@ -154,12 +159,14 @@ class VersionChecker {
     required PlayxPlatformVersion? minPlatformVersion,
     required bool? forceUpdate,
     bool enableLog = false,
+    PlayxNetworkOptions? networkOptions,
   }) async {
     final storeInfo = await _dataSource.getAppStoreInfo(
         packageId: packageId,
         country: country,
         language: language,
-        enableLog: enableLog);
+        enableLog: enableLog,
+        networkOptions: networkOptions);
 
     return storeInfo.mapAsync(success: (info) async {
       final currentVersion = resolvePlatformVersionForCurrentPlatform(

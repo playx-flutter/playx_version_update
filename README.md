@@ -285,6 +285,40 @@ If your backend serves different app versions for Android and iOS, use `newPlatf
 These values override `newVersion` and `minVersion` on the current platform only, while `PlayxVersionUpdateInfo.newVersion` and `PlayxVersionUpdateInfo.minVersion` continue to expose the effective resolved values used by the package.
 
 
+### Network Settings
+
+Tune how the store is queried with `networkOptions`:
+
+```dart
+final result = await PlayxVersionUpdate.checkVersion(
+  options: PlayxUpdateOptions(
+    enableNetworkLogging: true, // logs request, response, status, timing...
+    networkOptions: PlayxNetworkOptions(
+      maxRetries: 2, // retryable failures only (timeouts, offline, 429, 502-504)
+      connectTimeout: Duration(seconds: 10),
+      headers: {'X-App': 'my-app'},
+      dio: myDio, // optional: proxy, certificate pinning, interceptors
+      cancelToken: cancelToken, // optional: cancel a pending check
+    ),
+  ),
+);
+```
+
+Errors expose a stable `errorCode` (see `NetworkErrorCode`) and `isRetryable`:
+
+```dart
+error: (error) {
+  if (error is PlayxVersionNetworkError) {
+    switch (error.errorCode) {
+      case NetworkErrorCode.noInternetConnection: /* show offline banner */ break;
+      case NetworkErrorCode.appNotFound: /* wrong package id / not published */ break;
+    }
+    if (error.error.isRetryable) { /* offer a retry button */ }
+  }
+},
+```
+
+
 -----
 
 ## Google Play In-App Updates (Android Only)

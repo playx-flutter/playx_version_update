@@ -1,3 +1,4 @@
+import 'package:playx_version_update/src/core/model/options/playx_network_options.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_result.dart';
 import 'package:playx_version_update/src/core/model/store_info.dart';
@@ -26,18 +27,20 @@ class RemoteStoreDataSource {
     required String country,
     required String language,
     bool enableLog = false,
+    PlayxNetworkOptions? networkOptions,
   }) {
     return _fetch(
       store: StoreType.googlePlay,
       url: getGooglePlayUrl(
-          packageId: packageId, country: country, language: language),
+        packageId: packageId,
+        country: country,
+        language: language,
+      ),
       // Google Play serves a localized page and may reject unknown clients.
-      headers: {
-        'User-Agent': _browserUserAgent,
-        'Accept-Language': language,
-      },
+      headers: {'User-Agent': _browserUserAgent, 'Accept-Language': language},
       parse: StoreInfo.fromGooglePlay,
       enableLog: enableLog,
+      networkOptions: networkOptions,
     );
   }
 
@@ -46,13 +49,18 @@ class RemoteStoreDataSource {
     required String country,
     required String language,
     bool enableLog = false,
+    PlayxNetworkOptions? networkOptions,
   }) {
     return _fetch(
       store: StoreType.appStore,
       url: getAppStoreInfoUrl(
-          packageId: packageId, country: country, language: language),
+        packageId: packageId,
+        country: country,
+        language: language,
+      ),
       parse: StoreInfo.fromAppStore,
       enableLog: enableLog,
+      networkOptions: networkOptions,
     );
   }
 
@@ -62,18 +70,29 @@ class RemoteStoreDataSource {
     required StoreInfo Function(dynamic body) parse,
     Map<String, String>? headers,
     bool enableLog = false,
+    PlayxNetworkOptions? networkOptions,
   }) async {
     try {
-      final body =
-          await _client.get(url, headers: headers, enableLog: enableLog);
-      return PlayxVersionUpdateResult.success(parse(body));
+      // A custom Dio is used only for this request, the shared client keeps
+      // its default configuration.
+      final dio = networkOptions?.dio;
+      final client = dio == null ? _client : NetworkClient(dio: dio);
+      final response = await client.get(
+        url,
+        headers: headers,
+        enableLog: enableLog,
+        options: networkOptions,
+      );
+      return PlayxVersionUpdateResult.success(parse(response.body));
     } on NetworkException catch (e) {
       return PlayxVersionUpdateResult.error(
-          PlayxVersionNetworkError(StoreErrorMapper.refine(store, e)));
+        PlayxVersionNetworkError(StoreErrorMapper.refine(store, e)),
+      );
     } catch (e) {
       // The store responded, but its body could not be parsed.
       return PlayxVersionUpdateResult.error(
-          PlayxVersionNetworkError(InvalidFormatException(cause: e)));
+        PlayxVersionNetworkError(InvalidFormatException(cause: e)),
+      );
     }
   }
 
