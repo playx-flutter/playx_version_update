@@ -80,7 +80,11 @@ class VersionChecker {
 
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
-    String version = packageInfo.version;
+    // `localVersion` in the options overrides the installed version.
+    final overridden = options.localVersion;
+    final version = overridden != null && overridden.isNotEmpty
+        ? overridden
+        : packageInfo.version;
 
     final packageId = resolvePackageId(
         platform: platform, options: options, fallback: packageInfo.packageName);

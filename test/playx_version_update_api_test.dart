@@ -161,6 +161,36 @@ void main() {
       expect(info.releaseNotes, 'Android notes');
     });
 
+    test('localVersion in the options overrides the installed version', () async {
+      final info = (await PlayxVersionUpdate.checkVersion(
+        options: const PlayxUpdateOptions(
+          localVersion: '1.9.0',
+          versionSource: _newVersion,
+        ),
+      )).updateData!;
+
+      expect(info.localVersion, '1.9.0');
+      expect(info.canUpdate, isTrue);
+
+      final current = (await PlayxVersionUpdate.checkVersion(
+        options: const PlayxUpdateOptions(
+          localVersion: '2.0.0',
+          versionSource: _newVersion,
+        ),
+      )).updateData!;
+      expect(current.canUpdate, isFalse);
+    });
+
+    test('an empty localVersion is ignored', () async {
+      final info = (await PlayxVersionUpdate.checkVersion(
+        options: const PlayxUpdateOptions(
+          localVersion: '',
+          versionSource: _newVersion,
+        ),
+      )).updateData!;
+      expect(info.localVersion, '1.0.0');
+    });
+
     test('forces the update below the minimum version', () async {
       final info = (await PlayxVersionUpdate.checkVersion(
         options: _options(minVersion: '1.5.0'),
