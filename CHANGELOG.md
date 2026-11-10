@@ -1,5 +1,6 @@
 # Changelog
 ## Unreleased
+- Add `PlayxUpdateOptions.appIds` (`PlayxPlatformValue<String>`) to set the app id per platform. `androidPackageName` and `iosBundleId` still work; `appIds` wins when both are set.
 - Add `PlayxPlatform` (android, ios, macos, windows, linux) and the generic `PlayxPlatformValue<T>`. `PlayxPlatformVersion` now extends it and gains `macos`, `windows` and `linux` values, so each platform can have its own version or minimum version. `PlayxVersionRequest` exposes `platform` (with `isAndroid` / `isIos` helpers).
 - `checkVersion` can run on macOS, Windows and Linux when a custom `versionSource` is provided; the default store source supports Android and iOS only. `showUpdateDialog` still needs Android or iOS (use `checkVersion` with `PlayxUpdatePage` elsewhere).
 - **Deprecate** the `PlayxUpdateOptions.newPlatformVersion` and `minPlatformVersion` options in favor of `versionSource`, which receives the platform in its request. They keep working and will be removed in a future major release.

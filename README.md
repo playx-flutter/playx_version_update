@@ -284,6 +284,22 @@ The package will parse this information and automatically update the `forceUpdat
 
 They override `newVersion` and `minVersion` on the current platform only, while `PlayxVersionUpdateInfo.newVersion` and `PlayxVersionUpdateInfo.minVersion` continue to expose the effective resolved values used by the package.
 
+### App IDs per Platform
+
+The package id (Google Play) and bundle id (App Store) are read from the app by default. Override them per platform with `appIds`, which also covers platforms you add later:
+
+```dart
+PlayxUpdateOptions(
+  appIds: PlayxPlatformValue(
+    android: 'com.example.app',
+    ios: 'com.example.app.ios',
+    macos: 'com.example.app.mac',
+  ),
+)
+```
+
+`androidPackageName` and `iosBundleId` remain as shortcuts. Precedence: `appIds` > `androidPackageName` / `iosBundleId` > the id read from the app.
+
 ### Network Settings
 
 Tune how the store is queried with `networkOptions`:

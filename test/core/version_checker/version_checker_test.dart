@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:playx_version_update/playx_version_update.dart' show PlayxPlatformValue, PlayxUpdateOptions;
 import 'package:playx_version_update/src/core/model/playx_platform.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
 import 'package:playx_version_update/src/core/network/network_client.dart';
@@ -13,6 +14,7 @@ import 'package:playx_version_update/src/core/model/result/playx_version_update_
 import 'package:playx_version_update/src/core/version_checker/version_checker.dart';
 
 void main() {
+  packageIdTests();
   final checker = VersionChecker();
 
   group('resolvePlatformVersionForCurrentPlatform', () {
@@ -574,4 +576,65 @@ class _CountingAdapter implements HttpClientAdapter {
 
   @override
   void close({bool force = false}) {}
+}
+
+void packageIdTests() {
+  group('resolvePackageId', () {
+    String resolve(
+      PlayxPlatform platform,
+      PlayxUpdateOptions options,
+    ) =>
+        resolvePackageId(
+            platform: platform, options: options, fallback: 'from.app');
+
+    test('falls back to the id read from the app', () {
+      expect(resolve(PlayxPlatform.android, const PlayxUpdateOptions()),
+          'from.app');
+      expect(resolve(PlayxPlatform.macos, const PlayxUpdateOptions()),
+          'from.app');
+    });
+
+    test('uses the legacy android and ios options', () {
+      const options = PlayxUpdateOptions(
+          androidPackageName: 'legacy.android', iosBundleId: 'legacy.ios');
+      expect(resolve(PlayxPlatform.android, options), 'legacy.android');
+      expect(resolve(PlayxPlatform.ios, options), 'legacy.ios');
+      expect(resolve(PlayxPlatform.windows, options), 'from.app');
+    });
+
+    test('appIds win over the legacy options and cover every platform', () {
+      const options = PlayxUpdateOptions(
+        androidPackageName: 'legacy.android',
+        appIds: PlayxPlatformValue(
+          android: 'new.android',
+          macos: 'new.macos',
+          windows: 'new.windows',
+        ),
+      );
+      expect(resolve(PlayxPlatform.android, options), 'new.android');
+      expect(resolve(PlayxPlatform.macos, options), 'new.macos');
+      expect(resolve(PlayxPlatform.windows, options), 'new.windows');
+      expect(resolve(PlayxPlatform.linux, options), 'from.app');
+    });
+
+    test('a platform missing from appIds uses the legacy option', () {
+      const options = PlayxUpdateOptions(
+        iosBundleId: 'legacy.ios',
+        appIds: PlayxPlatformValue(android: 'new.android'),
+      );
+      expect(resolve(PlayxPlatform.ios, options), 'legacy.ios');
+    });
+
+    test('empty ids count as not provided', () {
+      const options = PlayxUpdateOptions(
+        androidPackageName: 'legacy.android',
+        appIds: PlayxPlatformValue(android: ''),
+      );
+      expect(resolve(PlayxPlatform.android, options), 'legacy.android');
+      expect(
+          resolve(PlayxPlatform.ios,
+              const PlayxUpdateOptions(iosBundleId: '')),
+          'from.app');
+    });
+  });
 }

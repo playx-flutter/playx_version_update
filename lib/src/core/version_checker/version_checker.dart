@@ -27,6 +27,26 @@ String? resolvePlatformVersionForCurrentPlatform({
   return version;
 }
 
+/// The app id used to look the app up on [platform]: `options.appIds`, then
+/// `androidPackageName` / `iosBundleId`, then [fallback] (the package name
+/// read from the app itself). Empty values count as not provided.
+String resolvePackageId({
+  required PlayxPlatform platform,
+  required PlayxUpdateOptions options,
+  required String fallback,
+}) {
+  String? usable(String? id) => id == null || id.isEmpty ? null : id;
+
+  final legacy = switch (platform) {
+    PlayxPlatform.android => options.androidPackageName,
+    PlayxPlatform.ios => options.iosBundleId,
+    _ => null,
+  };
+  return usable(options.appIds?.forPlatform(platform)) ??
+      usable(legacy) ??
+      fallback;
+}
+
 class VersionChecker {
   static final VersionChecker _instance = VersionChecker._internal();
 
@@ -60,12 +80,8 @@ class VersionChecker {
 
     String version = packageInfo.version;
 
-    final packageId = switch (platform) {
-      PlayxPlatform.android =>
-        options.androidPackageName ?? packageInfo.packageName,
-      PlayxPlatform.ios => options.iosBundleId ?? packageInfo.packageName,
-      _ => packageInfo.packageName,
-    };
+    final packageId = resolvePackageId(
+        platform: platform, options: options, fallback: packageInfo.packageName);
 
     return checkVersionFor(
       platform: platform,

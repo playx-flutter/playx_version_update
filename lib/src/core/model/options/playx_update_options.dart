@@ -1,4 +1,5 @@
 import 'package:playx_version_update/src/core/model/options/playx_network_options.dart';
+import 'package:playx_version_update/src/core/model/playx_platform_value.dart';
 import 'package:playx_version_update/src/core/model/playx_platform_version.dart';
 import 'package:playx_version_update/src/core/source/playx_version_source.dart';
 
@@ -57,11 +58,24 @@ class PlayxUpdateOptions {
 
   /// The app's package name on the Google Play Store (e.g., 'com.example.app').
   /// If not provided, it's fetched from `package_info_plus`.
+  ///
+  /// A shortcut for `appIds: PlayxPlatformValue(android: ...)`; [appIds] wins
+  /// when both are set.
   final String? androidPackageName;
 
   /// The app's bundle ID on the Apple App Store (e.g., 'com.example.app').
   /// If not provided, it's fetched from `package_info_plus`.
+  ///
+  /// A shortcut for `appIds: PlayxPlatformValue(ios: ...)`; [appIds] wins
+  /// when both are set.
   final String? iosBundleId;
+
+  /// The app's id on each platform: the Google Play package name, the App
+  /// Store bundle id, or the identifier used by another platform's store.
+  /// Set every platform once; the package uses the one of the current
+  /// platform. Platforms without a value fall back to [androidPackageName] /
+  /// [iosBundleId], then to the id read from the app itself.
+  final PlayxPlatformValue<String>? appIds;
 
   /// The two-letter country code for the store country. Defaults to 'us'.
   final String country;
@@ -101,5 +115,6 @@ class PlayxUpdateOptions {
     this.enableNetworkLogging = false,
     this.networkOptions = const PlayxNetworkOptions(),
     this.versionSource,
+    this.appIds,
   });
 }
