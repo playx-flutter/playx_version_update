@@ -560,6 +560,139 @@ void main() {
       expect(info.newVersion, '2.0.0');
     });
   });
+
+  group('custom store urls', () {
+    const appStoreJson =
+        '{"resultCount":1,"results":[{"version":"9.0.0","trackViewUrl":"https://apps.apple.com/lookup"}]}';
+
+    (VersionChecker, _CountingAdapter) make(ResponseBody Function() response) {
+      final adapter = _CountingAdapter(response);
+      final dio = Dio(BaseOptions(responseType: ResponseType.plain))
+        ..httpClientAdapter = adapter;
+      return (
+        VersionChecker.withDataSource(RemoteStoreDataSource.withClient(
+            NetworkClient(dio: dio, maxRetries: 0))),
+        adapter,
+      );
+    }
+
+    Future<PlayxVersionUpdateResult<PlayxVersionUpdateInfo>> check(
+      VersionChecker c, {
+      required PlayxPlatform platform,
+      String? newVersion,
+      PlayxPlatformValue<String>? storeUrls,
+      PlayxVersionSource? source,
+    }) =>
+        c.checkVersionFor(
+          platform: platform,
+          localVersion: '1.0.0',
+          packageId: 'a.b',
+          country: 'us',
+          language: 'en',
+          newVersion: newVersion,
+          newPlatformVersion: null,
+          minVersion: null,
+          minPlatformVersion: null,
+          forceUpdate: null,
+          storeUrls: storeUrls,
+          source: source,
+        );
+
+    const urls = PlayxPlatformValue<String>(
+      android: 'market://details?id=a.b',
+      ios: 'https://my.link/ios',
+    );
+
+    test('ios skips the lookup when version and url are provided', () async {
+      final (c, adapter) =
+          make(() => ResponseBody.fromString(appStoreJson, 200));
+      final info = (await check(c,
+              platform: PlayxPlatform.ios, newVersion: '2.0.0', storeUrls: urls))
+          .updateData!;
+
+      expect(adapter.count, 0);
+      expect(info.newVersion, '2.0.0');
+      expect(info.storeUrl, 'https://my.link/ios');
+    });
+
+    test('ios with only a url still looks up and keeps the version', () async {
+      final (c, adapter) =
+          make(() => ResponseBody.fromString(appStoreJson, 200));
+      final info =
+          (await check(c, platform: PlayxPlatform.ios, storeUrls: urls))
+              .updateData!;
+
+      expect(adapter.count, 1);
+      expect(info.newVersion, '9.0.0');
+      expect(info.storeUrl, 'https://my.link/ios');
+    });
+
+    test('ios with only a version still looks up for the url', () async {
+      final (c, adapter) =
+          make(() => ResponseBody.fromString(appStoreJson, 200));
+      final info = (await check(c,
+              platform: PlayxPlatform.ios, newVersion: '2.0.0'))
+          .updateData!;
+
+      expect(adapter.count, 1);
+      expect(info.storeUrl, 'https://apps.apple.com/lookup');
+    });
+
+    test('the url of another platform is ignored', () async {
+      final (c, adapter) =
+          make(() => ResponseBody.fromString(appStoreJson, 200));
+      final info = (await check(c,
+              platform: PlayxPlatform.ios,
+              newVersion: '2.0.0',
+              storeUrls: const PlayxPlatformValue(android: 'market://x')))
+          .updateData!;
+
+      expect(adapter.count, 1);
+      expect(info.storeUrl, 'https://apps.apple.com/lookup');
+    });
+
+    test('an empty url counts as not provided', () async {
+      final (c, adapter) =
+          make(() => ResponseBody.fromString(appStoreJson, 200));
+      final info = (await check(c,
+              platform: PlayxPlatform.ios,
+              newVersion: '2.0.0',
+              storeUrls: const PlayxPlatformValue(ios: '')))
+          .updateData!;
+
+      expect(adapter.count, 1);
+      expect(info.storeUrl, 'https://apps.apple.com/lookup');
+    });
+
+    test('android uses the provided url instead of the derived one', () async {
+      final (c, adapter) = make(() => ResponseBody.fromString('', 500));
+      final info = (await check(c,
+              platform: PlayxPlatform.android,
+              newVersion: '2.0.0',
+              storeUrls: urls))
+          .updateData!;
+
+      expect(adapter.count, 0);
+      expect(info.storeUrl, 'market://details?id=a.b');
+    });
+
+    test('options win over the url of a custom source', () async {
+      final (c, _) = make(() => ResponseBody.fromString('', 500));
+      final source = PlayxCallbackVersionSource((_) async =>
+          const PlayxRemoteVersionInfo(
+              version: '3.0.0', storeUrl: 'https://source.url'));
+
+      final withOptions = (await check(c,
+              platform: PlayxPlatform.ios, storeUrls: urls, source: source))
+          .updateData!;
+      final withoutOptions =
+          (await check(c, platform: PlayxPlatform.ios, source: source))
+              .updateData!;
+
+      expect(withOptions.storeUrl, 'https://my.link/ios');
+      expect(withoutOptions.storeUrl, 'https://source.url');
+    });
+  });
 }
 
 class _CountingAdapter implements HttpClientAdapter {

@@ -33,6 +33,11 @@ class PlayxVersionRequest {
   /// so a source may skip work when it is set.
   final String? providedVersion;
 
+  /// The store URL the caller already supplied for this platform
+  /// (`PlayxUpdateOptions.storeUrls`), if any. It always wins over a URL a
+  /// source returns, so a source does not need to look one up.
+  final String? providedStoreUrl;
+
   const PlayxVersionRequest({
     required this.platform,
     required this.packageId,
@@ -41,5 +46,6 @@ class PlayxVersionRequest {
     this.networkOptions,
     this.enableLog = false,
     this.providedVersion,
+    this.providedStoreUrl,
   });
 }

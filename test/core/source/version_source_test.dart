@@ -184,6 +184,25 @@ void main() {
       expect(info.storeUrl, 'https://apps.apple.com/x');
     });
 
+    test('ios makes no request with a provided version and store url', () async {
+      final (source, adapter) = make(() => ResponseBody.fromString('', 500));
+      final info = (await source.fetch(
+        const PlayxVersionRequest(
+          platform: PlayxPlatform.ios,
+          packageId: 'a.b',
+          country: 'us',
+          language: 'en',
+          providedVersion: '2.0.0',
+          providedStoreUrl: 'https://my.link/ios',
+        ),
+      ))
+          .updateData!;
+
+      expect(adapter.count, 0);
+      expect(info.version, '2.0.0');
+      expect(info.storeUrl, 'https://my.link/ios');
+    });
+
     test('platforms without a store return NotSupportedException', () async {
       final (source, adapter) = make(() => ResponseBody.fromString('', 200));
       final error = (await source.fetch(

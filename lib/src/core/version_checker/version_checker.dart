@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:playx_version_update/src/core/datasource/remote_store_data_source.dart';
 import 'package:playx_version_update/src/core/datasource/store_urls.dart';
 import 'package:playx_version_update/src/core/model/playx_platform.dart';
+import 'package:playx_version_update/src/core/model/playx_platform_value.dart';
 import 'package:playx_version_update/src/core/model/playx_platform_version.dart';
 import 'package:playx_version_update/src/core/model/playx_version_update_info.dart';
 import 'package:playx_version_update/src/core/model/result/playx_version_update_error.dart';
@@ -94,6 +95,7 @@ class VersionChecker {
       minVersion: options.minVersion,
       minPlatformVersion: options.minPlatformVersion,
       forceUpdate: options.forceUpdate,
+      storeUrls: options.storeUrls,
       source: options.versionSource,
       enableLog: options.enableNetworkLogging,
       networkOptions: options.networkOptions,
@@ -118,6 +120,7 @@ class VersionChecker {
     required String? minVersion,
     required PlayxPlatformVersion? minPlatformVersion,
     required bool? forceUpdate,
+    PlayxPlatformValue<String>? storeUrls,
     PlayxVersionSource? source,
     bool enableLog = false,
     PlayxNetworkOptions? networkOptions,
@@ -126,6 +129,8 @@ class VersionChecker {
         platform: platform,
         newVersion: newVersion,
         newPlatformVersion: newPlatformVersion);
+
+    final providedStoreUrl = _usable(storeUrls?.forPlatform(platform));
 
     var sourceResult = await (source ?? _defaultSource).fetch(
       PlayxVersionRequest(
@@ -136,6 +141,7 @@ class VersionChecker {
         networkOptions: networkOptions,
         enableLog: enableLog,
         providedVersion: providedVersion,
+        providedStoreUrl: providedStoreUrl,
       ),
     );
     if (providedVersion != null && sourceResult.isError) {
@@ -166,13 +172,13 @@ class VersionChecker {
             minVersion: normalizedMinVersion,
             playxForceUpdate: forceUpdate);
 
-        final sourceUrl = info.storeUrl;
-        final storeUrl = sourceUrl != null && sourceUrl.isNotEmpty
-            ? sourceUrl
-            : platform == PlayxPlatform.android
+        // Caller's URL > the source's URL > the one derived from the package.
+        final storeUrl = providedStoreUrl ??
+            _usable(info.storeUrl) ??
+            (platform == PlayxPlatform.android
                 ? getGooglePlayUrl(
                     packageId: packageId, country: country, language: language)
-                : '';
+                : '');
 
         final updateInfo = PlayxVersionUpdateInfo(
           localVersion: localVersion,
@@ -195,6 +201,9 @@ class VersionChecker {
       return PlayxVersionUpdateResult<PlayxVersionUpdateInfo>.error(error);
     });
   }
+
+  static String? _usable(String? value) =>
+      value == null || value.isEmpty ? null : value;
 
   /// The new version supplied by the caller for the current platform, if any.
   String? _providedVersion({

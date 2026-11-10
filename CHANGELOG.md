@@ -1,5 +1,6 @@
 # Changelog
 ## Unreleased
+- Add `PlayxUpdateOptions.storeUrls` (`PlayxPlatformValue<String>`) to set a custom store URL per platform. It wins over a version source's URL and the derived one; on iOS, providing it with `newVersion` skips the App Store lookup.
 - Add `PlayxUpdateOptions.appIds` (`PlayxPlatformValue<String>`) to set the app id per platform. `androidPackageName` and `iosBundleId` still work; `appIds` wins when both are set.
 - Add `PlayxPlatform` (android, ios, macos, windows, linux) and the generic `PlayxPlatformValue<T>`. `PlayxPlatformVersion` now extends it and gains `macos`, `windows` and `linux` values, so each platform can have its own version or minimum version. `PlayxVersionRequest` exposes `platform` (with `isAndroid` / `isIos` helpers).
 - `checkVersion` can run on macOS, Windows and Linux when a custom `versionSource` is provided; the default store source supports Android and iOS only. `showUpdateDialog` still needs Android or iOS (use `checkVersion` with `PlayxUpdatePage` elsewhere).

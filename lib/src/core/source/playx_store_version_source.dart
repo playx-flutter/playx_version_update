@@ -16,7 +16,8 @@ import 'playx_version_source.dart';
 /// ([PlayxVersionRequest.providedVersion]), Android does not request the
 /// Google Play page at all, because the store URL can be built from the
 /// package name. iOS still performs the lookup, as it is the only source of
-/// the App Store URL.
+/// the App Store URL, unless the caller supplied both the new version and the
+/// store URL ([PlayxVersionRequest.providedStoreUrl]).
 class PlayxStoreVersionSource implements PlayxVersionSource {
   final RemoteStoreDataSource _dataSource;
 
@@ -65,6 +66,15 @@ class PlayxStoreVersionSource implements PlayxVersionSource {
       // Only Google Play and the App Store can be read. Other platforms need
       // a custom PlayxVersionSource.
       return const PlayxVersionUpdateResult.error(NotSupportedException());
+    }
+
+    // The lookup is only needed for the App Store URL (and the extras). With
+    // both a version and a URL supplied there is nothing left to ask for.
+    final providedVersion = request.providedVersion;
+    final providedUrl = request.providedStoreUrl;
+    if (providedVersion != null && providedUrl != null) {
+      return PlayxVersionUpdateResult.success(
+          PlayxRemoteVersionInfo(version: providedVersion, storeUrl: providedUrl));
     }
 
     final result = await _dataSource.getAppStoreInfo(

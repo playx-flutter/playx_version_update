@@ -20,7 +20,8 @@ class PlayxUpdateOptions {
   ///   [minVersion] if you need one.
   /// - On **iOS** the App Store lookup is still attempted, because it is the
   ///   only source of the store URL, release notes and minimum version. If it
-  ///   fails, the provided version is used anyway.
+  ///   fails, the provided version is used anyway. Also provide [storeUrls]
+  ///   to skip the lookup entirely.
   final String? newVersion;
 
   /// The minimum required version for the app to run.
@@ -99,6 +100,15 @@ class PlayxUpdateOptions {
   /// `minVersion`, the platform overrides, `forceUpdate`) always win over it.
   final PlayxVersionSource? versionSource;
 
+  /// Where users update the app, per platform. Any scheme works (`https://`,
+  /// `market://`, a marketing short link). Set every platform once; the
+  /// package uses the one of the current platform.
+  ///
+  /// It wins over the URL a [versionSource] returns and over the one derived
+  /// from the store. On iOS, providing it together with [newVersion] skips
+  /// the App Store lookup altogether.
+  final PlayxPlatformValue<String>? storeUrls;
+
   const PlayxUpdateOptions({
     this.localVersion,
     this.newVersion,
@@ -116,5 +126,6 @@ class PlayxUpdateOptions {
     this.networkOptions = const PlayxNetworkOptions(),
     this.versionSource,
     this.appIds,
+    this.storeUrls,
   });
 }

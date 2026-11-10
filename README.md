@@ -300,6 +300,23 @@ PlayxUpdateOptions(
 
 `androidPackageName` and `iosBundleId` remain as shortcuts. Precedence: `appIds` > `androidPackageName` / `iosBundleId` > the id read from the app.
 
+### Custom Store URL
+
+Send users somewhere other than the default store page (another store, a marketing link, a `market://` link):
+
+```dart
+PlayxUpdateOptions(
+  storeUrls: PlayxPlatformValue(
+    android: 'market://details?id=com.example.app',
+    ios: 'https://apps.apple.com/app/id123456789',
+  ),
+)
+```
+
+Set every platform once; the package uses the one of the current platform. Any scheme is accepted and used as is. Precedence: `storeUrls` > the URL a `versionSource` returns > the URL derived from the store.
+
+On iOS, passing `storeUrls` together with `newVersion` skips the App Store lookup entirely, because the lookup was only needed for the store URL.
+
 ### Network Settings
 
 Tune how the store is queried with `networkOptions`:
