@@ -58,9 +58,9 @@ class Version implements Comparable<Version> {
   ///
   /// [major], [minor], and [patch] are required and must be non-negative.
   /// [additionalComponents] is an optional list of non-negative integers for extra version segments.
-  /// [preRelease] is optional, but if specified, must be a string containing only [0-9A-Za-z-]
+  /// [preRelease] is optional, but if specified, must be a string containing only `[0-9A-Za-z-]`
   ///   and dot-separated segments (e.g., "alpha.1").
-  /// [build] is optional, but if specified, must be a string containing only [0-9A-Za-z-.]
+  /// [build] is optional, but if specified, must be a string containing only `[0-9A-Za-z-.]`
   ///   (e.g., "build.info").
   ///
   /// Throws a [FormatException] if string content violates character constraints.

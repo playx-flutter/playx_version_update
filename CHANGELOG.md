@@ -1,33 +1,95 @@
 # Changelog
-## Unreleased
-- **Deprecate** `PlayxUpdateOptions.androidPackageName` and `iosBundleId` in favor of `appIds`. They keep working and will be removed in a future major release.
-- Support macOS: the default source looks the app up in the Mac App Store (`entity=macSoftware`), the update dialog renders with the Cupertino style, and the update button opens the Mac App Store app (`macappstores://`) before the web URL. macOS is listed in the supported platforms and the example app has a macOS runner. Apps distributed outside the Mac App Store need a custom `versionSource`.
-- `PlayxVersionUpdate.openStore` can open the store without a version check: `storeUrl` is now optional and an `options` parameter resolves it (`storeUrls`, else the Google Play URL on Android, else one App Store lookup / `versionSource` request on iOS).
-- Add `PlayxUpdateUIOptions.storeLauncher` to open the store yourself, and `PlayxUpdateEvents.onStoreOpenResult` reporting whether the store opened. On the update button: `onUpdate` > `storeLauncher` > default `openStore`. The callback typedefs (`UpdatePressedCallback`, `StoreLauncherCallback`, ...) are now exported.
-- Fix the iOS update dialog popping the route twice when dismissible.
-- `PlayxVersionUpdate.openStore` now opens the store app directly (`market://` on Android, `itms-apps://` on iOS) before falling back to the web URL; control it with `preferStoreApp` (also on `PlayxUpdateUIOptions`). It launches directly instead of calling `canLaunchUrl`, so no `<queries>` / `LSApplicationQueriesSchemes` are needed, and it now returns an error whenever nothing could be opened (before, `launchUrl` returning `false` gave `success(false)`).
-- Add `PlayxStaticVersionSource`: fixed per-platform version, minimum version, release notes and store URL (`PlayxPlatformVersion` / `PlayxPlatformValue`). The deprecated `newPlatformVersion` / `minPlatformVersion` options now point to it.
-- Add `PlayxUpdateOptions.storeUrls` (`PlayxPlatformValue<String>`) to set a custom store URL per platform. It wins over a version source's URL and the derived one; on iOS, providing it with `newVersion` skips the App Store lookup.
-- Add `PlayxUpdateOptions.appIds` (`PlayxPlatformValue<String>`) to set the app id per platform. `androidPackageName` and `iosBundleId` are deprecated in favor of it; they still work, and `appIds` wins when both are set.
-- Add `PlayxPlatform` (android, ios, macos, windows, linux) and the generic `PlayxPlatformValue<T>`. `PlayxPlatformVersion` now extends it and gains `macos`, `windows` and `linux` values, so each platform can have its own version or minimum version. `PlayxVersionRequest` exposes `platform` (with `isAndroid` / `isIos` helpers).
-- `checkVersion` can run on Windows and Linux when a custom `versionSource` is provided; the default store source supports Android, iOS and macOS. `showUpdateDialog` needs Android, iOS or macOS (use `checkVersion` with `PlayxUpdatePage` elsewhere).
-- **Deprecate** the `PlayxUpdateOptions.newPlatformVersion` and `minPlatformVersion` options in favor of `versionSource`, which receives the platform in its request. They keep working and will be removed in a future major release.
-- Add pluggable `PlayxVersionSource` (`PlayxUpdateOptions.versionSource`) with `PlayxStoreVersionSource` (default), `PlayxCallbackVersionSource` (Remote Config / own backend) and `PlayxFallbackVersionSource`. Options values still win over the source.
-- Fix `newVersion` / `newPlatformVersion` not skipping the store lookup. On Android the Google Play page is no longer requested when a version is provided; on iOS the App Store lookup (needed for the store URL) is best-effort and its failure no longer fails the check.
-- Add `PlayxUpdateEvents` (`PlayxUpdateUIOptions.events`) for analytics: shown, update tapped, dismissed, skipped, suppressed, and Android in-app update started/result.
-- Add "Later" snoozing and "Skip this version" through `reminderOptions` on `showUpdateDialog` / `iosReminderOptions` on `showInAppUpdateDialog`, with pluggable `PlayxUpdateStorage` (in-memory by default). `showUpdateDialog` returns `success(false)` when the prompt is suppressed.
-- Detect Google's EU consent page and report it as `ConsentRequiredException` (`STORE_CONSENT_REQUIRED`) instead of a version format error.
-- Add `PlayxUpdateOptions.networkOptions` (`PlayxNetworkOptions`): retries, timeouts, headers, a custom `Dio` and a `CancelToken`.
-- **Breaking:** raise the minimum Dart SDK to 3.10 and Flutter to 3.38.1; update `dio` to ^5.11.1 and `package_info_plus` to ^10.2.2.
-- Remove the `playx_network` dependency in favor of a small lightweight built-in `dio` based network client.
-- The `NetworkException` types are still exported from this package, so existing error handling keeps working.
-- Add stable `NetworkErrorCode` constants, an `errorCode` and original `cause` on every `NetworkException`, and `PlayxVersionNetworkError.statusCode`.
-- Add `BadRequestException`, `TooManyRequestsException` and `BadCertificateException`; 502/504 now map to `ServiceUnavailableException`.
-- Add `AppNotFoundException` (`STORE_APP_NOT_FOUND`): Google Play 404 and empty App Store lookups are now reported as "app not found" instead of a format error. App Store 403 is treated as throttling.
-- `enableNetworkLogging` now logs the full exchange (request method/URL/headers, response status/headers/timing/body preview, errors, retries) through a dedicated `NetworkLogInterceptor`; sensitive headers are masked.
-- Add `NetworkException.isRetryable`, and one automatic retry for retryable failures.
-- Send a browser user agent and `Accept-Language` to Google Play.
-- Fix the example app so network errors are detected through `PlayxVersionNetworkError`.
+
+## 2.0.0
+
+A big release: version sources, "Later" and "Skip", events, macOS, a rewritten network layer and many
+fixes. **See the [migration guide](https://playx-flutter.github.io/playx_version_update/docs/migration/migrating-to-2)**
+for the few changes you may need to make.
+
+### Breaking changes
+
+- The minimum SDK is now **Dart 3.10 and Flutter 3.38.1** (was Dart 3.6 and Flutter 3.27). `package_info_plus`
+  is `^10.2.2` and `dio` is `^5.11.1`.
+- **`playx_network` is removed.** The package now has its own small `dio` based client. The `NetworkException`
+  types are still exported under the same names, but they are this package's own types: they have an
+  `errorCode`, `message`, `cause` and `isRetryable`, and no `apiErrorMessage` / `shouldShowApiError`.
+  `PlayxVersionNetworkError.errorCode` is now the stable `NetworkErrorCode` (it used to be the status code or the message).
+- `PlayxVersionUpdate.openStore` now opens the store app first (`market://`, `itms-apps://`, `macappstores://`)
+  and the web URL after it, no longer calls `canLaunchUrl` (no `<queries>` / `LSApplicationQueriesSchemes`
+  needed), and returns an **error** whenever nothing could be opened (before, `launchUrl` returning `false`
+  gave `success(false)`).
+- Android in-app updates report the real result: a denied update is `PlayxInAppUpdateCanceledError` (it was
+  `success(false)`) and a failed one is `PlayxInAppUpdateFailedError` (it was `success(true)`).
+  `getUpdateStalenessDays` / `getUpdatePriority` return `-1` when there is no update instead of an error.
+- `PlayxVersionUpdateError` has three new subclasses (`PlayxUpdateNotAvailableError`,
+  `PlayxUpdateInProgressError`, `PlayxUpdateNotAllowedError`), so an exhaustive `switch` needs them.
+- `PlayxVersionRequest` (new) exposes `platform: PlayxPlatform` instead of a boolean.
+
+### Added
+
+- **Version sources**: `PlayxUpdateOptions.versionSource` with `PlayxStoreVersionSource` (default),
+  `PlayxCallbackVersionSource` (Remote Config or your backend), `PlayxStaticVersionSource` (fixed values per
+  platform) and `PlayxFallbackVersionSource`. Implement `PlayxVersionSource` for your own.
+- **macOS support**: the default source reads the Mac App Store, the update dialog renders in the Cupertino style
+  and the update button opens the Mac App Store app. macOS is listed in the supported platforms.
+- **Per-platform values**: `PlayxPlatform` (android, ios, macos, windows, linux), the generic
+  `PlayxPlatformValue<T>`, and `PlayxPlatformVersion` with `macos`, `windows` and `linux` values.
+  `PlayxUpdateOptions.appIds` sets the app id per platform and `storeUrls` a custom store URL per platform.
+  `checkVersion` runs on Windows and Linux with a custom `versionSource`.
+- **"Later" and "Skip this version"**: `reminderOptions` on `showUpdateDialog` (`iosReminderOptions` on
+  `showInAppUpdateDialog`) with pluggable `PlayxUpdateStorage` (in memory by default) and `PlayxUpdateReminder`.
+  `showUpdateDialog` returns `success(false)` when the prompt is suppressed.
+- **Events**: `PlayxUpdateEvents` (`PlayxUpdateUIOptions.events`): shown, update tapped, store open result,
+  dismissed, skipped, suppressed, and Android in-app update started / result.
+- **Opening the store**: `storeLauncher` and `onStoreOpenResult` to open the store yourself, `preferStoreApp`, and
+  `openStore` without a URL (it resolves one from the options) for an "Update" or "Rate us" button.
+- **Network**: `PlayxUpdateOptions.networkOptions` (`PlayxNetworkOptions`: retries, timeouts, headers, a custom
+  `Dio`, a `CancelToken`), full request and response logging with `enableNetworkLogging` (credentials are
+  masked), automatic retry of failures that can succeed later, stable `NetworkErrorCode`s, `isRetryable`,
+  and new `AppNotFoundException`, `ConsentRequiredException`, `BadRequestException`,
+  `TooManyRequestsException` and `BadCertificateException`.
+- **Google consent page**: the EU/UK consent page is reported as `ConsentRequiredException`
+  (`STORE_CONSENT_REQUIRED`) instead of a version format error.
+- The callback typedefs (`UpdatePressedCallback`, `StoreLauncherCallback`, ...) are exported.
+- A documentation site with guides, troubleshooting and a migration guide:
+  https://playx-flutter.github.io/playx_version_update/
+- Over 330 tests (96% line coverage of `lib/`), CI on every pull request, and publishing to pub.dev
+  automated from `v*` tags.
+
+### Changed
+
+- When you pass `newVersion`, the Google Play page is no longer requested on Android; on iOS the App Store
+  lookup (needed for the store URL) is best-effort. Passing `storeUrls` with `newVersion` skips it.
+- Google Play requests send a browser user agent and `Accept-Language`.
+- A forced update is no longer flagged automatically when the app is already current (an explicit
+  `forceUpdate: true` still applies), and an empty `minVersion` falls back to the source's.
+- Store URLs encode the package id, country and language.
+
+### Deprecated
+
+- `PlayxUpdateOptions.newPlatformVersion` and `minPlatformVersion`: use `versionSource: PlayxStaticVersionSource(...)`.
+- `PlayxUpdateOptions.androidPackageName` and `iosBundleId`: use `appIds`.
+
+They keep working and will be removed in a future major release.
+
+### Fixed
+
+- The update dialog and page: a forced dialog with its own `onCancel` no longer also exits the app and is no
+  longer closed by its dismiss button; the page's dismiss button closes a dismissible page; the page handles
+  the back button like the dialog; the iOS dialog no longer pops its route twice; double taps no longer pop an
+  unrelated route or launch the store twice; `onShown` is only reported when something is on screen.
+- Errors thrown by your callbacks (events, `onUpdate`, `onCancel`, `storeLauncher`) are reported to
+  `FlutterError.onError` instead of leaving the update half-handled.
+- Android: an immediate update no longer hangs when it is not allowed; an interrupted immediate update resumes
+  when the app returns; cancelling the download subscription after the app was paused no longer fails;
+  results are completed on the main thread.
+- `PlayxUpdateOptions.localVersion` is honored (it was ignored).
+- Versions with a `v` prefix or surrounding spaces are parsed (`v2.0.0` was read as `0.0.0`), and
+  `Version.hashCode` is consistent with `==`.
+- A Google Play page that merely mentions `consent.google.com` is no longer rejected as the consent form.
+- The snooze deadline is stored in UTC.
+- A malformed download event no longer breaks the in-app update stream.
+- Android Gradle Plugin 9 (built-in Kotlin) is supported.
 
 ## 1.3.0
 - Add `PlayxPlatformVersion` with `newPlatformVersion` and `minPlatformVersion` overrides for Android- and iOS-specific app version checks.
