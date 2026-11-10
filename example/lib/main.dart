@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:playx_version_update/playx_version_update.dart';
 
+import 'features_page.dart';
+
 final GlobalKey<ScaffoldMessengerState> globalKey =
     GlobalKey<ScaffoldMessengerState>();
 
@@ -53,7 +55,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       appBar: AppBar(
         title: const Text('Playx Version Update Example'),
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -97,19 +99,27 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               onPressed: () {
                 startImmediateUpdate(context);
               },
-              child: const Text('Start Immediate Update (Android/iOS)'),
+              child: const Text('Start Immediate Update (Android/iOS/macOS)'),
             ),
             ElevatedButton(
               onPressed: () {
                 startFlexibleUpdate(context);
               },
-              child: const Text('Start Flexible Update (Android/iOS)'),
+              child: const Text('Start Flexible Update (Android/iOS/macOS)'),
             ),
             ElevatedButton(
               onPressed: () {
                 startFlexibleUpdateOnly(context);
               },
               child: const Text('Start Flexible Update Only (Android)'),
+            ),
+            const SizedBox(height: 12),
+            FilledButton.tonal(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const FeaturesPage()),
+              ),
+              child: const Text('More features: sources, events, Later/Skip'),
             ),
           ],
         ),
