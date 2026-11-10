@@ -1,0 +1,16 @@
+{
+ "resultCount": 1,
+ "results": [
+  {
+   "kind": "mac-software",
+   "bundleId": "com.apple.dt.Xcode",
+   "trackName": "Xcode",
+   "version": "27.2",
+   "trackViewUrl": "https://apps.apple.com/us/app/xcode/id497799835?mt=12&uo=4",
+   "minimumOsVersion": "26.6",
+   "releaseNotes": "Xcode 27.2 includes Swift 6.4 and SDKs for iOS 27.2, iPadOS 27.2, tvOS 27.2, watchOS 27.2, visionOS 27.2, and macOS 27.2.\n\nThis update adds support for Touch on MacBook Pro with PROLED XDR Display, so you can test how your app responds to real touch input in Previews and Device Hub. It introduces a JSON-based project format that's more readable, easier to edit, and merge-friendly. It also includes a code coverage tool for coding agents, brings slow-motion animation, simulated shake, and simulated memory pressure in Device Hub, and provides bug fixes and improved stability.",
+   "currentVersionReleaseDate": "2026-10-30T00:02:26Z",
+   "description": "Xcode offers the tools you need to develop, test, and distribute apps for Apple platforms, including generative intelligence powered by frontier coding agents and models, advanced profiling and debugging tools, and simulators for Apple devices. It enables a unified workflow that spans from the earliest stages of app development to testing, debugging, optimization, and app distribution to testers and users. And with the Swift programming language, Xcode makes developing apps easy and fun.\n\nDevice Hub enables rapid prototyping and testing of your app on both physical devices and simulators, with"
+  }
+ ]
+}
