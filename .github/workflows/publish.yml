@@ -1,28 +1,63 @@
 name: Publish to pub.dev
 
+# Publishes when a version tag is pushed, for example:
+#   git tag v2.0.0 && git push origin v2.0.0
+#
+# One-time setup on pub.dev (package -> Admin -> Automated publishing):
+#   repository:  playx-flutter/playx_version_update
+#   tag pattern: v{{version}}
+# No secret is stored in GitHub: the job authenticates with a short-lived
+# OIDC token. Consider tag protection rules so only maintainers can tag.
 on:
-  pull_request:
-    types:
-      - closed
-    branches:
-      - 'main'
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+permissions:
+  contents: read
 
 jobs:
   publish:
-    if: github.event.pull_request.merged == true
+    name: Test and publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Required for authentication using OIDC
     steps:
-      - uses: actions/checkout@v2
-      - name: Install Flutter
-        uses: subosito/flutter-action@v2
-      - name: Install dependencies
-        run: flutter pub get
-      - name: Format code
-        run: dart format .
-      - name: 'Publish package'
-        uses: k-paxian/dart-package-publisher@master
+      - uses: actions/checkout@v4
+
+      # Configures the OIDC token that `pub publish` uses.
+      - uses: dart-lang/setup-dart@v1
+
+      - uses: subosito/flutter-action@v2
         with:
-          credentialJson: ${{ secrets.CREDENTIAL_JSON }}
-          flutter: true
-          skipTests: true
-          environment: pub.dev
+          channel: stable
+          cache: true
+
+      - name: The tag matches the version in pubspec.yaml
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          pubspec_version="$(grep '^version:' pubspec.yaml | awk '{print $2}')"
+          echo "tag: $tag_version, pubspec.yaml: $pubspec_version"
+          if [ "$tag_version" != "$pubspec_version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match version $pubspec_version in pubspec.yaml"
+            exit 1
+          fi
+
+      - name: The changelog mentions the version
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          if ! grep -q "^## $version" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## $version' section"
+            exit 1
+          fi
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+      - name: Dry run
+        run: flutter pub publish --dry-run
+
+      - name: Publish
+        run: flutter pub publish --force

@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, qa]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Lowest Flutter the package supports (Dart 3.10), see pubspec.yaml.
+  MIN_FLUTTER: 3.38.1
+  # Minimum line coverage of lib/ (the suite is above 96%).
+  MIN_COVERAGE: 92
+
+jobs:
+  analyze-test:
+    name: Analyze and test (${{ matrix.flutter }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flutter: [min, stable]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ matrix.flutter == 'min' && env.MIN_FLUTTER || '' }}
+          cache: true
+
+      - run: flutter --version
+      - run: flutter pub get
+      - run: flutter analyze
+      - name: Test with coverage
+        run: flutter test --coverage
+      - name: Coverage gate
+        if: matrix.flutter == 'stable'
+        run: python3 tool/coverage_summary.py --min "$MIN_COVERAGE"
+      - name: Upload coverage
+        if: matrix.flutter == 'stable'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: coverage/lcov.info
+
+  min-dependencies:
+    name: Lowest dependency versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      # Resolves every dependency to the lowest version pubspec.yaml allows.
+      - run: flutter pub downgrade
+      - run: flutter analyze
+      - run: flutter test
+
+  example:
+    name: Example app (Android)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+        working-directory: example
+      - run: flutter analyze
+        working-directory: example
+      - run: flutter test
+        working-directory: example
+      - run: flutter build apk --debug
+        working-directory: example
+
+  example-macos:
+    name: Example app (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+        working-directory: example
+      - run: flutter build macos --debug
+        working-directory: example
+
+  android-native:
+    name: Android unit tests (Kotlin)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      # Creates example/android/local.properties and registers the plugin.
+      - run: flutter pub get
+        working-directory: example
+      - run: ./gradlew :playx_version_update:testDebugUnitTest
+        working-directory: example/android
+
+  pub-dry-run:
+    name: Package is publishable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter pub publish --dry-run
